@@ -91,7 +91,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="metric"><div class="metric-lbl">VIX</div><div class="metric-val" id="vix-val">—</div><div class="metric-sub" id="vix-sub">—</div></div>
         <div class="metric"><div class="metric-lbl">S&P 500</div><div class="metric-val" id="spy-val" style="color:#1e40af">—</div><div class="metric-sub" id="spy-sub">—</div></div>
         <div class="metric"><div class="metric-lbl">Opportunities</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
-        <div class="metric"><div class="metric-lbl">Portfolio</div><div class="metric-val" id="port-val" style="font-size:18px">—</div><div class="metric-sub">live from Schwab + IBKR</div></div>
+        <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">—</div><div class="metric-sub">holdings tracked</div></div>
       </div>
       <div id="verdict-box" class="verdict"></div>
       <div id="summary-box" class="summary-box" style="display:none">
@@ -119,7 +119,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- POSITIONS -->
   <div class="page" id="page-positions">
-    <div class="notice">Real positions from your Schwab and IBKR accounts — updated 3x/day by the scanner.</div>
+    <div class="notice">Position signals from your Schwab and IBKR accounts — updated 3x/day. No sensitive data stored or shown.</div>
     <div class="g3" id="pos-grid"><div class="spinner">Loading...</div></div>
   </div>
 
@@ -180,8 +180,7 @@ function renderMarket() {
   document.getElementById('opp-count').textContent = opps.length;
   document.getElementById('opp-sub').textContent = above20 + ' above 20% minimum';
 
-  const port = (data.portfolio_size || 0).toLocaleString('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0});
-  document.getElementById('port-val').textContent = port;
+  document.getElementById('port-val').textContent = (data.positions || []).length;
 
   const vb = document.getElementById('verdict-box');
   vb.textContent = m.verdict || '';
@@ -268,33 +267,34 @@ function renderPositions() {
   const grid = document.getElementById('pos-grid');
   const positions = data.positions || [];
   if (!positions.length) {
-    grid.innerHTML = '<div class="empty">No positions found in last scan.<br>IBKR Flex and Schwab accounts are checked automatically.</div>';
+    grid.innerHTML = '<div class="empty">No positions found in last scan.</div>';
     return;
   }
   const tierBadge = t => t==='Core'?'b-blue':t==='Growth'?'b-purple':t==='Cyclical'?'b-amber':'b-gray';
-  grid.innerHTML = positions.map(p => {
-    const pnl = p.pnl_pct || 0;
-    const pc = pnl > 5 ? '#166534' : pnl < -5 ? '#991b1b' : '#92400e';
-    const mv = ((p.shares||0)*(p.current_price||0)).toLocaleString('en-US',{maximumFractionDigits:0});
-    return `
+  const pnlColor  = s => s==='strong_profit'||s==='profit' ? '#166534' : s==='loss'||s==='significant_loss' ? '#991b1b' : '#92400e';
+  const pnlLabel  = s => ({'strong_profit':'Strong Profit','profit':'Profit','breakeven':'Break-even','loss':'Loss','significant_loss':'Significant Loss'})[s] || s;
+  const sizeLabel = s => ({'overweight':'Overweight','near_max':'Near Max','normal':'Normal','light':'Light'})[s] || s;
+  const sizeColor = s => s==='overweight'?'#991b1b':s==='near_max'?'#92400e':'#6b7280';
+  const actionBadge = a => a==='REDUCE'?'b-red':a==='GENERATE INCOME'?'b-green':a==='PROTECT'?'b-amber':'b-blue';
+  grid.innerHTML = positions.map(p => `
     <div class="pos-card">
       <div class="pos-hdr">
         <div>
           <div class="pos-ticker">${p.ticker}</div>
-          <div class="opp-meta"><span class="badge ${tierBadge(p.tier)}">${p.tier}</span> ${p.account}</div>
+          <div class="opp-meta">
+            <span class="badge ${tierBadge(p.tier)}">${p.tier}</span>
+            &nbsp;•&nbsp;
+            <span style="color:${sizeColor(p.size_status)};font-size:11px;font-weight:600">${sizeLabel(p.size_status)}</span>
+          </div>
         </div>
-        <div style="font-family:monospace;font-size:15px;font-weight:700;color:${pc}">${pnl>0?'+':''}${pnl.toFixed(1)}%</div>
+        <div style="font-size:13px;font-weight:600;color:${pnlColor(p.pnl_status)}">${pnlLabel(p.pnl_status)}</div>
       </div>
-      <div class="pos-stats">
-        <div><div class="stat-l">Shares</div><div class="stat-v">${p.shares}</div></div>
-        <div><div class="stat-l">Avg cost</div><div class="stat-v">$${p.avg_cost}</div></div>
-        <div><div class="stat-l">Price</div><div class="stat-v">$${p.current_price}</div></div>
-        <div><div class="stat-l">Value</div><div class="stat-v">$${mv}</div></div>
-        <div><div class="stat-l">Global %</div><div class="stat-v">${p.global_pct}%</div></div>
-        <div><div class="stat-l">Status</div><div class="stat-v" style="color:${pc}">${p.pnl_status}</div></div>
+      <div style="margin:10px 0 6px">
+        <span class="badge ${actionBadge(p.action)}" style="font-size:12px;padding:4px 10px">${p.action}</span>
       </div>
-    </div>`;
-  }).join('');
+      <div style="font-size:12px;color:#6b7280;line-height:1.5">${p.action_note}</div>
+      ${p.has_cc ? '<div style="margin-top:8px;font-size:11px;color:#166534;background:#f0fdf4;padding:5px 8px;border-radius:6px">💰 CC opportunity available — check Opportunities tab</div>' : ''}
+    </div>`).join('');
 }
 
 // ── Nav ───────────────────────────────────────────────────
