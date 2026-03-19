@@ -243,12 +243,17 @@ function renderOpps() {
       <hr class="divider">
       <div class="stats">
         <div><div class="stat-l">Strike</div><div class="stat-v">${o.mode === 'BCS' ? '$' + o.long_strike + ' / $' + o.short_strike : '$' + o.strike}</div></div>
-        <div><div class="stat-l">Expiry</div><div class="stat-v">${o.expiry}</div></div>
         <div><div class="stat-l">DTE</div><div class="stat-v">${o.dte}</div></div>
+        <div><div class="stat-l">Delta</div><div class="stat-v" style="color:${Math.abs((o.delta||0)-0.28)<0.08?'#166534':'#92400e'}">${o.delta}</div></div>
         <div><div class="stat-l">Premium</div><div class="stat-v">$${o.premium}</div></div>
-        <div><div class="stat-l">Delta</div><div class="stat-v">${o.delta}</div></div>
-        <div><div class="stat-l">$/day</div><div class="stat-v">$${ppd}</div></div>
+        <div><div class="stat-l">$/day</div><div class="stat-v">$${o.premium_per_day || ppd}</div></div>
+        <div><div class="stat-l">Breakeven</div><div class="stat-v">${o.breakeven ? '$' + o.breakeven : '—'}</div></div>
       </div>
+      ${o.risk_level ? `<div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <span class="badge ${o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red'}">Risk: ${o.risk_level}</span>
+        ${o.position_status ? '<span class="badge b-blue">'+o.position_status+'</span>' : ''}
+        <span style="font-size:11px;color:#6b7280">IVP: ${o.ivp}%</span>
+      </div>` : ''}
       ${o.signal ? `<div class="opp-signal">${o.signal}</div>` : ''}
       ${o.risk_note ? `<div class="risk">${o.risk_note}</div>` : ''}
     </div>`;
