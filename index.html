@@ -94,12 +94,27 @@ function ann(premium, strike, dte) {
 }
 
 async function callClaude(key, prompt, maxTok = 1500) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-    body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTok, messages: [{ role: "user", content: prompt }] })
-  });
-  if (!r.ok) throw new Error("API " + r.status);
+  if (!key || key.length < 10) throw new Error("No API key — add in Settings first");
+  let r;
+  try {
+    r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTok, messages: [{ role: "user", content: prompt }] })
+    });
+  } catch(fetchErr) {
+    throw new Error("Network error — check internet connection: " + fetchErr.message);
+  }
+  if (!r.ok) {
+    let body = "";
+    try { body = await r.text(); } catch(e) {}
+    throw new Error("API " + r.status + " — " + body.slice(0,100));
+  }
   const d = await r.json();
   const txt = d.content[0].text;
   const m = txt.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
