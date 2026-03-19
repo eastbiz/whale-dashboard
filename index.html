@@ -174,7 +174,7 @@ function renderMarket() {
     ? '✅ Above 200MA — normal environment'
     : '⚠️ Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
 
-  const opps = data.opportunities || [];
+  const opps = data.dashboard_opportunities || data.opportunities || [];
   const above20 = opps.filter(o => o.annualized_return >= 20).length;
   document.getElementById('opp-count').textContent = opps.length;
   document.getElementById('opp-sub').textContent = above20 + ' above 20% minimum';
@@ -195,8 +195,9 @@ function renderMarket() {
 // ── Opportunities tab ─────────────────────────────────────
 function renderOpps() {
   const grid = document.getElementById('opps-grid');
-  const opps = data.opportunities || [];
-  const filtered = currentFilter === 'all' ? opps : opps.filter(o => o.mode === currentFilter);
+  // Use dashboard_opportunities (full list) if available, else fall back to strict opps
+  const allOpps = data.dashboard_opportunities || data.opportunities || [];
+  const filtered = currentFilter === 'all' ? allOpps : allOpps.filter(o => o.mode === currentFilter);
 
   if (!filtered.length) {
     grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.<br><br>The scanner is working correctly — it only shows trades that pass all quality filters.</div>';
@@ -223,7 +224,7 @@ function renderOpps() {
       <div class="opp-top">
         <div>
           <div class="opp-ticker">${o.ticker}</div>
-          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span></div>
+          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span>${o.passes_quality === false ? ' <span class="badge b-red">Review</span>' : o.passes_quality ? ' <span class="badge b-green">✓ Quality</span>' : ''}</div>
         </div>
         <div style="text-align:right">
           <div class="opp-return" style="color:${rc}">${ret}%</div>
@@ -236,7 +237,9 @@ function renderOpps() {
         <span style="font-family:monospace;font-size:11px;color:${ic};min-width:28px">${ivp}%</span>
         <span class="badge ${ibc}">${ilbl}</span>
       </div>
+      ${!o.passes_quality ? '<div class="warn-box">⚠️ Does not pass strict quality filter — review warnings before trading</div>' : ''}
       ${belowMin ? '<div class="warn-box">⚠️ Below 20% minimum — consider skipping or try a wider strike</div>' : ''}
+      ${o.warnings && o.warnings.length ? '<div class="warn-box">⚠️ ' + o.warnings.join(' | ') + '</div>' : ''}
       <hr class="divider">
       <div class="stats">
         <div><div class="stat-l">Strike</div><div class="stat-v">$${o.strike}</div></div>
