@@ -232,60 +232,82 @@ function renderOpps() {
 
   grid.innerHTML = filtered.map(o => {
     const [bc, bl] = modeMap[o.mode] || ['b-gray', o.mode];
-    const ret = o.annualized_return || 0;
-    const rc = ret > 25 ? '#166534' : ret > 20 ? '#15803d' : ret > 15 ? '#92400e' : '#6b7280';
-    const ivp = o.ivp || 0;
-    const ic = ivp > 50 ? '#166534' : ivp > 30 ? '#92400e' : '#9ca3af';
-    const ibc = ivp > 50 ? 'b-green' : ivp > 30 ? 'b-amber' : 'b-gray';
-    const ilbl = ivp > 50 ? 'Elevated' : ivp > 30 ? 'Good' : 'Low';
-    const ppd = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '—';
-    const belowMin = ret < 20 && ['CSP','DROP_CSP'].includes(o.mode);
+    const ret  = o.annualized_return || 0;
+    const ivp  = o.ivp || 0;
+    const rc   = ret > 25 ? '#166534' : ret > 20 ? '#15803d' : ret > 15 ? '#92400e' : '#6b7280';
+    const ic   = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#9ca3af';
+    const ilbl = ivp > 60 ? 'Elevated' : ivp > 35 ? 'Good' : ivp > 20 ? 'Moderate' : 'Low';
+    const ppd  = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '—';
+
+    // Build quality label with inline reasons (per scoring doc section 7)
+    const reasons = [];
+    if (o.warnings && o.warnings.length) reasons.push(...o.warnings);
+    if (o.delta > 0.35 && ['CSP'].includes(o.mode)) reasons.push('delta too high');
+    if (o.delta > 0.40 && ['CC','PIO'].includes(o.mode)) reasons.push('delta too high');
+    if (ivp < 20 && ['CSP','CC'].includes(o.mode)) reasons.push('low IVP');
+    if (ret < 20 && ['CSP','DROP_CSP'].includes(o.mode)) reasons.push('below 20% min');
+    const ql = o.quality_label || '';
+    const qlColor = ql==='Strong'?'b-green':ql==='Acceptable'?'b-amber':'b-gray';
+    const qlText  = reasons.length ? ql + ' — ' + reasons.join(', ') : ql;
+
+    // Score display
+    const scoreDisp = o.normalized !== undefined
+      ? '<span style="font-size:11px;color:#6366f1;font-weight:700">↑ '+(o.normalized*100).toFixed(0)+'%</span>'
+      : o.score !== undefined
+      ? '<span style="font-size:11px;color:#6b7280">'+o.score+'pts</span>'
+      : '';
+
     return `
     <div class="opp-card">
+      <!-- HEADER: ticker | strategy | score | IVP (shown ONCE here) -->
       <div class="opp-top">
-        <div>
-          <div class="opp-ticker">${o.ticker}</div>
-          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span>${o.quality_label ? ' <span class="badge ' + (o.quality_label==='Strong'?'b-green':o.quality_label==='Acceptable'?'b-amber':'b-gray') + '">' + o.quality_label + '</span>' : ''}${o.candidate_type === 'execution' ? ' <span class="badge b-green" style="font-size:9px">✅ Exec</span>' : ''}</div>
+        <div style="flex:1">
+          <div class="opp-ticker">${o.ticker}
+            <span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px">${o.price ? '$'+o.price : ''}</span>
+          </div>
+          <div class="opp-meta" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px">
+            <span class="badge ${bc}">${bl}</span>
+            <span style="color:#9ca3af">•</span>
+            <span style="font-size:11px;color:#6b7280">${o.tier}</span>
+            ${ql ? '<span class="badge '+qlColor+'" style="font-size:10px">'+qlText+'</span>' : ''}
+            ${o.candidate_type === 'execution' ? '<span class="badge b-green" style="font-size:9px">✅ Exec</span>' : ''}
+          </div>
         </div>
-        <div style="text-align:right">
-          <div class="opp-return" style="color:${rc}">${ret}%</div>
-          <div class="opp-meta">annualized</div>
+        <!-- Score + IVP — shown ONCE in header, not repeated below -->
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+          ${scoreDisp}
+          <span style="font-size:12px;font-weight:600;color:${ic}">IVP ${ivp}%</span>
+          <span style="font-size:10px;color:${ic}">${ilbl}</span>
         </div>
       </div>
-      <div class="ivp-row">
-        <span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>
-        <div class="ivp-bar"><div class="ivp-fill" style="width:${Math.min(ivp,100)}%;background:${ic}"></div></div>
-        <span style="font-family:monospace;font-size:11px;color:${ic};min-width:28px">${ivp}%</span>
-        <span class="badge ${ibc}">${ilbl}</span>
-      </div>
-      ${!o.passes_quality ? '<div class="warn-box">⚠️ Does not pass strict quality filter — review warnings before trading</div>' : ''}
-      ${belowMin ? '<div class="warn-box">⚠️ Below 20% minimum — consider skipping or try a wider strike</div>' : ''}
-      ${o.warnings && o.warnings.length ? '<div class="warn-box">⚠️ ' + o.warnings.join(' | ') + '</div>' : ''}
+      <!-- METRICS ROW — no IVP repeated here -->
       <hr class="divider">
       <div class="stats">
-        <div><div class="stat-l">Strike</div><div class="stat-v">${o.mode === 'BCS' ? '$' + o.long_strike + ' / $' + o.short_strike : '$' + o.strike}</div></div>
+        <div><div class="stat-l">Strike</div><div class="stat-v">${o.mode === 'BCS' ? '$'+o.long_strike+' / $'+o.short_strike : '$'+o.strike}</div></div>
         <div><div class="stat-l">DTE</div><div class="stat-v">${o.dte}</div></div>
-        <div><div class="stat-l">Delta δ</div><div class="stat-v" style="color:${Math.abs((o.delta||0)-0.28)<0.08?'#166534':'#92400e'}">${o.delta}</div></div>
+        <div><div class="stat-l">δ Delta</div><div class="stat-v" style="color:${Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e'}">${o.delta}</div></div>
         <div><div class="stat-l">Premium</div><div class="stat-v">$${o.premium}</div></div>
         <div><div class="stat-l">$/day</div><div class="stat-v">$${o.premium_per_day || ppd}</div></div>
-        <div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600">${o.breakeven ? '$' + o.breakeven : '—'}</div></div>
+        <div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">${o.breakeven ? '$'+o.breakeven : '—'}</div></div>
       </div>
-      <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        ${o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">Risk: ' + o.risk_level + '</span>' : ''}
+      <!-- RETURN + RISK BADGES — no IVP repeated -->
+      <div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;color:${rc}">${ret}% ann</span>
+        ${o.risk_level ? '<span class="badge '+(o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red')+'">'+o.risk_level+'</span>' : ''}
         ${o.position_status ? '<span class="badge b-blue">'+o.position_status+'</span>' : ''}
-        <span style="font-size:11px;color:#6b7280">IVP: ${o.ivp}% (${o.ivp>70?'Elevated':o.ivp>40?'Good':o.ivp>20?'Moderate':'Low'})</span>
-        ${(() => {
-          const ns = o.normalized !== undefined ? o.normalized : null;
-          const us = o.unified_score !== undefined ? o.unified_score : null;
-          const sc = o.score !== undefined ? o.score : null;
-          if (ns !== null) return '<span style="font-size:10px;color:#6366f1;margin-left:auto;font-weight:600" title="Normalized 0-1">↑ '+(ns*100).toFixed(0)+'%</span>';
-          if (us !== null) return '<span style="font-size:10px;color:#9ca3af;margin-left:auto">★ '+us+'/10</span>';
-          if (sc !== null) return '<span style="font-size:10px;color:#9ca3af;margin-left:auto">Score: '+sc+'</span>';
-          return '';
-        })()}
+        <span style="font-size:10px;color:#9ca3af;margin-left:auto">${o.expiry || ''}</span>
       </div>
-      ${o.signal ? `<div class="opp-signal">${o.signal}</div>` : ''}
-      ${o.risk_note ? `<div class="risk">${o.risk_note}</div>` : ''}
+      <!-- SIGNAL — strip any IVP repetition from signal text -->
+      ${o.signal ? (() => {
+        let s = o.signal
+          .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g, '')  // remove IVP segment
+          .replace(/^\s*\|\s*/, '')   // remove leading pipe
+          .replace(/\s*\|\s*$/, '')   // remove trailing pipe
+          .replace(/—\s*$/, '')         // remove orphaned dash
+          .replace(/—\s*\|/, '—')      // clean dash-pipe combos
+          .trim();
+        return s ? '<div class="opp-signal" style="margin-top:6px;font-size:11px;color:#6b7280">'+s+'</div>' : '';
+      })() : ''}
     </div>`;
   }).join('');
 }
