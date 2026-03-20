@@ -250,18 +250,19 @@ function renderOpps() {
     const qlColor = ql==='Strong'?'b-green':ql==='Acceptable'?'b-amber':'b-gray';
     const qlText  = reasons.length ? ql + ' — ' + reasons.join(', ') : ql;
 
-    // Score display
-    const scoreDisp = o.normalized !== undefined
-      ? '<span style="font-size:11px;color:#6366f1;font-weight:700">↑ '+(o.normalized*100).toFixed(0)+'%</span>'
-      : o.score !== undefined
-      ? '<span style="font-size:11px;color:#6b7280">'+o.score+'pts</span>'
+    // Score display — show raw score/max so user sees actual ranking basis
+    const maxScore = {'CSP':12,'CC':13,'LEAPS':13,'PIO':13,'SPIKE_CC':10,'DROP_CSP':12,'BCS':10}[o.mode] || 12;
+    const scoreDisp = o.score !== undefined
+      ? '<span style="font-size:11px;font-weight:700;color:' +
+        (o.score/maxScore >= 0.75 ? '#166534' : o.score/maxScore >= 0.50 ? '#92400e' : '#9ca3af') +
+        '" title="Score: '+o.score+'/'+maxScore+'">'+o.score+'/'+maxScore+'</span>'
       : '';
 
     return `
     <div class="opp-card">
-      <!-- HEADER: ticker | strategy | score | IVP (shown ONCE here) -->
+      <!-- HEADER: ticker left, annualized return right (original layout) -->
       <div class="opp-top">
-        <div style="flex:1">
+        <div>
           <div class="opp-ticker">${o.ticker}
             <span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px">${o.price ? '$'+o.price : ''}</span>
           </div>
@@ -269,19 +270,28 @@ function renderOpps() {
             <span class="badge ${bc}">${bl}</span>
             <span style="color:#9ca3af">•</span>
             <span style="font-size:11px;color:#6b7280">${o.tier}</span>
-            ${ql ? '<span class="badge '+qlColor+'" style="font-size:10px">'+qlText+'</span>' : ''}
+            ${ql ? '<span class="badge '+qlColor+'" style="font-size:10px" title="'+qlText+'">'+qlText+'</span>' : ''}
             ${o.candidate_type === 'execution' ? '<span class="badge b-green" style="font-size:9px">✅ Exec</span>' : ''}
           </div>
         </div>
-        <!-- Score + IVP — shown ONCE in header, not repeated below -->
-        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-          ${scoreDisp}
-          <span style="font-size:12px;font-weight:600;color:${ic}">IVP ${ivp}%</span>
-          <span style="font-size:10px;color:${ic}">${ilbl}</span>
+        <!-- Annualized return — prominent, top right (original position) -->
+        <div style="text-align:right">
+          <div class="opp-return" style="color:${rc}">${ret}%</div>
+          <div class="opp-meta">annualized</div>
+          <div style="font-size:11px;font-weight:700;color:${o.score/maxScore>=0.75?'#166534':o.score/maxScore>=0.5?'#92400e':'#9ca3af'};margin-top:2px">${scoreDisp}</div>
         </div>
       </div>
-      <!-- METRICS ROW — no IVP repeated here -->
+      <!-- IVP bar — visual, prominent (original style) -->
+      <div class="ivp-row">
+        <span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>
+        <div class="ivp-bar"><div class="ivp-fill" style="width:${Math.min(ivp,100)}%;background:${ic}"></div></div>
+        <span style="font-family:monospace;font-size:11px;color:${ic};min-width:30px">${ivp}%</span>
+        <span style="font-size:10px;color:${ic}">${ilbl}</span>
+      </div>
+      <!-- Warnings -->
+      ${o.warnings && o.warnings.length ? '<div class="warn-box">⚠️ ' + o.warnings.join(' | ') + '</div>' : ''}
       <hr class="divider">
+      <!-- METRICS -->
       <div class="stats">
         <div><div class="stat-l">Strike</div><div class="stat-v">${o.mode === 'BCS' ? '$'+o.long_strike+' / $'+o.short_strike : '$'+o.strike}</div></div>
         <div><div class="stat-l">DTE</div><div class="stat-v">${o.dte}</div></div>
@@ -290,22 +300,18 @@ function renderOpps() {
         <div><div class="stat-l">$/day</div><div class="stat-v">$${o.premium_per_day || ppd}</div></div>
         <div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">${o.breakeven ? '$'+o.breakeven : '—'}</div></div>
       </div>
-      <!-- RETURN + RISK BADGES — no IVP repeated -->
+      <!-- BADGES ROW -->
       <div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-        <span style="font-size:12px;font-weight:600;color:${rc}">${ret}% ann</span>
         ${o.risk_level ? '<span class="badge '+(o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red')+'">'+o.risk_level+'</span>' : ''}
         ${o.position_status ? '<span class="badge b-blue">'+o.position_status+'</span>' : ''}
         <span style="font-size:10px;color:#9ca3af;margin-left:auto">${o.expiry || ''}</span>
       </div>
-      <!-- SIGNAL — strip any IVP repetition from signal text -->
+      <!-- SIGNAL — IVP stripped since shown in bar above -->
       ${o.signal ? (() => {
         let s = o.signal
-          .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g, '')  // remove IVP segment
-          .replace(/^\s*\|\s*/, '')   // remove leading pipe
-          .replace(/\s*\|\s*$/, '')   // remove trailing pipe
-          .replace(/—\s*$/, '')         // remove orphaned dash
-          .replace(/—\s*\|/, '—')      // clean dash-pipe combos
-          .trim();
+          .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g, '')
+          .replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '')
+          .replace(/—\s*$/, '').replace(/—\s*\|/, '—').trim();
         return s ? '<div class="opp-signal" style="margin-top:6px;font-size:11px;color:#6b7280">'+s+'</div>' : '';
       })() : ''}
     </div>`;
