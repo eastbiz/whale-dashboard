@@ -224,7 +224,7 @@ function renderOpps() {
       <div class="opp-top">
         <div>
           <div class="opp-ticker">${o.ticker}</div>
-          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span>${o.passes_quality === false ? ' <span class="badge b-red">Review</span>' : o.passes_quality ? ' <span class="badge b-green">✓ Quality</span>' : ''}</div>
+          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span>${o.quality_label ? ' <span class="badge ' + (o.quality_label==='Strong'?'b-green':o.quality_label==='Acceptable'?'b-amber':'b-gray') + '">' + o.quality_label + '</span>' : ''}</div>
         </div>
         <div style="text-align:right">
           <div class="opp-return" style="color:${rc}">${ret}%</div>
@@ -244,16 +244,17 @@ function renderOpps() {
       <div class="stats">
         <div><div class="stat-l">Strike</div><div class="stat-v">${o.mode === 'BCS' ? '$' + o.long_strike + ' / $' + o.short_strike : '$' + o.strike}</div></div>
         <div><div class="stat-l">DTE</div><div class="stat-v">${o.dte}</div></div>
-        <div><div class="stat-l">Delta</div><div class="stat-v" style="color:${Math.abs((o.delta||0)-0.28)<0.08?'#166534':'#92400e'}">${o.delta}</div></div>
+        <div><div class="stat-l">Delta δ</div><div class="stat-v" style="color:${Math.abs((o.delta||0)-0.28)<0.08?'#166534':'#92400e'}">${o.delta}</div></div>
         <div><div class="stat-l">Premium</div><div class="stat-v">$${o.premium}</div></div>
         <div><div class="stat-l">$/day</div><div class="stat-v">$${o.premium_per_day || ppd}</div></div>
-        <div><div class="stat-l">Breakeven</div><div class="stat-v">${o.breakeven ? '$' + o.breakeven : '—'}</div></div>
+        <div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600">${o.breakeven ? '$' + o.breakeven : '—'}</div></div>
       </div>
-      ${o.risk_level ? `<div style="margin-top:8px;display:flex;gap:8px;align-items:center">
-        <span class="badge ${o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red'}">Risk: ${o.risk_level}</span>
+      <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        ${o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">Risk: ' + o.risk_level + '</span>' : ''}
         ${o.position_status ? '<span class="badge b-blue">'+o.position_status+'</span>' : ''}
-        <span style="font-size:11px;color:#6b7280">IVP: ${o.ivp}%</span>
-      </div>` : ''}
+        <span style="font-size:11px;color:#6b7280">IVP: ${o.ivp}% (${o.ivp>70?'Elevated':o.ivp>40?'Good':o.ivp>20?'Moderate':'Low'})</span>
+        ${o.score !== undefined ? '<span style="font-size:10px;color:#9ca3af;margin-left:auto">Score: '+o.score+'</span>' : ''}
+      </div>
       ${o.signal ? `<div class="opp-signal">${o.signal}</div>` : ''}
       ${o.risk_note ? `<div class="risk">${o.risk_note}</div>` : ''}
     </div>`;
