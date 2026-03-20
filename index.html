@@ -271,7 +271,15 @@ function renderOpps() {
         ${o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">Risk: ' + o.risk_level + '</span>' : ''}
         ${o.position_status ? '<span class="badge b-blue">'+o.position_status+'</span>' : ''}
         <span style="font-size:11px;color:#6b7280">IVP: ${o.ivp}% (${o.ivp>70?'Elevated':o.ivp>40?'Good':o.ivp>20?'Moderate':'Low'})</span>
-        ${o.score !== undefined ? '<span style="font-size:10px;color:#9ca3af;margin-left:auto">Score: '+o.score+'</span>' : ''}
+        ${(() => {
+          const ns = o.normalized !== undefined ? o.normalized : null;
+          const us = o.unified_score !== undefined ? o.unified_score : null;
+          const sc = o.score !== undefined ? o.score : null;
+          if (ns !== null) return '<span style="font-size:10px;color:#6366f1;margin-left:auto;font-weight:600" title="Normalized 0-1">↑ '+(ns*100).toFixed(0)+'%</span>';
+          if (us !== null) return '<span style="font-size:10px;color:#9ca3af;margin-left:auto">★ '+us+'/10</span>';
+          if (sc !== null) return '<span style="font-size:10px;color:#9ca3af;margin-left:auto">Score: '+sc+'</span>';
+          return '';
+        })()}
       </div>
       ${o.signal ? `<div class="opp-signal">${o.signal}</div>` : ''}
       ${o.risk_note ? `<div class="risk">${o.risk_note}</div>` : ''}
@@ -311,7 +319,10 @@ function renderPositions() {
       <td style="padding:10px;text-align:center;font-size:11px;color:#6b7280">${p.target_range}</td>
       <td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:${posColor(p.pos_status)}">${p.pos_status}</td>
       <td style="padding:10px;text-align:center;font-size:11px;color:${priceColor(p.price_opp)};font-weight:500">${p.price_opp}${p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#9ca3af">'+p.pullback_pct+'% off high</span>' : ''}</td>
-      <td style="padding:10px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:${actionBg(p.action)};color:${actionColor(p.action)}">${p.action}</span></td>
+      <td style="padding:10px;text-align:center">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:${actionBg(p.action)};color:${actionColor(p.action)}">${p.action}</span>
+        ${p.sizing_action && p.sizing_action !== p.action ? '<br><span style="font-size:9px;color:#9ca3af;margin-top:2px;display:inline-block">sizing: '+p.sizing_action+'</span>' : ''}
+      </td>
     </tr>`).join('');
 
   // Summary block — top 5 each category
