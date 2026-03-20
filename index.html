@@ -106,6 +106,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page" id="page-opportunities">
     <div class="filter-row">
       <button class="outline-btn active" onclick="filterOpps('all',this)">All</button>
+      <button class="outline-btn" onclick="filterOpps('execution',this)">✅ Execution Ready</button>
       <button class="outline-btn" onclick="filterOpps('CSP',this)">💰 CSP</button>
       <button class="outline-btn" onclick="filterOpps('CC',this)">📈 CC</button>
       <button class="outline-btn" onclick="filterOpps('LEAPS',this)">🚀 LEAPS</button>
@@ -214,8 +215,10 @@ function renderMarket() {
 function renderOpps() {
   const grid = document.getElementById('opps-grid');
   // Use dashboard_opportunities (full list) if available, else fall back to strict opps
-  const allOpps = data.dashboard_opportunities || data.opportunities || [];
-  const filtered = currentFilter === 'all' ? allOpps : allOpps.filter(o => o.mode === currentFilter);
+  const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
+  const filtered = currentFilter === 'all' ? allOpps
+    : currentFilter === 'execution' ? allOpps.filter(o => o.candidate_type === 'execution')
+    : allOpps.filter(o => o.mode === currentFilter);
 
   if (!filtered.length) {
     grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.<br><br>The scanner is working correctly — it only shows trades that pass all quality filters.</div>';
@@ -242,7 +245,7 @@ function renderOpps() {
       <div class="opp-top">
         <div>
           <div class="opp-ticker">${o.ticker}</div>
-          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span>${o.quality_label ? ' <span class="badge ' + (o.quality_label==='Strong'?'b-green':o.quality_label==='Acceptable'?'b-amber':'b-gray') + '">' + o.quality_label + '</span>' : ''}</div>
+          <div class="opp-meta">${o.tier} • <span class="badge ${bc}">${bl}</span>${o.quality_label ? ' <span class="badge ' + (o.quality_label==='Strong'?'b-green':o.quality_label==='Acceptable'?'b-amber':'b-gray') + '">' + o.quality_label + '</span>' : ''}${o.candidate_type === 'execution' ? ' <span class="badge b-green" style="font-size:9px">✅ Exec</span>' : ''}</div>
         </div>
         <div style="text-align:right">
           <div class="opp-return" style="color:${rc}">${ret}%</div>
