@@ -191,7 +191,7 @@ function renderMarket() {
     ? '✅ Above 200MA — normal environment'
     : '⚠️ Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
 
-  const opps = data.dashboard_opportunities || data.opportunities || [];
+  const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
   const execCount = allOpps.filter(o => o.candidate_type === 'execution').length;
   document.getElementById('opp-count').textContent = allOpps.length;
   document.getElementById('opp-sub').textContent = execCount + ' execution ready';
