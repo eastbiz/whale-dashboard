@@ -106,7 +106,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page" id="page-opportunities">
     <div class="filter-row">
       <button class="outline-btn active" onclick="filterOpps('all',this)">All</button>
-      <button class="outline-btn" onclick="filterOpps('execution',this)">✅ Execution Ready</button>
       <button class="outline-btn" onclick="filterOpps('CSP',this)">💰 CSP</button>
       <button class="outline-btn" onclick="filterOpps('CC',this)">📈 CC</button>
       <button class="outline-btn" onclick="filterOpps('LEAPS',this)">🚀 LEAPS</button>
@@ -193,9 +192,9 @@ function renderMarket() {
     : '⚠️ Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
 
   const opps = data.dashboard_opportunities || data.opportunities || [];
-  const above20 = opps.filter(o => o.annualized_return >= 20).length;
-  document.getElementById('opp-count').textContent = opps.length;
-  document.getElementById('opp-sub').textContent = above20 + ' above 20% minimum';
+  const execCount = allOpps.filter(o => o.candidate_type === 'execution').length;
+  document.getElementById('opp-count').textContent = allOpps.length;
+  document.getElementById('opp-sub').textContent = execCount + ' execution ready';
 
   const pos = data.positions || [];
   const owned = pos.filter(p => p.status === 'Owned').length;
@@ -217,7 +216,6 @@ function renderOpps() {
   // Use dashboard_opportunities (full list) if available, else fall back to strict opps
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
   const filtered = currentFilter === 'all' ? allOpps
-    : currentFilter === 'execution' ? allOpps.filter(o => o.candidate_type === 'execution')
     : allOpps.filter(o => o.mode === currentFilter);
 
   if (!filtered.length) {
@@ -352,7 +350,6 @@ function renderPositions() {
       <td style="padding:10px;text-align:center;font-size:11px;color:${priceColor(p.price_opp)};font-weight:500">${p.price_opp}${p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#9ca3af">'+p.pullback_pct+'% off high</span>' : ''}</td>
       <td style="padding:10px;text-align:center">
         <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:${actionBg(p.action)};color:${actionColor(p.action)}">${p.action}</span>
-        ${p.sizing_action && p.sizing_action !== p.action ? '<br><span style="font-size:9px;color:#9ca3af;margin-top:2px;display:inline-block">sizing: '+p.sizing_action+'</span>' : ''}
       </td>
     </tr>`).join('');
 
