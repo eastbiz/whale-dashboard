@@ -20,12 +20,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .page{display:none;}
 .page.active{display:block;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
 .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px;}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
 .metric{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;}
 .metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;margin-bottom:6px;font-weight:600;}
 .metric-val{font-size:26px;font-weight:700;font-family:monospace;line-height:1;margin-bottom:4px;}
 .metric-sub{font-size:11px;color:#6b7280;line-height:1.5;}
+.exposure-panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px;}
+.exposure-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.exposure-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;}
+.exposure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.exp-cell{padding:10px 12px;background:#f9fafb;border-radius:8px;}
+.exp-lbl{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;}
+.exp-val{font-size:17px;font-weight:700;font-family:monospace;color:#111827;}
+.exp-sub{font-size:11px;color:#6b7280;margin-top:2px;}
+.cap-bar-wrap{margin-top:12px;}
+.cap-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:5px;}
+.cap-bar-track{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
+.cap-bar-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+.cap-ok{background:#22c55e;}.cap-warn{background:#f59e0b;}.cap-over{background:#ef4444;}
 .verdict{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#166534;line-height:1.6;}
 .verdict.warn{background:#fef3c7;border-color:#fcd34d;color:#92400e;}
 .summary-box{background:#f5f3ff;border-radius:10px;padding:16px;margin-bottom:16px;}
@@ -51,29 +64,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
 .stat-l{font-size:10px;color:#9ca3af;margin-bottom:1px;}
 .stat-v{font-size:12px;font-family:monospace;font-weight:600;color:#111827;}
-.opp-signal{font-size:11px;color:#6b7280;margin-top:10px;line-height:1.5;}
-.warn-box{font-size:11px;color:#92400e;background:#fef3c7;border-radius:6px;padding:5px 8px;margin-top:8px;}
-.risk{font-size:11px;color:#991b1b;margin-top:6px;font-style:italic;}
+.sizing-panel{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-top:10px;}
+.sizing-panel.over{background:#fff7ed;border-color:#fed7aa;}
+.sizing-panel.warn{background:#fef9c3;border-color:#fde047;}
+.sizing-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#166534;margin-bottom:7px;}
+.sizing-panel.over .sizing-hdr{color:#9a3412;}
+.sizing-panel.warn .sizing-hdr{color:#854d0e;}
+.sizing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.sz-lbl{font-size:10px;color:#6b7280;margin-bottom:1px;}
+.sz-val{font-size:12px;font-family:monospace;font-weight:600;color:#111827;}
+.sz-result{margin-top:8px;font-size:11px;color:#374151;padding-top:7px;border-top:1px solid #d1fae5;}
+.sizing-panel.over .sz-result{border-color:#fed7aa;}
+.sizing-panel.warn .sz-result{border-top-color:#fde047;}
 .ivp-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
 .ivp-bar{flex:1;height:3px;background:#e5e7eb;border-radius:2px;overflow:hidden;}
 .ivp-fill{height:100%;border-radius:2px;}
-.pos-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;}
-.pos-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.pos-ticker{font-size:15px;font-weight:700;font-family:monospace;}
-.pos-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:10px;border-top:1px solid #f3f4f6;}
+.warn-box{font-size:11px;color:#92400e;background:#fef3c7;border-radius:6px;padding:5px 8px;margin-top:8px;}
+.opp-signal{font-size:11px;color:#6b7280;margin-top:10px;line-height:1.5;}
 .empty{text-align:center;padding:40px 20px;color:#9ca3af;font-size:13px;}
 .spinner{text-align:center;padding:40px;font-size:13px;color:#6b7280;}
-@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}}
+@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
 <div class="app">
 
   <div class="hdr">
-    <div class="logo">🐋 Whale Intelligence</div>
+    <div class="logo">&#x1F40B; Whale Intelligence</div>
     <div class="hdr-right">
       <span class="last-scan" id="last-scan">Loading...</span>
-      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+      <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
     </div>
   </div>
 
@@ -88,14 +108,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="market-loading" class="spinner">Loading latest scan results...</div>
     <div id="market-content" style="display:none">
       <div class="g4">
-        <div class="metric"><div class="metric-lbl">VIX</div><div class="metric-val" id="vix-val">—</div><div class="metric-sub" id="vix-sub">—</div></div>
-        <div class="metric"><div class="metric-lbl">S&P 500</div><div class="metric-val" id="spy-val" style="color:#1e40af">—</div><div class="metric-sub" id="spy-sub">—</div></div>
+        <div class="metric"><div class="metric-lbl">VIX</div><div class="metric-val" id="vix-val">&#8212;</div><div class="metric-sub" id="vix-sub">&#8212;</div></div>
+        <div class="metric"><div class="metric-lbl">S&amp;P 500</div><div class="metric-val" id="spy-val" style="color:#1e40af">&#8212;</div><div class="metric-sub" id="spy-sub">&#8212;</div></div>
         <div class="metric"><div class="metric-lbl">Opportunities</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
-        <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">—</div><div class="metric-sub">holdings tracked</div></div>
+        <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">&#8212;</div><div class="metric-sub">holdings tracked</div></div>
       </div>
+
+      <!-- EXPOSURE PANEL — spec sections 4 and 7 -->
+      <div class="exposure-panel" id="exposure-panel" style="display:none">
+        <div class="exposure-hdr">
+          <span class="exposure-title">Portfolio Exposure &amp; Capacity</span>
+          <span id="exp-limit-badge" class="badge b-green"></span>
+        </div>
+        <div class="exposure-grid">
+          <div class="exp-cell">
+            <div class="exp-lbl">CSP Obligation (total)</div>
+            <div class="exp-val" id="exp-cso">&#8212;</div>
+            <div class="exp-sub" id="exp-cso-pct">Cash secured puts open</div>
+          </div>
+          <div class="exp-cell">
+            <div class="exp-lbl">Remaining CSP Capacity</div>
+            <div class="exp-val" id="exp-room" style="color:#166534">&#8212;</div>
+            <div class="exp-sub" id="exp-room-sub">Available for new CSPs</div>
+          </div>
+          <div class="exp-cell">
+            <div class="exp-lbl">Total Premium (this scan)</div>
+            <div class="exp-val" id="exp-prem">&#8212;</div>
+            <div class="exp-sub" id="exp-prem-sub">CSP + CC combined</div>
+          </div>
+        </div>
+        <div class="cap-bar-wrap">
+          <div class="cap-bar-label">
+            <span>CSP utilization</span>
+            <span id="cap-bar-lbl-r">0% of 25% limit</span>
+          </div>
+          <div class="cap-bar-track">
+            <div class="cap-bar-fill cap-ok" id="cap-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
       <div id="verdict-box" class="verdict"></div>
       <div id="summary-box" class="summary-box" style="display:none">
-        <div class="summary-lbl">🧠 Claude Analysis</div>
+        <div class="summary-lbl">&#x1F9E0; Claude Analysis</div>
         <div class="summary-txt" id="summary-txt"></div>
       </div>
     </div>
@@ -106,13 +161,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page" id="page-opportunities">
     <div class="filter-row">
       <button class="outline-btn active" onclick="filterOpps('all',this)">All</button>
-      <button class="outline-btn" onclick="filterOpps('CSP',this)">💰 CSP</button>
-      <button class="outline-btn" onclick="filterOpps('CC',this)">📈 CC</button>
-      <button class="outline-btn" onclick="filterOpps('LEAPS',this)">🚀 LEAPS</button>
-      <button class="outline-btn" onclick="filterOpps('BCS',this)">📊 Bull Call Spread</button>
-      <button class="outline-btn" onclick="filterOpps('SPIKE_CC',this)">⚡ Spike CC</button>
-      <button class="outline-btn" onclick="filterOpps('DROP_CSP',this)">🔻 Post-Drop</button>
-      <button class="outline-btn" onclick="filterOpps('PIO',this)">💼 Position Income</button>
+      <button class="outline-btn" onclick="filterOpps('CSP',this)">&#x1F4B0; CSP</button>
+      <button class="outline-btn" onclick="filterOpps('CC',this)">&#x1F4C8; CC</button>
+      <button class="outline-btn" onclick="filterOpps('LEAPS',this)">&#x1F680; LEAPS</button>
+      <button class="outline-btn" onclick="filterOpps('BCS',this)">&#x1F4CA; Bull Call Spread</button>
+      <button class="outline-btn" onclick="filterOpps('SPIKE_CC',this)">&#x26A1; Spike CC</button>
+      <button class="outline-btn" onclick="filterOpps('DROP_CSP',this)">&#x1F53B; Post-Drop</button>
+      <button class="outline-btn" onclick="filterOpps('PIO',this)">&#x1F4BC; Position Income</button>
     </div>
     <div class="g2" id="opps-grid"><div class="spinner">Loading...</div></div>
   </div>
@@ -121,7 +176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page" id="page-positions">
     <div id="pos-summary" style="display:none;background:#f9fafb;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:2"></div>
     <div id="pos-table-wrap">
-      <table style="width:100%;border-collapse:collapse;font-size:12px" id="pos-table">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead>
           <tr style="border-bottom:2px solid #e5e7eb">
             <th style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Ticker</th>
@@ -140,32 +195,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
 </div>
-
 <script>
 const RESULTS_URL = 'https://raw.githubusercontent.com/eastbiz/whale-intelligence/main/results.json';
 let data = null;
 let currentFilter = 'all';
 
-// ── Load data ─────────────────────────────────────────────
+function fmtK(v) {
+  v = Math.round(v);
+  if (v >= 1000000) return '$' + (v/1000000).toFixed(2) + 'M';
+  if (v >= 1000)    return '$' + Math.round(v/1000) + 'K';
+  return '$' + v.toLocaleString();
+}
+
 async function loadData() {
   document.getElementById('last-scan').textContent = 'Refreshing...';
   try {
-    // Cache-bust so we always get the latest
     const r = await fetch(RESULTS_URL + '?t=' + Date.now());
     if (!r.ok) throw new Error('HTTP ' + r.status);
     data = await r.json();
     renderAll();
-    document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '—');
+    document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '&#8212;');
   } catch(e) {
     document.getElementById('last-scan').textContent = 'Load failed';
     document.getElementById('market-loading').style.display = 'none';
     const err = document.getElementById('market-error');
     err.style.display = 'block';
-    err.textContent = '⚠️ Could not load scan results: ' + e.message + '. The scanner may not have run yet today, or results.json is missing from the repo.';
+    err.textContent = 'Could not load scan results: ' + e.message + '. The scanner may not have run yet today, or results.json is missing from the repo.';
   }
 }
 
-// ── Render all ────────────────────────────────────────────
 function renderAll() {
   document.getElementById('market-loading').style.display = 'none';
   document.getElementById('market-content').style.display = 'block';
@@ -175,7 +233,6 @@ function renderAll() {
   renderPositions();
 }
 
-// ── Market tab ────────────────────────────────────────────
 function renderMarket() {
   const m = data.market || {};
   const vix = m.vix || 0;
@@ -188,16 +245,16 @@ function renderMarket() {
 
   document.getElementById('spy-val').textContent = '$' + (m.spy || 0).toLocaleString();
   document.getElementById('spy-sub').textContent = m.spy_above
-    ? '✅ Above 200MA — normal environment'
-    : '⚠️ Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
+    ? 'Above 200MA — normal environment'
+    : 'Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
 
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
-  const execCount = allOpps.filter(o => o.candidate_type === 'execution').length;
+  const execCount = allOpps.filter(function(o){ return o.candidate_type === 'execution'; }).length;
   document.getElementById('opp-count').textContent = allOpps.length;
   document.getElementById('opp-sub').textContent = execCount + ' execution ready';
 
   const pos = data.positions || [];
-  const owned = pos.filter(p => p.status === 'Owned').length;
+  const owned = pos.filter(function(p){ return p.status === 'Owned'; }).length;
   document.getElementById('port-val').textContent = owned + ' owned';
 
   const vb = document.getElementById('verdict-box');
@@ -208,174 +265,240 @@ function renderMarket() {
     document.getElementById('summary-txt').textContent = data.analysis;
     document.getElementById('summary-box').style.display = 'block';
   }
+
+  // Exposure panel — spec sections 4 and 7
+  const exp = data.exposure;
+  if (exp) {
+    document.getElementById('exposure-panel').style.display = 'block';
+    const cso     = exp.total_csp_obligation || 0;
+    const room    = exp.remaining_csp_capacity || 0;
+    const maxCso  = exp.max_csp_allocation_usd || 1;
+    const pct     = exp.csp_allocation_pct || 0;
+    const maxPct  = exp.max_csp_allocation_pct || 25;
+    const premAll = exp.total_premium_all || 0;
+    const premCsp = exp.total_premium_csp || 0;
+    const premCc  = exp.total_premium_cc  || 0;
+    const nPuts   = (exp.csp_positions || []).length;
+
+    document.getElementById('exp-cso').textContent      = fmtK(cso);
+    document.getElementById('exp-cso-pct').textContent  = pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)';
+    document.getElementById('exp-room').textContent     = fmtK(room);
+    document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% = ' + fmtK(maxCso);
+    document.getElementById('exp-prem').textContent     = fmtK(premAll);
+    document.getElementById('exp-prem-sub').textContent = 'CSP ' + fmtK(premCsp) + ' · CC ' + fmtK(premCc);
+
+    const util = Math.min(100, maxCso > 0 ? (cso / maxCso) * 100 : 0);
+    const fill = document.getElementById('cap-bar-fill');
+    fill.style.width = util.toFixed(1) + '%';
+    fill.className = 'cap-bar-fill ' + (util >= 90 ? 'cap-over' : util >= 70 ? 'cap-warn' : 'cap-ok');
+    document.getElementById('cap-bar-lbl-r').textContent = pct.toFixed(1) + '% of ' + maxPct + '% limit';
+
+    const badge = document.getElementById('exp-limit-badge');
+    if (pct >= maxPct)           { badge.textContent = 'At limit';    badge.className = 'badge b-red'; }
+    else if (pct >= maxPct*0.80) { badge.textContent = 'Near limit';  badge.className = 'badge b-amber'; }
+    else                         { badge.textContent = 'Within limit';badge.className = 'badge b-green'; }
+  }
 }
 
-// ── Opportunities tab ─────────────────────────────────────
 function renderOpps() {
   const grid = document.getElementById('opps-grid');
-  // Use dashboard_opportunities (full list) if available, else fall back to strict opps
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
   const filtered = currentFilter === 'all' ? allOpps
-    : allOpps.filter(o => o.mode === currentFilter);
+    : allOpps.filter(function(o){ return o.mode === currentFilter || (currentFilter === 'CC' && o.mode === 'PIO'); });
 
   if (!filtered.length) {
-    grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.<br><br>The scanner is working correctly — it only shows trades that pass all quality filters.</div>';
+    grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.</div>';
     return;
   }
 
-  const modeMap = {
+  var modeMap = {
     CSP:['b-green','CSP'], CC:['b-green','CC'], LEAPS:['b-purple','LEAPS'],
-    SPIKE_CC:['b-amber','Spike CC'], DROP_CSP:['b-red','Post-Drop'], PIO:['b-blue','Position Income']
+    BCS:['b-purple','BCS'], SPIKE_CC:['b-amber','Spike CC'],
+    DROP_CSP:['b-red','Post-Drop'], PIO:['b-blue','Position Income']
   };
 
-  grid.innerHTML = filtered.map(o => {
-    const [bc, bl] = modeMap[o.mode] || ['b-gray', o.mode];
-    const ret  = o.annualized_return || 0;
-    const ivp  = o.ivp || 0;
-    const rc   = ret > 25 ? '#166534' : ret > 20 ? '#15803d' : ret > 15 ? '#92400e' : '#6b7280';
-    const ic   = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#9ca3af';
-    const ilbl = ivp > 60 ? 'Elevated' : ivp > 35 ? 'Good' : ivp > 20 ? 'Moderate' : 'Low';
-    const ppd  = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '—';
+  grid.innerHTML = filtered.map(function(o) {
+    var mm    = modeMap[o.mode] || ['b-gray', o.mode];
+    var bc    = mm[0], bl = mm[1];
+    var ret   = o.annualized_return || 0;
+    var ivp   = o.ivp || 0;
+    var rc    = ret > 25 ? '#166534' : ret > 20 ? '#15803d' : ret > 15 ? '#92400e' : '#6b7280';
+    var ic    = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#9ca3af';
+    var ilbl  = ivp > 60 ? 'Elevated' : ivp > 35 ? 'Good' : ivp > 20 ? 'Moderate' : 'Low';
+    var ppd   = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '&#8212;';
 
-    // Build quality label with inline reasons (per scoring doc section 7)
-    const reasons = [];
-    if (o.warnings && o.warnings.length) reasons.push(...o.warnings);
-    if (o.delta > 0.35 && ['CSP'].includes(o.mode)) reasons.push('delta too high');
-    if (o.delta > 0.40 && ['CC','PIO'].includes(o.mode)) reasons.push('delta too high');
-    if (ivp < 20 && ['CSP','CC'].includes(o.mode)) reasons.push('low IVP');
-    if (ret < 20 && ['CSP','DROP_CSP'].includes(o.mode)) reasons.push('below 20% min');
-    const ql = o.quality_label || '';
-    const qlColor = ql==='Strong'?'b-green':ql==='Acceptable'?'b-amber':'b-gray';
-    const qlText  = reasons.length ? ql + ' — ' + reasons.join(', ') : ql;
+    var reasons = [];
+    if (o.warnings && o.warnings.length) reasons = reasons.concat(o.warnings);
+    if (o.delta > 0.35 && o.mode === 'CSP') reasons.push('delta too high');
+    if (o.delta > 0.40 && (o.mode === 'CC' || o.mode === 'PIO')) reasons.push('delta too high');
+    if (ivp < 20 && (o.mode === 'CSP' || o.mode === 'CC')) reasons.push('low IVP');
+    if (ret < 20 && (o.mode === 'CSP' || o.mode === 'DROP_CSP')) reasons.push('below 20% min');
+    var ql = o.quality_label || '';
+    var qlColor = ql === 'Strong' ? 'b-green' : ql === 'Acceptable' ? 'b-amber' : 'b-gray';
+    var qlText  = reasons.length ? ql + ' &#8212; ' + reasons.join(', ') : ql;
 
-    // Score display — show raw score/max so user sees actual ranking basis
-    const maxScore = {'CSP':12,'CC':13,'LEAPS':13,'PIO':13,'SPIKE_CC':10,'DROP_CSP':12,'BCS':10}[o.mode] || 12;
-    const scoreDisp = o.score !== undefined
-      ? '<span style="font-size:11px;font-weight:700;color:' +
-        (o.score/maxScore >= 0.75 ? '#166534' : o.score/maxScore >= 0.50 ? '#92400e' : '#9ca3af') +
-        '" title="Score: '+o.score+'/'+maxScore+'">'+o.score+'/'+maxScore+'</span>'
+    var maxScore = {'CSP':12,'CC':13,'LEAPS':13,'PIO':13,'SPIKE_CC':10,'DROP_CSP':12,'BCS':10}[o.mode] || 12;
+    var scoreDisp = o.score !== undefined
+      ? '<span style="font-size:11px;font-weight:700;color:' + (o.score/maxScore>=0.75?'#166534':o.score/maxScore>=0.50?'#92400e':'#9ca3af') + '" title="Score: '+o.score+'/'+maxScore+'">'+o.score+'/'+maxScore+'</span>'
       : '';
 
-    return `
-    <div class="opp-card">
-      <!-- HEADER: ticker left, annualized return right (original layout) -->
-      <div class="opp-top">
-        <div>
-          <div class="opp-ticker">${o.ticker}
-            <span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px">${o.price ? '$'+o.price : ''}</span>
-          </div>
-          <div class="opp-meta" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px">
-            <span class="badge ${bc}">${bl}</span>
-            <span style="color:#9ca3af">•</span>
-            <span style="font-size:11px;color:#6b7280">${o.tier}</span>
-            ${ql ? '<span class="badge '+qlColor+'" style="font-size:10px" title="'+qlText+'">'+qlText+'</span>' : ''}
-            ${o.candidate_type === 'execution' ? '<span class="badge b-green" style="font-size:9px">✅ Exec</span>' : ''}
-          </div>
-        </div>
-        <!-- Annualized return — prominent, top right (original position) -->
-        <div style="text-align:right">
-          <div class="opp-return" style="color:${rc}">${ret}%</div>
-          <div class="opp-meta">annualized</div>
-          <div style="font-size:11px;font-weight:700;color:${o.score/maxScore>=0.75?'#166534':o.score/maxScore>=0.5?'#92400e':'#9ca3af'};margin-top:2px">${scoreDisp}</div>
-        </div>
-      </div>
-      <!-- IVP bar — visual, prominent (original style) -->
-      <div class="ivp-row">
-        <span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>
-        <div class="ivp-bar"><div class="ivp-fill" style="width:${Math.min(ivp,100)}%;background:${ic}"></div></div>
-        <span style="font-family:monospace;font-size:11px;color:${ic};min-width:30px">${ivp}%</span>
-        <span style="font-size:10px;color:${ic}">${ilbl}</span>
-      </div>
-      <!-- Warnings -->
-      ${o.warnings && o.warnings.length ? '<div class="warn-box">⚠️ ' + o.warnings.join(' | ') + '</div>' : ''}
-      <hr class="divider">
-      <!-- METRICS -->
-      <div class="stats">
-        <div><div class="stat-l">Strike</div><div class="stat-v">${o.mode === 'BCS' ? '$'+o.long_strike+' / $'+o.short_strike : '$'+o.strike}</div></div>
-        <div><div class="stat-l">DTE</div><div class="stat-v">${o.dte}</div></div>
-        <div><div class="stat-l">δ Delta</div><div class="stat-v" style="color:${Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e'}">${o.delta}</div></div>
-        <div><div class="stat-l">Premium</div><div class="stat-v">$${o.premium}</div></div>
-        <div><div class="stat-l">$/day</div><div class="stat-v">$${o.premium_per_day || ppd}</div></div>
-        <div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">${o.breakeven ? '$'+o.breakeven : '—'}</div></div>
-      </div>
-      <!-- BADGES ROW -->
-      <div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-        ${o.risk_level ? '<span class="badge '+(o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red')+'">'+o.risk_level+'</span>' : ''}
-        ${o.position_status ? '<span class="badge b-blue">'+o.position_status+'</span>' : ''}
-        <span style="font-size:10px;color:#9ca3af;margin-left:auto">${o.expiry || ''}</span>
-      </div>
-      <!-- SIGNAL — IVP stripped since shown in bar above -->
-      ${o.signal ? (() => {
-        let s = o.signal
-          .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g, '')
-          .replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '')
-          .replace(/—\s*$/, '').replace(/—\s*\|/, '—').trim();
-        return s ? '<div class="opp-signal" style="margin-top:6px;font-size:11px;color:#6b7280">'+s+'</div>' : '';
-      })() : ''}
-    </div>`;
+    // Sizing panel — spec sections 5 and 6
+    var sz = o.sizing || {};
+    var sizingHtml = '';
+    if (sz.suggested_contracts !== undefined) {
+      var contracts = sz.suggested_contracts;
+      var capital   = sz.capital_required || 0;
+      var premium   = sz.premium_received || 0;
+      var actionLbl = sz.action_label || o.action_label || o.mode;
+
+      if ((o.mode === 'CSP' || o.mode === 'DROP_CSP') && sz.cso !== undefined) {
+        var withinLim   = sz.within_limit !== false;
+        var resultPct   = (sz.resulting_pct || 0).toFixed(1);
+        var resultObl   = sz.resulting_obligation || 0;
+        var remainAftr  = sz.remaining_after || 0;
+        var panelCls    = contracts === 0 ? 'sizing-panel over' : !withinLim ? 'sizing-panel warn' : 'sizing-panel';
+        var hdrTxt      = contracts === 0 ? 'No capacity &#8212; CSP budget at limit' : actionLbl;
+        sizingHtml = '<div class="' + panelCls + '">'
+          + '<div class="sizing-hdr">' + hdrTxt + '</div>'
+          + '<div class="sizing-grid">'
+          + '<div><div class="sz-lbl">Contracts</div><div class="sz-val">' + contracts + '</div></div>'
+          + '<div><div class="sz-lbl">Capital (CSO)</div><div class="sz-val">' + fmtK(capital) + '</div></div>'
+          + '<div><div class="sz-lbl">Premium received</div><div class="sz-val">' + fmtK(premium) + '</div></div>'
+          + '</div>'
+          + '<div class="sz-result">After trade: obligation ' + fmtK(resultObl) + ' (' + resultPct + '% portfolio) &#183; remaining ' + fmtK(remainAftr)
+          + (withinLim ? ' &#10003; Within limit' : ' &#9888; Exceeds limit') + '</div>'
+          + '</div>';
+      } else if ((o.mode === 'CC' || o.mode === 'PIO' || o.mode === 'SPIKE_CC') && sz.nva !== undefined) {
+        var nva    = sz.nva || 0;
+        var shares = sz.shares_covered || contracts * 100;
+        sizingHtml = '<div class="sizing-panel">'
+          + '<div class="sizing-hdr">' + actionLbl + '</div>'
+          + '<div class="sizing-grid">'
+          + '<div><div class="sz-lbl">Contracts</div><div class="sz-val">' + contracts + '</div></div>'
+          + '<div><div class="sz-lbl">Shares covered</div><div class="sz-val">' + shares.toLocaleString() + '</div></div>'
+          + '<div><div class="sz-lbl">Premium received</div><div class="sz-val">' + fmtK(premium) + '</div></div>'
+          + '</div>'
+          + '<div class="sz-result">Notional value at assignment: ' + fmtK(nva) + '</div>'
+          + '</div>';
+      }
+    }
+
+    var strikeDisp = o.mode === 'BCS'
+      ? ('$' + o.long_strike + ' / $' + o.short_strike)
+      : ('$' + o.strike);
+
+    var execBadge = o.candidate_type === 'execution'
+      ? '<span class="badge b-green" style="font-size:9px">Exec</span>' : '';
+
+    var signalHtml = '';
+    if (o.signal) {
+      var s = o.signal
+        .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g,'')
+        .replace(/^\s*\|\s*/,'').replace(/\s*\|\s*$/,'')
+        .replace(/&#8212;\s*$/,'').trim();
+      if (s) signalHtml = '<div class="opp-signal">' + s + '</div>';
+    }
+
+    return '<div class="opp-card">'
+      + '<div class="opp-top">'
+      +   '<div>'
+      +     '<div class="opp-ticker">' + o.ticker
+      +       '<span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px">' + (o.price ? '$'+o.price : '') + '</span>'
+      +     '</div>'
+      +     '<div class="opp-meta" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px">'
+      +       '<span class="badge ' + bc + '">' + bl + '</span>'
+      +       '<span style="color:#9ca3af">&#183;</span>'
+      +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
+      +       (ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : '')
+      +       execBadge
+      +     '</div>'
+      +   '</div>'
+      +   '<div style="text-align:right">'
+      +     '<div class="opp-return" style="color:' + rc + '">' + ret + '%</div>'
+      +     '<div class="opp-meta">annualized</div>'
+      +     '<div style="margin-top:2px">' + scoreDisp + '</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="ivp-row">'
+      +   '<span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>'
+      +   '<div class="ivp-bar"><div class="ivp-fill" style="width:' + Math.min(ivp,100) + '%;background:' + ic + '"></div></div>'
+      +   '<span style="font-family:monospace;font-size:11px;color:' + ic + ';min-width:30px">' + ivp + '%</span>'
+      +   '<span style="font-size:10px;color:' + ic + '">' + ilbl + '</span>'
+      + '</div>'
+      + (o.warnings && o.warnings.length ? '<div class="warn-box">' + o.warnings.join(' | ') + '</div>' : '')
+      + '<hr class="divider">'
+      + '<div class="stats">'
+      +   '<div><div class="stat-l">Strike</div><div class="stat-v">' + strikeDisp + '</div></div>'
+      +   '<div><div class="stat-l">DTE</div><div class="stat-v">' + o.dte + '</div></div>'
+      +   '<div><div class="stat-l">Delta</div><div class="stat-v" style="color:' + (Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e') + '">' + o.delta + '</div></div>'
+      +   '<div><div class="stat-l">Premium</div><div class="stat-v">$' + o.premium + '</div></div>'
+      +   '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>'
+      +   '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">' + (o.breakeven ? '$'+o.breakeven : '&#8212;') + '</div></div>'
+      + '</div>'
+      + '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
+      +   (o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
+      +   (o.position_status ? '<span class="badge b-blue">' + o.position_status + '</span>' : '')
+      +   '<span style="font-size:10px;color:#9ca3af;margin-left:auto">' + (o.expiry||'') + '</span>'
+      + '</div>'
+      + signalHtml
+      + sizingHtml
+      + '</div>';
   }).join('');
 }
 
 function filterOpps(f, btn) {
   currentFilter = f;
-  document.querySelectorAll('.filter-row .outline-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-row .outline-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   if (data) renderOpps();
 }
 
-// ── Positions tab ─────────────────────────────────────────
 function renderPositions() {
-  const positions = data.positions || [];
-  const tbody = document.getElementById('pos-tbody');
+  var positions = data.positions || [];
+  var tbody = document.getElementById('pos-tbody');
   if (!positions.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af">No positions in last scan.</td></tr>';
     return;
   }
+  var actionColor = function(a){ return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':'#991b1b'; };
+  var actionBg    = function(a){ return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':'#fee2e2'; };
+  var tierColor   = function(t){ return t==='Core'?'#1e40af':t==='Growth'?'#4c1d95':t==='Cyclical'?'#92400e':'#374151'; };
+  var tierBg      = function(t){ return t==='Core'?'#dbeafe':t==='Growth'?'#ede9fe':t==='Cyclical'?'#fef3c7':'#f3f4f6'; };
+  var posColor    = function(s){ return s==='Overweight'?'#991b1b':s==='On Target'?'#166534':'#1e40af'; };
+  var priceColor  = function(p){ return p==='Pullback'?'#166534':p==='Near High'?'#991b1b':'#6b7280'; };
 
-  const actionColor = a => a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':'#991b1b';
-  const actionBg    = a => a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':'#fee2e2';
-  const tierColor   = t => t==='Core'?'#1e40af':t==='Growth'?'#4c1d95':t==='Cyclical'?'#92400e':'#374151';
-  const tierBg      = t => t==='Core'?'#dbeafe':t==='Growth'?'#ede9fe':t==='Cyclical'?'#fef3c7':'#f3f4f6';
-  const posColor    = s => s==='Overweight'?'#991b1b':s==='On Target'?'#166534':'#1e40af';
-  const priceColor  = p => p==='Pullback'?'#166534':p==='Near High'?'#991b1b':'#6b7280';
+  tbody.innerHTML = positions.map(function(p){
+    return '<tr style="border-bottom:1px solid #f3f4f6" onmouseover="this.style.background=\'#f9fafb\'" onmouseout="this.style.background=\'\'">'
+      + '<td style="padding:10px;font-weight:600;font-family:monospace;font-size:13px">' + p.ticker + (p.status==='Watchlist'?'<span style="font-size:9px;color:#9ca3af;font-family:sans-serif;font-weight:400;margin-left:4px">watch</span>':'') + '</td>'
+      + '<td style="padding:10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:'+tierBg(p.tier)+';color:'+tierColor(p.tier)+'">'+p.tier+'</span></td>'
+      + '<td style="padding:10px;font-size:12px;color:#6b7280">'+p.status+'</td>'
+      + '<td style="padding:10px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">'+(p.exposure_pct > 0 ? p.exposure_pct+'%' : '&#8212;')+'</td>'
+      + '<td style="padding:10px;text-align:center;font-size:11px;color:#6b7280">'+p.target_range+'</td>'
+      + '<td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:'+posColor(p.pos_status)+'">'+p.pos_status+'</td>'
+      + '<td style="padding:10px;text-align:center;font-size:11px;color:'+priceColor(p.price_opp)+';font-weight:500">'+p.price_opp+(p.pullback_pct>8?'<br><span style="font-size:10px;color:#9ca3af">'+p.pullback_pct+'% off high</span>':'')+'</td>'
+      + '<td style="padding:10px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:'+actionBg(p.action)+';color:'+actionColor(p.action)+'">'+p.action+'</span></td>'
+      + '</tr>';
+  }).join('');
 
-  tbody.innerHTML = positions.map(p => `
-    <tr style="border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
-      <td style="padding:10px;font-weight:600;font-family:monospace;font-size:13px">${p.ticker}${p.status==='Watchlist'?'<span style="font-size:9px;color:#9ca3af;font-family:sans-serif;font-weight:400;margin-left:4px">watch</span>':''}</td>
-      <td style="padding:10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:${tierBg(p.tier)};color:${tierColor(p.tier)}">${p.tier}</span></td>
-      <td style="padding:10px;font-size:12px;color:#6b7280">${p.status}</td>
-      <td style="padding:10px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">${p.exposure_pct > 0 ? p.exposure_pct + '%' : '—'}</td>
-      <td style="padding:10px;text-align:center;font-size:11px;color:#6b7280">${p.target_range}</td>
-      <td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:${posColor(p.pos_status)}">${p.pos_status}</td>
-      <td style="padding:10px;text-align:center;font-size:11px;color:${priceColor(p.price_opp)};font-weight:500">${p.price_opp}${p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#9ca3af">'+p.pullback_pct+'% off high</span>' : ''}</td>
-      <td style="padding:10px;text-align:center">
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:${actionBg(p.action)};color:${actionColor(p.action)}">${p.action}</span>
-      </td>
-    </tr>`).join('');
-
-  // Summary block — top 5 each category
-  const buys  = positions.filter(p => ['BUY','ADD'].includes(p.action)).slice(0,5).map(p=>p.ticker).join(', ');
-  const holds = positions.filter(p => p.action==='HOLD').slice(0,5).map(p=>p.ticker).join(', ');
-  const trims = positions.filter(p => ['TRIM','REDUCE'].includes(p.action)).slice(0,5).map(p=>p.ticker).join(', ');
-  const sumEl = document.getElementById('pos-summary');
+  var buys  = positions.filter(function(p){ return p.action==='BUY'||p.action==='ADD'; }).slice(0,5).map(function(p){return p.ticker;}).join(', ');
+  var holds = positions.filter(function(p){ return p.action==='HOLD'; }).slice(0,5).map(function(p){return p.ticker;}).join(', ');
+  var trims = positions.filter(function(p){ return p.action==='TRIM'||p.action==='REDUCE'; }).slice(0,5).map(function(p){return p.ticker;}).join(', ');
+  var sumEl = document.getElementById('pos-summary');
   if (sumEl) {
     sumEl.style.display = 'block';
-    sumEl.innerHTML = `
-      <div style="margin-bottom:4px"><strong style="color:#166534">▲ BUY / ADD:</strong> <span style="color:#374151">${buys || '—'}</span></div>
-      <div style="margin-bottom:4px"><strong style="color:#1e40af">● HOLD:</strong> <span style="color:#374151">${holds || '—'}</span></div>
-      <div><strong style="color:#991b1b">▼ TRIM / REDUCE:</strong> <span style="color:#374151">${trims || '—'}</span></div>`;
+    sumEl.innerHTML = '<div style="margin-bottom:4px"><strong style="color:#166534">BUY / ADD:</strong> <span style="color:#374151">'+(buys||'&#8212;')+'</span></div>'
+      + '<div style="margin-bottom:4px"><strong style="color:#1e40af">HOLD:</strong> <span style="color:#374151">'+(holds||'&#8212;')+'</span></div>'
+      + '<div><strong style="color:#991b1b">TRIM / REDUCE:</strong> <span style="color:#374151">'+(trims||'&#8212;')+'</span></div>';
   }
 }
 
-// ── Nav ───────────────────────────────────────────────────
 function showTab(name, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
 }
 
-// ── Init ──────────────────────────────────────────────────
 loadData();
 </script>
 </body>
