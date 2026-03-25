@@ -266,20 +266,37 @@ function renderMarket() {
     document.getElementById('summary-box').style.display = 'block';
   }
 
-  // Exposure panel — spec sections 4 and 7
-  const exp = data.exposure;
-  if (exp) {
-    document.getElementById('exposure-panel').style.display = 'block';
-    const cso     = exp.total_csp_obligation || 0;
-    const room    = exp.remaining_csp_capacity || 0;
-    const maxCso  = exp.max_csp_allocation_usd || 1;
-    const pct     = exp.csp_allocation_pct || 0;
-    const maxPct  = exp.max_csp_allocation_pct || 25;
-    const premAll = exp.total_premium_all || 0;
-    const premCsp = exp.total_premium_csp || 0;
-    const premCc  = exp.total_premium_cc  || 0;
-    const nPuts   = (exp.csp_positions || []).length;
+  // Exposure panel — always visible. Uses live data if available, shows
+  // placeholder values until new whale_scanner.py has run and written
+  // the "exposure" key into results.json.
+  document.getElementById('exposure-panel').style.display = 'block';
+  const exp     = data.exposure || {};
+  const hasExp  = !!data.exposure;
 
+  // Portfolio size: try to derive from positions data as fallback
+  const portSize = exp.portfolio_size || 0;
+  const maxPct   = exp.max_csp_allocation_pct || 25;
+  const maxCso   = exp.max_csp_allocation_usd || (portSize * maxPct / 100) || 0;
+  const cso      = exp.total_csp_obligation    || 0;
+  const room     = exp.remaining_csp_capacity  || (maxCso > 0 ? Math.max(0, maxCso - cso) : 0);
+  const pct      = exp.csp_allocation_pct      || (maxCso > 0 ? +(cso / maxCso * maxPct).toFixed(1) : 0);
+  const premAll  = exp.total_premium_all || 0;
+  const premCsp  = exp.total_premium_csp || 0;
+  const premCc   = exp.total_premium_cc  || 0;
+  const nPuts    = (exp.csp_positions    || []).length;
+
+  if (!hasExp) {
+    // Scanner not yet updated — show panel with notice
+    document.getElementById('exp-cso').textContent      = 'Pending';
+    document.getElementById('exp-cso-pct').textContent  = 'Deploy new scanner to enable';
+    document.getElementById('exp-room').textContent     = 'Pending';
+    document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% limit configured';
+    document.getElementById('exp-prem').textContent     = 'Pending';
+    document.getElementById('exp-prem-sub').textContent = 'Available after next scan';
+    document.getElementById('cap-bar-lbl-r').textContent = '— awaiting scanner update';
+    document.getElementById('exp-limit-badge').textContent = 'Awaiting data';
+    document.getElementById('exp-limit-badge').className   = 'badge b-gray';
+  } else {
     document.getElementById('exp-cso').textContent      = fmtK(cso);
     document.getElementById('exp-cso-pct').textContent  = pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)';
     document.getElementById('exp-room').textContent     = fmtK(room);
