@@ -227,18 +227,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <table style="width:100%;border-collapse:collapse;font-size:12px" id="pos-table">
         <thead>
           <tr style="border-bottom:2px solid #e5e7eb">
-            <th onclick="posSort('ticker')" style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="psi-ticker"></span></th>
-            <th onclick="posSort('tier')" style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Tier<span id="psi-tier"></span></th>
-            <th onclick="posSort('status')" style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Status<span id="psi-status"></span></th>
-            <th onclick="posSort('exposure_pct')" style="text-align:right;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Exposure<span id="psi-exposure_pct"></span></th>
-            <th onclick="posSort('target_range')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Target<span id="psi-target_range"></span></th>
-            <th onclick="posSort('pos_status')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Position<span id="psi-pos_status"></span></th>
-            <th onclick="posSort('price_opp')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Price<span id="psi-price_opp"></span></th>
-            <th onclick="posSort('coverage_pct')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af">CC<br>% covered<span id="psi-coverage_pct"></span></th>
-            <th onclick="posSort('csp_obligation')" style="text-align:right;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e">CSP<br>obligation<span id="psi-csp_obligation"></span></th>
-            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS</th>
-            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;white-space:nowrap;border-left:2px solid #a5b4fc;background:#eef2ff;color:#3730a3">Bull Call</th>
-            <th onclick="posSort('action')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action<span id="psi-action"></span></th>
+            <th onclick="posSort('ticker')" style="text-align:left;padding:7px 8px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="psi-ticker"></span></th>
+            <th onclick="posSort('tier')" style="text-align:left;padding:7px 5px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;max-width:56px">Tier<span id="psi-tier"></span></th>
+            <th onclick="posSort('status')" style="text-align:left;padding:7px 5px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;max-width:56px">Status<span id="psi-status"></span></th>
+            <th onclick="posSort('exposure_pct')" style="text-align:right;padding:7px 5px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;max-width:60px">Exp%<span id="psi-exposure_pct"></span></th>
+            <th onclick="posSort('target_range')" style="text-align:center;padding:7px 5px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;max-width:52px">Target<span id="psi-target_range"></span></th>
+            <th onclick="posSort('pos_status')" style="text-align:center;padding:7px 5px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;max-width:70px">Position<span id="psi-pos_status"></span></th>
+            <th onclick="posSort('price_opp')" style="text-align:center;padding:7px 8px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;min-width:80px">Price<span id="psi-price_opp"></span></th>
+            <th onclick="posSort('coverage_pct')" style="text-align:center;padding:7px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0;font-weight:600;cursor:pointer;user-select:none;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af">CC<br>% cvrd<span id="psi-coverage_pct"></span></th>
+            <th onclick="posSort('csp_obligation')" style="text-align:right;padding:7px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0;font-weight:600;cursor:pointer;user-select:none;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e">CSP<br>oblig.<span id="psi-csp_obligation"></span></th>
+            <th style="text-align:center;padding:7px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0;font-weight:600;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS</th>
+            <th style="text-align:center;padding:7px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0;font-weight:600;border-left:2px solid #a5b4fc;background:#eef2ff;color:#3730a3">Bull<br>Call</th>
+            <th onclick="posSort('action')" style="text-align:center;padding:7px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action<span id="psi-action"></span></th>
           </tr>
         </thead>
         <tbody id="pos-tbody"><tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
@@ -621,38 +621,38 @@ function renderPositions() {
       : '<span style="color:#d1d5db">&#8212;</span>';
 
     return '<tr style="border-bottom:0.5px solid #f3f4f6" onmouseover="this.style.background=&apos;#f9fafb&apos;" onmouseout="this.style.background=&apos;&apos;">'
-      + '<td style="padding:9px 10px;font-weight:600;font-family:monospace;font-size:13px">'
+      + '<td style="padding:7px 8px;font-weight:600;font-family:monospace;font-size:12px">'
         + p.ticker + (p.status==='Watchlist' ? '<span style="font-size:9px;color:#9ca3af;font-weight:400;margin-left:4px">watch</span>' : '')
         + '</td>'
       + '<td style="padding:9px 10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:' + tierBg(p.tier) + ';color:' + tierColor(p.tier) + '">' + p.tier + '</span></td>'
-      + '<td style="padding:9px 10px;font-size:12px;color:#6b7280">' + p.status + '</td>'
-      + '<td style="padding:9px 10px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">' + (p.exposure_pct > 0 ? p.exposure_pct + '%' : '&#8212;') + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;font-size:11px;color:#6b7280">' + p.target_range + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;font-size:11px;font-weight:600;color:' + posColor(p.pos_status) + '">' + p.pos_status + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;font-size:11px;color:' + priceColor(p.price_opp) + ';font-weight:500">'
+      + '<td style="padding:7px 7px;font-size:12px;color:#6b7280">' + p.status + '</td>'
+      + '<td style="padding:7px 7px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">' + (p.exposure_pct > 0 ? p.exposure_pct + '%' : '&#8212;') + '</td>'
+      + '<td style="padding:7px 7px;text-align:center;font-size:11px;color:#6b7280">' + p.target_range + '</td>'
+      + '<td style="padding:7px 7px;text-align:center;font-size:11px;font-weight:600;color:' + posColor(p.pos_status) + '">' + p.pos_status + '</td>'
+      + '<td style="padding:7px 7px;text-align:center;font-size:11px;color:' + priceColor(p.price_opp) + ';font-weight:500">'
         + p.price_opp + (p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#9ca3af">' + p.pullback_pct + '% off high</span>' : '')
         + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;border-left:2px solid #bfdbfe">' + covHtml + '</td>'
-      + '<td style="padding:9px 10px;text-align:right;font-family:monospace;font-weight:600;border-left:2px solid #fed7aa;color:' + (cspObl > 0 ? '#92400e' : '#d1d5db') + '">'
+      + '<td style="padding:7px 7px;text-align:center;border-left:2px solid #bfdbfe">' + covHtml + '</td>'
+      + '<td style="padding:7px 7px;text-align:right;font-family:monospace;font-weight:600;border-left:2px solid #fed7aa;color:' + (cspObl > 0 ? '#92400e' : '#d1d5db') + '">'
         + (cspObl > 0 ? fmtK(cspObl) : '&#8212;') + '</td>'
       + (function(){
           var leaps = p.leaps || [];
-          if (!leaps.length) return '<td style="padding:9px 10px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!leaps.length) return '<td style="padding:7px 7px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = leaps.map(function(l){
             var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed">BE $'+l.breakeven+'</div>' : '';
             return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600">$'+l.strike+' '+(l.expiry_fmt||l.expiry)+'</div>'+be;
           }).join('');
-          return '<td style="padding:9px 10px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
+          return '<td style="padding:7px 7px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
         })()
       + (function(){
           var bcs = p.bcs || [];
-          if (!bcs.length) return '<td style="padding:9px 10px;text-align:center;border-left:2px solid #a5b4fc;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!bcs.length) return '<td style="padding:7px 7px;text-align:center;border-left:2px solid #a5b4fc;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = bcs.map(function(b){
             return '<div style="font-family:monospace;font-size:11px;color:#3730a3;font-weight:600">$'+b.strike+' '+(b.expiry_fmt||b.expiry)+'</div>';
           }).join('');
-          return '<td style="padding:9px 10px;border-left:2px solid #a5b4fc;background:#eef2ff">'+lines+'</td>';
+          return '<td style="padding:7px 7px;border-left:2px solid #a5b4fc;background:#eef2ff">'+lines+'</td>';
         })()
-      + '<td style="padding:9px 10px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:' + actionBg(p.action) + ';color:' + actionColor(p.action) + '">' + p.action + '</span></td>'
+      + '<td style="padding:7px 7px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:' + actionBg(p.action) + ';color:' + actionColor(p.action) + '">' + p.action + '</span></td>'
       + '</tr>';
   }
 
@@ -668,8 +668,8 @@ function renderPositions() {
 
   // Total row
   html += '<tr style="border-top:2px solid #e5e7eb;background:#f9fafb">'
-    + '<td colspan="8" style="padding:9px 10px;text-align:right;font-size:11px;color:#6b7280;font-weight:600">Total CSP obligation</td>'
-    + '<td style="padding:9px 10px;text-align:right;font-family:monospace;font-weight:700;border-left:2px solid #fed7aa;color:#92400e">' + fmtK(totalCSP) + '</td>'
+    + '<td colspan="8" style="padding:7px 7px;text-align:right;font-size:11px;color:#6b7280;font-weight:600">Total CSP obligation</td>'
+    + '<td style="padding:7px 7px;text-align:right;font-family:monospace;font-weight:700;border-left:2px solid #fed7aa;color:#92400e">' + fmtK(totalCSP) + '</td>'
     + '<td></td><td></td><td></td></tr>';
 
   tbody.innerHTML = html;
