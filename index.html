@@ -146,6 +146,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="cap-bar-fill cap-ok" id="cap-bar-fill" style="width:0%"></div>
           </div>
         </div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:14px;padding-top:12px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;margin-bottom:10px;">CC Exposure</div>
+          <div class="exposure-grid">
+            <div class="exp-cell">
+              <div class="exp-lbl">CC Notional (total)</div>
+              <div class="exp-val" id="exp-cc-nva">&#8212;</div>
+              <div class="exp-sub" id="exp-cc-sub">Value if all calls assigned</div>
+            </div>
+            <div class="exp-cell">
+              <div class="exp-lbl">Shares covered</div>
+              <div class="exp-val" id="exp-cc-shares">&#8212;</div>
+              <div class="exp-sub">Across all positions</div>
+            </div>
+            <div class="exp-cell">
+              <div class="exp-lbl">Max shares called away</div>
+              <div class="exp-val" id="exp-cc-away">&#8212;</div>
+              <div class="exp-sub">If all CCs assigned</div>
+            </div>
+          </div>
+          <div id="exp-cc-tickers" style="margin-top:8px;font-size:11px;color:#6b7280;line-height:2;"></div>
+        </div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Total premium collected</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSPs</span><span id="exp-risk-csp-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CCs</span><span id="exp-risk-cc-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+        </div>
       </div>
 
       <div id="verdict-box" class="verdict"></div>
@@ -314,6 +341,35 @@ function renderMarket() {
     if (pct >= maxPct)           { badge.textContent = 'At limit';    badge.className = 'badge b-red'; }
     else if (pct >= maxPct*0.80) { badge.textContent = 'Near limit';  badge.className = 'badge b-amber'; }
     else                         { badge.textContent = 'Within limit';badge.className = 'badge b-green'; }
+
+    // CC Exposure — spec §4
+    const ccNva      = exp.total_cc_notional || 0;
+    const ccShared   = exp.cc_shares_covered || {};
+    const ccShares   = Object.values(ccShared).reduce(function(a,b){return a+b;}, 0);
+    const ccAway     = exp.max_shares_called_away || ccShares;
+    const ccCovPct   = exp.cc_coverage_pct || {};
+    const ccPosCount = (exp.cc_positions || []).length;
+    const cspCount   = (exp.csp_positions || []).length;
+
+    document.getElementById('exp-cc-nva').textContent    = fmtK(ccNva);
+    document.getElementById('exp-cc-sub').textContent    = ccPosCount + ' open covered call' + (ccPosCount !== 1 ? 's' : '');
+    document.getElementById('exp-cc-shares').textContent = ccShares.toLocaleString();
+    document.getElementById('exp-cc-away').textContent   = ccAway.toLocaleString();
+
+    var tickerLines = Object.keys(ccCovPct).sort(function(a,b){ return ccCovPct[b]-ccCovPct[a]; }).map(function(t){
+      var p = ccCovPct[t];
+      var covered = ccShared[t] || 0;
+      var color = p >= 50 ? '#92400e' : p >= 30 ? '#1e40af' : '#6b7280';
+      return '<span style="margin-right:14px;color:'+color+'"><strong>'+t+'</strong> '+p+'% covered ('+covered.toLocaleString()+' shares)</span>';
+    }).join('');
+    var tickerEl = document.getElementById('exp-cc-tickers');
+    if (tickerEl) tickerEl.innerHTML = tickerLines || '<span style="color:#9ca3af">No covered calls open</span>';
+
+    // Risk Summary — spec §4
+    document.getElementById('exp-risk-assign').textContent    = fmtK(exp.max_assignment_exposure || cso);
+    document.getElementById('exp-risk-prem').textContent      = fmtK(exp.total_premium_all || 0);
+    document.getElementById('exp-risk-csp-count').textContent = cspCount;
+    document.getElementById('exp-risk-cc-count').textContent  = ccPosCount;
   }
 }
 
