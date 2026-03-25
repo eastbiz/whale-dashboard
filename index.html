@@ -83,7 +83,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .opp-signal{font-size:11px;color:#6b7280;margin-top:10px;line-height:1.5;}
 .empty{text-align:center;padding:40px 20px;color:#9ca3af;font-size:13px;}
 .spinner{text-align:center;padding:40px;font-size:13px;color:#6b7280;}
-@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}}
+.pos-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+.pos-sum-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;}
+.pos-sum-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;margin-bottom:10px;}
+.pos-sum-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#374151;padding:3px 0;border-bottom:0.5px solid #f3f4f6;}
+.pos-sum-row:last-child{border-bottom:none;}
+.pos-sum-lbl{color:#9ca3af;}
+.pos-sum-val{font-family:monospace;font-weight:600;color:#111827;}
+.acct-filter{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.exp-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.exp-tbl th{padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.7px;color:#9ca3af;font-weight:600;border-bottom:2px solid #e5e7eb;white-space:nowrap;}
+.exp-tbl td{padding:9px 10px;border-bottom:0.5px solid #f3f4f6;vertical-align:middle;}
+.exp-tbl tr:hover td{background:#f9fafb;}
+.cov-bar-wrap{display:flex;align-items:center;gap:6px;}
+.cov-bar{flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;min-width:40px;}
+.cov-bar-fill{height:100%;border-radius:3px;}
+.status-pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}.pos-summary-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -201,22 +217,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- POSITIONS -->
   <div class="page" id="page-positions">
-    <div id="pos-summary" style="display:none;background:#f9fafb;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:2"></div>
-    <div id="pos-table-wrap">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <!-- Account filter -->
+    <div class="acct-filter">
+      <button class="outline-btn active" onclick="filterPositions('ALL',this)">All accounts</button>
+      <button class="outline-btn" onclick="filterPositions('IRA',this)">IRA</button>
+      <button class="outline-btn" onclick="filterPositions('CRT',this)">CRT</button>
+      <button class="outline-btn" onclick="filterPositions('IBKR',this)">IBKR</button>
+    </div>
+    <!-- Portfolio summary cards -->
+    <div class="pos-summary-grid" id="pos-summary-cards">
+      <div class="pos-sum-card">
+        <div class="pos-sum-title">Covered Calls (CC)</div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">Total shares owned</span><span class="pos-sum-val" id="ps-shares-owned">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">Shares covered</span><span class="pos-sum-val" id="ps-shares-covered">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">% covered</span><span class="pos-sum-val" id="ps-pct-covered">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">Uncovered shares</span><span class="pos-sum-val" id="ps-uncovered">—</span></div>
+      </div>
+      <div class="pos-sum-card">
+        <div class="pos-sum-title">Cash Secured Puts (CSP)</div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">Open contracts</span><span class="pos-sum-val" id="ps-csp-contracts">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">Total obligation (CSO)</span><span class="pos-sum-val" id="ps-csp-cso">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">% allocation used</span><span class="pos-sum-val" id="ps-csp-pct">—</span></div>
+      </div>
+      <div class="pos-sum-card">
+        <div class="pos-sum-title">Remaining Capacity</div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">CSP capacity left</span><span class="pos-sum-val" id="ps-csp-room" style="color:#166534">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">CC capacity (shares)</span><span class="pos-sum-val" id="ps-cc-room">—</span></div>
+        <div class="pos-sum-row"><span class="pos-sum-lbl">CC capacity (contracts)</span><span class="pos-sum-val" id="ps-cc-contracts-room">—</span></div>
+      </div>
+    </div>
+    <!-- Exposure table -->
+    <div style="overflow-x:auto;">
+      <table class="exp-tbl">
         <thead>
-          <tr style="border-bottom:2px solid #e5e7eb">
-            <th style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Ticker</th>
-            <th style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Tier</th>
-            <th style="text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Status</th>
-            <th style="text-align:right;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Exposure</th>
-            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Target</th>
-            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Position</th>
-            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Price</th>
-            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;font-weight:600">Action</th>
+          <tr>
+            <th style="text-align:left">Ticker</th>
+            <th style="text-align:left">Tier</th>
+            <th style="text-align:right">Shares owned</th>
+            <th style="text-align:center">CC contracts</th>
+            <th style="text-align:right">Shares covered</th>
+            <th style="text-align:center">% covered</th>
+            <th style="text-align:right">Uncovered</th>
+            <th style="text-align:center">CSP contracts</th>
+            <th style="text-align:right">CSP obligation</th>
+            <th style="text-align:center">Status</th>
+            <th style="text-align:center">Action</th>
           </tr>
         </thead>
-        <tbody id="pos-tbody"><tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+        <tbody id="pos-tbody"><tr><td colspan="11" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -526,43 +574,101 @@ function filterOpps(f, btn) {
   if (data) renderOpps();
 }
 
+var currentPosFilter = 'ALL';
+
+function filterPositions(acct, btn) {
+  currentPosFilter = acct;
+  document.querySelectorAll('.acct-filter .outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (data) renderPositions();
+}
+
 function renderPositions() {
-  var positions = data.positions || [];
+  var allPositions = data.positions || [];
+  var exp = data.exposure || {};
+
+  var positions = currentPosFilter === 'ALL' ? allPositions : allPositions.filter(function(p){
+    var acct = (p.account || '').toUpperCase();
+    if (currentPosFilter === 'IBKR') return acct === 'IBKR' || acct === '' || acct === 'UNDEFINED';
+    return acct.indexOf(currentPosFilter) !== -1;
+  });
+
+  var totalOwned    = positions.reduce(function(s,p){ return s+(p.shares_owned||0); },0);
+  var totalCovered  = positions.reduce(function(s,p){ return s+(p.shares_covered||0); },0);
+  var totalUncov    = positions.reduce(function(s,p){ return s+(p.uncovered_shares||0); },0);
+  var totalAddCC    = positions.reduce(function(s,p){ return s+(p.add_cc_contracts||0); },0);
+  var portCovPct    = totalOwned > 0 ? (totalCovered/totalOwned*100).toFixed(1) : '0';
+  var totalCSPContr = positions.reduce(function(s,p){ return s+(p.csp_contracts||0); },0);
+  var totalCSO      = positions.reduce(function(s,p){ return s+(p.csp_obligation||0); },0);
+  var cspRoom       = exp.remaining_csp_capacity || 0;
+  var maxPct        = exp.max_csp_allocation_pct || 25;
+  var cspPct        = exp.csp_allocation_pct || 0;
+
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('ps-shares-owned',     totalOwned.toLocaleString());
+  set('ps-shares-covered',   totalCovered.toLocaleString());
+  set('ps-pct-covered',      portCovPct+'%');
+  set('ps-uncovered',        totalUncov.toLocaleString());
+  set('ps-csp-contracts',    totalCSPContr);
+  set('ps-csp-cso',          fmtK(totalCSO));
+  set('ps-csp-pct',          cspPct.toFixed(1)+'% of '+maxPct+'% limit');
+  set('ps-csp-room',         fmtK(cspRoom));
+  set('ps-cc-room',          totalUncov.toLocaleString()+' shares');
+  set('ps-cc-contracts-room',totalAddCC+' contracts');
+
   var tbody = document.getElementById('pos-tbody');
-  if (!positions.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af">No positions in last scan.</td></tr>';
+  var owned     = positions.filter(function(p){ return p.status==='Owned'||p.shares_owned>0||p.csp_contracts>0; });
+  var watchlist = positions.filter(function(p){ return p.status==='Watchlist'&&!p.shares_owned&&!p.csp_contracts; });
+  var rows = owned.concat(watchlist);
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#9ca3af">No positions found.</td></tr>';
     return;
   }
-  var actionColor = function(a){ return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':'#991b1b'; };
-  var actionBg    = function(a){ return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':'#fee2e2'; };
+
   var tierColor   = function(t){ return t==='Core'?'#1e40af':t==='Growth'?'#4c1d95':t==='Cyclical'?'#92400e':'#374151'; };
   var tierBg      = function(t){ return t==='Core'?'#dbeafe':t==='Growth'?'#ede9fe':t==='Cyclical'?'#fef3c7':'#f3f4f6'; };
-  var posColor    = function(s){ return s==='Overweight'?'#991b1b':s==='On Target'?'#166534':'#1e40af'; };
-  var priceColor  = function(p){ return p==='Pullback'?'#166534':p==='Near High'?'#991b1b':'#6b7280'; };
+  var actionColor = function(a){ return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':'#991b1b'; };
+  var actionBg    = function(a){ return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':'#fee2e2'; };
+  var statusStyle = function(s){
+    if (s==='Fully Covered')         return 'background:#dcfce7;color:#166534';
+    if (s&&s.indexOf('CC + CSP')!==-1) return 'background:#ede9fe;color:#4c1d95';
+    if (s&&s.indexOf('CSP')!==-1)    return 'background:#fef3c7;color:#92400e';
+    if (s&&s.indexOf('Covered')!==-1)return 'background:#dbeafe;color:#1e40af';
+    if (s==='Stock Only')            return 'background:#f3f4f6;color:#374151';
+    return 'background:#f3f4f6;color:#9ca3af';
+  };
 
-  tbody.innerHTML = positions.map(function(p){
-    return '<tr style="border-bottom:1px solid #f3f4f6" onmouseover="this.style.background=\'#f9fafb\'" onmouseout="this.style.background=\'\'">'
-      + '<td style="padding:10px;font-weight:600;font-family:monospace;font-size:13px">' + p.ticker + (p.status==='Watchlist'?'<span style="font-size:9px;color:#9ca3af;font-family:sans-serif;font-weight:400;margin-left:4px">watch</span>':'') + '</td>'
-      + '<td style="padding:10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:'+tierBg(p.tier)+';color:'+tierColor(p.tier)+'">'+p.tier+'</span></td>'
-      + '<td style="padding:10px;font-size:12px;color:#6b7280">'+p.status+'</td>'
-      + '<td style="padding:10px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">'+(p.exposure_pct > 0 ? p.exposure_pct+'%' : '&#8212;')+'</td>'
-      + '<td style="padding:10px;text-align:center;font-size:11px;color:#6b7280">'+p.target_range+'</td>'
-      + '<td style="padding:10px;text-align:center;font-size:11px;font-weight:600;color:'+posColor(p.pos_status)+'">'+p.pos_status+'</td>'
-      + '<td style="padding:10px;text-align:center;font-size:11px;color:'+priceColor(p.price_opp)+';font-weight:500">'+p.price_opp+(p.pullback_pct>8?'<br><span style="font-size:10px;color:#9ca3af">'+p.pullback_pct+'% off high</span>':'')+'</td>'
-      + '<td style="padding:10px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:'+actionBg(p.action)+';color:'+actionColor(p.action)+'">'+p.action+'</span></td>'
-      + '</tr>';
+  tbody.innerHTML = rows.map(function(p){
+    var sharesOwned   = p.shares_owned   || 0;
+    var ccContracts   = p.cc_contracts   || 0;
+    var sharesCovered = p.shares_covered || 0;
+    var covPct        = p.coverage_pct   || 0;
+    var uncovered     = p.uncovered_shares || 0;
+    var cspContracts  = p.csp_contracts  || 0;
+    var cspObl        = p.csp_obligation || 0;
+    var expStatus     = p.exp_status || (p.status==='Watchlist'?'Watchlist':'Stock Only');
+    var barColor      = covPct>=100?'#22c55e':covPct>=50?'#3b82f6':covPct>0?'#f59e0b':'#e5e7eb';
+    var covBar = covPct > 0
+      ? '<div class="cov-bar-wrap"><div class="cov-bar"><div class="cov-bar-fill" style="width:'+Math.min(covPct,100)+'%;background:'+barColor+'"></div></div>'
+        +'<span style="font-family:monospace;font-size:11px;font-weight:600;color:'+barColor+'">'+covPct+'%</span></div>'
+      : '<span style="color:#9ca3af;font-size:11px">&#8212;</span>';
+    var isWatch = p.status==='Watchlist'&&!sharesOwned&&!cspContracts;
+    return '<tr>'
+      +'<td style="font-weight:600;font-family:monospace;font-size:13px">'+p.ticker
+        +(isWatch?'<span style="font-size:9px;color:#9ca3af;font-weight:400;margin-left:4px">watch</span>':'')+'</td>'
+      +'<td><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:'+tierBg(p.tier)+';color:'+tierColor(p.tier)+'">'+p.tier+'</span></td>'
+      +'<td style="text-align:right;font-family:monospace;font-weight:600">'+(sharesOwned>0?sharesOwned.toLocaleString():'&#8212;')+'</td>'
+      +'<td style="text-align:center;font-family:monospace">'+(ccContracts>0?ccContracts:'&#8212;')+'</td>'
+      +'<td style="text-align:right;font-family:monospace">'+(sharesCovered>0?sharesCovered.toLocaleString():'&#8212;')+'</td>'
+      +'<td style="text-align:center">'+covBar+'</td>'
+      +'<td style="text-align:right;font-family:monospace;color:'+(uncovered>0?'#166534':'#9ca3af')+'">'+(uncovered>0?uncovered.toLocaleString():'&#8212;')+'</td>'
+      +'<td style="text-align:center;font-family:monospace">'+(cspContracts>0?cspContracts:'&#8212;')+'</td>'
+      +'<td style="text-align:right;font-family:monospace;color:'+(cspObl>0?'#92400e':'#9ca3af')+'">'+(cspObl>0?fmtK(cspObl):'&#8212;')+'</td>'
+      +'<td style="text-align:center"><span class="status-pill" style="'+statusStyle(expStatus)+'">'+expStatus+'</span></td>'
+      +'<td style="text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px;background:'+actionBg(p.action)+';color:'+actionColor(p.action)+'">'+p.action+'</span></td>'
+      +'</tr>';
   }).join('');
-
-  var buys  = positions.filter(function(p){ return p.action==='BUY'||p.action==='ADD'; }).slice(0,5).map(function(p){return p.ticker;}).join(', ');
-  var holds = positions.filter(function(p){ return p.action==='HOLD'; }).slice(0,5).map(function(p){return p.ticker;}).join(', ');
-  var trims = positions.filter(function(p){ return p.action==='TRIM'||p.action==='REDUCE'; }).slice(0,5).map(function(p){return p.ticker;}).join(', ');
-  var sumEl = document.getElementById('pos-summary');
-  if (sumEl) {
-    sumEl.style.display = 'block';
-    sumEl.innerHTML = '<div style="margin-bottom:4px"><strong style="color:#166534">BUY / ADD:</strong> <span style="color:#374151">'+(buys||'&#8212;')+'</span></div>'
-      + '<div style="margin-bottom:4px"><strong style="color:#1e40af">HOLD:</strong> <span style="color:#374151">'+(holds||'&#8212;')+'</span></div>'
-      + '<div><strong style="color:#991b1b">TRIM / REDUCE:</strong> <span style="color:#374151">'+(trims||'&#8212;')+'</span></div>';
-  }
 }
 
 function showTab(name, btn) {
