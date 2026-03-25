@@ -236,10 +236,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <th onclick="posSort('price_opp')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Price<span id="psi-price_opp"></span></th>
             <th onclick="posSort('coverage_pct')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af">CC<br>% covered<span id="psi-coverage_pct"></span></th>
             <th onclick="posSort('csp_obligation')" style="text-align:right;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e">CSP<br>obligation<span id="psi-csp_obligation"></span></th>
+            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS</th>
+            <th style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;white-space:nowrap;border-left:2px solid #a5b4fc;background:#eef2ff;color:#3730a3">Bull Call</th>
             <th onclick="posSort('action')" style="text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action<span id="psi-action"></span></th>
           </tr>
         </thead>
-        <tbody id="pos-tbody"><tr><td colspan="10" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+        <tbody id="pos-tbody"><tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -592,7 +594,7 @@ function renderPositions() {
 
   var tbody = document.getElementById('pos-tbody');
   if (!positions.length) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#9ca3af">No positions found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">No positions found.</td></tr>';
     return;
   }
 
@@ -633,17 +635,34 @@ function renderPositions() {
       + '<td style="padding:9px 10px;text-align:center;border-left:2px solid #bfdbfe">' + covHtml + '</td>'
       + '<td style="padding:9px 10px;text-align:right;font-family:monospace;font-weight:600;border-left:2px solid #fed7aa;color:' + (cspObl > 0 ? '#92400e' : '#d1d5db') + '">'
         + (cspObl > 0 ? fmtK(cspObl) : '&#8212;') + '</td>'
+      + (function(){
+          var leaps = p.leaps || [];
+          if (!leaps.length) return '<td style="padding:9px 10px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
+          var lines = leaps.map(function(l){
+            var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed">BE $'+l.breakeven+'</div>' : '';
+            return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600">$'+l.strike+' '+(l.expiry_fmt||l.expiry)+'</div>'+be;
+          }).join('');
+          return '<td style="padding:9px 10px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
+        })()
+      + (function(){
+          var bcs = p.bcs || [];
+          if (!bcs.length) return '<td style="padding:9px 10px;text-align:center;border-left:2px solid #a5b4fc;color:#d1d5db;font-size:11px">&#8212;</td>';
+          var lines = bcs.map(function(b){
+            return '<div style="font-family:monospace;font-size:11px;color:#3730a3;font-weight:600">$'+b.strike+' '+(b.expiry_fmt||b.expiry)+'</div>';
+          }).join('');
+          return '<td style="padding:9px 10px;border-left:2px solid #a5b4fc;background:#eef2ff">'+lines+'</td>';
+        })()
       + '<td style="padding:9px 10px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:' + actionBg(p.action) + ';color:' + actionColor(p.action) + '">' + p.action + '</span></td>'
       + '</tr>';
   }
 
   var html = '';
   if (owned.length) {
-    html += '<tr style="background:#f9fafb"><td colspan="10" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Owned</td></tr>';
+    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Owned</td></tr>';
     owned.forEach(function(p) { html += makeRow(p); });
   }
   if (watchlist.length) {
-    html += '<tr style="background:#f9fafb"><td colspan="10" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Watchlist</td></tr>';
+    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Watchlist</td></tr>';
     watchlist.forEach(function(p) { html += makeRow(p); });
   }
 
@@ -651,7 +670,7 @@ function renderPositions() {
   html += '<tr style="border-top:2px solid #e5e7eb;background:#f9fafb">'
     + '<td colspan="8" style="padding:9px 10px;text-align:right;font-size:11px;color:#6b7280;font-weight:600">Total CSP obligation</td>'
     + '<td style="padding:9px 10px;text-align:right;font-family:monospace;font-weight:700;border-left:2px solid #fed7aa;color:#92400e">' + fmtK(totalCSP) + '</td>'
-    + '<td></td></tr>';
+    + '<td></td><td></td><td></td></tr>';
 
   tbody.innerHTML = html;
 }
