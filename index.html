@@ -227,10 +227,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <table style="width:100%;border-collapse:collapse;font-size:12px" id="pos-table">
         <thead>
           <colgroup>
-            <col style="width:58px"><col style="width:48px"><col style="width:48px">
-            <col style="width:44px"><col style="width:44px"><col style="width:68px">
-            <col style="width:78px"><col style="width:66px"><col style="width:60px">
-            <col style="width:80px"><col style="width:72px"><col style="width:52px">
+            <col style="width:58px"><col style="width:44px"><col style="width:44px">
+            <col style="width:40px"><col style="width:42px"><col style="width:66px">
+            <col style="width:76px"><col style="width:64px"><col style="width:58px">
+            <col style="width:96px"><col style="width:76px"><col style="width:50px">
           </colgroup>
           <tr style="border-bottom:2px solid #e5e7eb">
             <th onclick="posSort('ticker')" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="psi-ticker"></span></th>
@@ -645,8 +645,10 @@ function renderPositions() {
           var leaps = p.leaps || [];
           if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = leaps.map(function(l){
-            var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed">BE $'+l.breakeven+'</div>' : '';
-            return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600">$'+l.strike+' '+(l.expiry_fmt||l.expiry)+'</div>'+be;
+            var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">BE $'+l.breakeven+'</div>' : '';
+            return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600;white-space:nowrap">$'+l.strike+'</div>'
+              +'<div style="font-size:10px;color:#6d28d9;white-space:nowrap">'+(l.expiry_fmt||l.expiry)+'</div>'
+              +be;
           }).join('');
           return '<td style="padding:6px 5px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
         })()
@@ -654,7 +656,8 @@ function renderPositions() {
           var bcs = p.bcs || [];
           if (!bcs.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #a5b4fc;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = bcs.map(function(b){
-            return '<div style="font-family:monospace;font-size:11px;color:#3730a3;font-weight:600">$'+b.strike+' '+(b.expiry_fmt||b.expiry)+'</div>';
+            return '<div style="font-family:monospace;font-size:11px;color:#3730a3;font-weight:600;white-space:nowrap">$'+b.strike+'</div>'
+              +'<div style="font-size:10px;color:#4338ca;white-space:nowrap">'+(b.expiry_fmt||b.expiry)+'</div>';
           }).join('');
           return '<td style="padding:6px 5px;border-left:2px solid #a5b4fc;background:#eef2ff">'+lines+'</td>';
         })()
