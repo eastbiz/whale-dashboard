@@ -553,13 +553,20 @@ function renderOpps() {
       ? '<span class="badge b-green" style="font-size:9px">Exec</span>' : '';
 
     var signalHtml = '';
+    if (o.mode === 'LEAPS' && o.trend_label) {
+      var tColor = o.trend_action === 'BUY' ? '#166534' : o.trend_action === 'WATCH' ? '#92400e' : '#991b1b';
+      var tBg    = o.trend_action === 'BUY' ? '#dcfce7' : o.trend_action === 'WATCH' ? '#fef3c7' : '#fee2e2';
+      signalHtml += '<div style="margin-top:8px;display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:'+tBg+';color:'+tColor+'">'+o.trend_label+'</div>';
+      if (o.trend_signal) signalHtml += '<div class="opp-signal" style="margin-top:4px">'+o.trend_signal+'</div>';
+    }
     if (o.signal) {
       var s = o.signal
         .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g,'')
         .replace(/^\s*\|\s*/,'').replace(/\s*\|\s*$/,'')
         .replace(/&#8212;\s*$/,'').trim();
-      if (s) signalHtml = '<div class="opp-signal">' + s + '</div>';
+      if (s) signalHtml += '<div class="opp-signal">' + s + '</div>';
     }
+
 
     return '<div class="opp-card">'
       + '<div class="opp-top">'
