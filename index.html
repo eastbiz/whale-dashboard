@@ -13,6 +13,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hdr-right{display:flex;align-items:center;gap:10px;}
 .refresh-btn{background:#111827;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
 .refresh-btn:hover{opacity:0.85;}
+.scan-btn{background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+.scan-btn:hover{opacity:0.85;}
+.scan-btn:disabled{background:#6b7280;cursor:not-allowed;}
 .last-scan{font-size:12px;color:#6b7280;}
 .tabs{display:flex;gap:2px;border-bottom:1px solid #e5e7eb;margin-bottom:20px;}
 .tab{padding:10px 20px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;}
@@ -109,6 +112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="logo">&#x1F40B; Whale Intelligence</div>
     <div class="hdr-right">
       <span class="last-scan" id="last-scan">Loading...</span>
+      <button class="scan-btn" id="scan-btn" onclick="runScan()">&#9654; Run Scan</button>
       <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
     </div>
   </div>
@@ -263,6 +267,60 @@ function fmtK(v) {
   if (v >= 1000000) return '$' + (v/1000000).toFixed(2) + 'M';
   if (v >= 1000)    return '$' + Math.round(v/1000) + 'K';
   return '$' + v.toLocaleString();
+}
+
+function getGithubToken() {
+  // Token from URL: ?token=ghp_xxx or stored in sessionStorage
+  var params = new URLSearchParams(window.location.search);
+  var t = params.get('token');
+  if (t) { sessionStorage.setItem('gh_token', t); return t; }
+  return sessionStorage.getItem('gh_token') || '';
+}
+
+async function runScan() {
+  var token = getGithubToken();
+  if (!token) {
+    alert('No GitHub token found.\n\nAdd ?token=YOUR_TOKEN to the URL and bookmark it.\nExample: https://eastbiz.github.io/whale-dashboard/?token=ghp_xxx');
+    return;
+  }
+  var btn = document.getElementById('scan-btn');
+  btn.disabled = true;
+  btn.textContent = 'Starting...';
+  try {
+    var r = await fetch(
+      'https://api.github.com/repos/eastbiz/whale-intelligence/actions/workflows/scanner.yml/dispatches',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+    if (r.status === 204) {
+      btn.textContent = 'Scan running...';
+      btn.style.background = '#166534';
+      document.getElementById('last-scan').textContent = 'Scan triggered — check back in ~2 min';
+      // Auto-refresh after 2.5 minutes
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = '\u25B6 Run Scan';
+        btn.style.background = '';
+        loadData();
+      }, 150000);
+    } else {
+      var err = await r.json().catch(function(){ return {}; });
+      alert('Scan failed: ' + (err.message || r.status) + '\n\nCheck your token has workflow scope.');
+      btn.disabled = false;
+      btn.textContent = '\u25B6 Run Scan';
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '\u25B6 Run Scan';
+  }
 }
 
 async function loadData() {
@@ -537,7 +595,22 @@ function renderOpps() {
       +   '<div><div class="stat-l">Delta</div><div class="stat-v" style="color:' + (Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e') + '">' + o.delta + '</div></div>'
       +   '<div><div class="stat-l">Premium</div><div class="stat-v">$' + o.premium + '</div></div>'
       +   '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>'
-      +   '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">' + (o.breakeven ? '$'+o.breakeven : '&#8212;') + '</div></div>'
+      + (function(){
+          var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
+          // Look up LEAPS for this ticker
+          var leapsList = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === o.ticker; });
+          if (!leapsList.length) {
+            return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
+          }
+          var leapsBe = leapsList.map(function(l){
+            return l.breakeven ? '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
+          }).filter(Boolean).join('<br>');
+          return '<div>'
+            +'<div class="stat-l">Breakeven</div>'
+            +'<div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div>'
+            +(leapsBe ? '<div style="font-size:10px;color:#7c3aed;margin-top:2px">LEAPS: '+leapsBe+'</div>' : '')
+            +'</div>';
+        })()
       + '</div>'
       + '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
       +   (o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
