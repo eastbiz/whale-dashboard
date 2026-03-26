@@ -585,9 +585,11 @@ function renderPositions() {
   var allPositions = data.positions || [];
 
   var positions = currentPosFilter === 'ALL' ? allPositions : allPositions.filter(function(p) {
-    var acct = (p.account || '').toUpperCase();
-    if (currentPosFilter === 'IBKR') return acct === 'IBKR' || acct === '' || acct === 'UNDEFINED' || !p.account;
-    return acct.indexOf(currentPosFilter) !== -1;
+    // Use accounts_all (list of all accounts this ticker appears in) for multi-account tickers
+    var accts = p.accounts_all || [p.account || 'IBKR'];
+    var acctUpper = accts.map(function(a){ return (a||'').toUpperCase(); });
+    if (currentPosFilter === 'IBKR') return acctUpper.indexOf('IBKR') !== -1 || accts.length === 0;
+    return acctUpper.indexOf(currentPosFilter) !== -1;
   });
 
   // Sort
@@ -632,7 +634,24 @@ function renderPositions() {
         + '</td>'
       + '<td style="padding:9px 10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:' + tierBg(p.tier) + ';color:' + tierColor(p.tier) + '">' + p.tier + '</span></td>'
       + '<td style="padding:6px 5px;font-size:12px;color:#6b7280">' + p.status + '</td>'
-      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">' + (p.exposure_pct > 0 ? p.exposure_pct + '%' : '&#8212;') + '</td>'
+      + (function(){
+          if (!p.exposure_pct || p.exposure_pct <= 0) return '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">&#8212;</td>';
+          // Show account-specific $ if filtered, otherwise total
+          var mv = 0;
+          if (currentPosFilter === 'ALL') {
+            mv = p.market_value || 0;
+          } else {
+            var byAcct = p.mv_by_account || {};
+            mv = byAcct[currentPosFilter] || 0;
+            // If not in mv_by_account, fall back to total (IBKR positions)
+            if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
+          }
+          var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
+          return '<td style="padding:6px 5px;text-align:right">'
+            + '<div style="font-family:monospace;font-weight:600;font-size:13px">'+p.exposure_pct+'%</div>'
+            + mvStr
+            + '</td>';
+        })()
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:#6b7280">' + (p.target_range && p.target_range !== '0–0%' ? p.target_range : '&#8212;') + '</td>'
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;font-weight:600;color:' + posColor(p.pos_status) + '">' + p.pos_status + '</td>'
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:' + priceColor(p.price_opp) + ';font-weight:500">'
