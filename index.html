@@ -610,7 +610,7 @@ function renderOpps() {
             return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
           }
           var leapsBe = leapsList.map(function(l){
-            return l.breakeven ? '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
+            return l.breakeven ? (l.contracts > 1 ? l.contracts+' x ' : '') + '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
           }).filter(Boolean).join('<br>');
           return '<div>'
             +'<div class="stat-l">Breakeven</div>'
