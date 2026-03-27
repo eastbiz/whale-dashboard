@@ -622,7 +622,7 @@ function renderOpps() {
             return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
           }
           var leapsBe = leapsList.map(function(l){
-            return l.breakeven ? (l.contracts > 1 ? l.contracts+' x ' : '') + '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
+            return l.breakeven ? (l.contracts ? l.contracts+' x ' : '') + '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
           }).filter(Boolean).join('<br>');
           return '<div>'
             +'<div class="stat-l">Breakeven</div>'
@@ -757,7 +757,7 @@ function renderPositions() {
           if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = leaps.map(function(l){
             var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">BE $'+l.breakeven+'</div>' : '';
-            var ct = l.contracts > 1 ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">'+l.contracts+' contracts</div>' : '';
+            var ct = l.contracts ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">'+l.contracts+' x</div>' : '';
             return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600;white-space:nowrap">$'+l.strike+'</div>'
               +'<div style="font-size:10px;color:#6d28d9;white-space:nowrap">'+(l.expiry_fmt||l.expiry)+'</div>'
               +be+ct;
