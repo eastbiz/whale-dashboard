@@ -465,8 +465,17 @@ function renderMarket() {
 function renderOpps() {
   const grid = document.getElementById('opps-grid');
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
-  const filtered = currentFilter === 'all' ? allOpps
+  var filtered = currentFilter === 'all' ? allOpps
     : allOpps.filter(function(o){ return o.mode === currentFilter || (currentFilter === 'CC' && o.mode === 'PIO'); });
+  // LEAPS: sort by extrinsic % ascending (lowest cost first), then score descending
+  if (currentFilter === 'LEAPS') {
+    filtered = filtered.slice().sort(function(a, b) {
+      var ae = a.extrinsic_pct != null ? a.extrinsic_pct : 999;
+      var be = b.extrinsic_pct != null ? b.extrinsic_pct : 999;
+      if (ae !== be) return ae - be;
+      return (b.score || 0) - (a.score || 0);
+    });
+  }
 
   if (!filtered.length) {
     grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.</div>';
@@ -602,7 +611,9 @@ function renderOpps() {
       +   '<div><div class="stat-l">DTE</div><div class="stat-v">' + o.dte + '</div></div>'
       +   '<div><div class="stat-l">Delta</div><div class="stat-v" style="color:' + (Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e') + '">' + o.delta + '</div></div>'
       +   '<div><div class="stat-l">Premium</div><div class="stat-v">$' + o.premium + '</div></div>'
-      +   '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>'
+      +   (o.mode === 'LEAPS' && o.extrinsic_pct != null
+          ? '<div><div class="stat-l">Extrinsic</div><div class="stat-v" style="color:' + (o.extrinsic_pct<15?'#166534':o.extrinsic_pct<20?'#92400e':'#991b1b') + ';font-weight:700">' + o.extrinsic_pct + '%</div></div>'
+          : '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>')
       + (function(){
           var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
           // Look up LEAPS for this ticker
