@@ -565,7 +565,23 @@ function renderOpps() {
     if (o.mode === 'LEAPS' && o.trend_signal) {
       signalHtml += '<div class="opp-signal" style="margin-top:6px">'+o.trend_signal+'</div>';
     }
-    if (o.mode !== 'LEAPS' && o.signal) {
+    if (o.mode === 'CSP' && o.action) {
+      var aC = o.action==='BUY'?'#166534':'#92400e';
+      var aB = o.action==='BUY'?'#dcfce7':'#fef3c7';
+      var dLabel = o.drop_type==='STRONG'?'Strong drop':'Moderate drop';
+      signalHtml += '<div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+        + '<span style="font-size:10px;font-weight:700;padding:2px 10px;border-radius:5px;background:'+aB+';color:'+aC+'">'+o.action+'</span>'
+        + (o.drop_type ? '<span style="font-size:11px;color:#6b7280">'+dLabel+'</span>' : '')
+        + (o.yield_30d ? '<span style="font-size:11px;color:#374151;font-weight:600">'+o.yield_30d+'% yield/30d</span>' : '')
+        + '</div>';
+      if (o.csp_flags && o.csp_flags.length) {
+        o.csp_flags.forEach(function(f){
+          var fC = f.indexOf('WAIT')>=0||f.indexOf('EXTREME')>=0?'#991b1b':f.indexOf('OVER')>=0?'#92400e':'#374151';
+          signalHtml += '<div style="font-size:11px;color:'+fC+';margin-top:3px">⚠ '+f+'</div>';
+        });
+      }
+    }
+    if (o.mode !== 'LEAPS' && o.mode !== 'CSP' && o.signal) {
       var s = o.signal
         .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g,'')
         .replace(/^\s*\|\s*/,'').replace(/\s*\|\s*$/,'')
