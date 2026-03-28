@@ -558,7 +558,7 @@ function renderOpps() {
       ? ('$' + o.long_strike + ' / $' + o.short_strike)
       : ('$' + o.strike);
 
-    var execBadge = o.candidate_type === 'execution'
+    var execBadge = (o.mode !== 'CSP' && o.mode !== 'CC' && o.candidate_type === 'execution')
       ? '<span class="badge b-green" style="font-size:9px">Exec</span>' : '';
 
     var signalHtml = '';
@@ -587,7 +587,7 @@ function renderOpps() {
       +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
       +       (o.mode === 'LEAPS' && o.trend_label
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
-          : (o.mode !== 'CSP' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
+          : (o.mode !== 'CSP' && o.mode !== 'CC' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
       +       execBadge
       +     '</div>'
       +   '</div>'
@@ -598,19 +598,23 @@ function renderOpps() {
       +   '</div>'
       + '</div>'
       + (o.mode === 'CSP' ? (function(){
-          var cspAction = o.action || 'WATCH';
-          var bigC = cspAction==='BUY'?'#166534':cspAction==='SKIP'?'#991b1b':'#92400e';
-          var bigB = cspAction==='BUY'?'#dcfce7':cspAction==='SKIP'?'#fee2e2':'#fef3c7';
-          var bigLabel = cspAction==='BUY'?'● BUY NOW':cspAction==='SKIP'?'● SKIP':'● WATCH';
-          var flags = o.csp_flags || [];
+          var a = o.action || 'WAIT';
+          var isBuySafe  = a === 'BUY_SAFE';
+          var isBuyRisky = a === 'BUY_RISKY';
+          var isWait     = a === 'WAIT';
+          var bigC = isBuySafe ? '#166534' : isBuyRisky ? '#1e40af' : isWait ? '#92400e' : '#991b1b';
+          var bigB = isBuySafe ? '#dcfce7' : isBuyRisky ? '#dbeafe' : isWait ? '#fef3c7' : '#fee2e2';
+          var bigLabel = isBuySafe ? '● BUY (SAFE)' : isBuyRisky ? '● BUY (RISKY)' : isWait ? '● WAIT' : '● SKIP';
+          var flags = (o.csp_flags || []).filter(function(f){ return f != null; });
           var drop = o.drop_type || '';
           var rp = [];
           if (drop==='STRONG') rp.push('Strong drop');
           else if (drop==='MODERATE') rp.push('Moderate drop');
           if (flags.indexOf('AT LOWS')>=0) rp.push('near lows');
-          if (flags.indexOf('BELOW 200DMA')>=0||flags.indexOf('BELOW 50DMA')>=0) rp.push('weak trend');
-          if (flags.indexOf('WAIT FOR STABILIZATION')>=0) rp.push('wait for stabilization');
-          if (flags.indexOf('HIGH VOLATILITY')>=0) rp.push('high market volatility');
+          if (flags.indexOf('BELOW 200DMA')>=0) rp.push('below 200DMA');
+          else if (flags.indexOf('BELOW 50DMA')>=0) rp.push('below 50DMA');
+          if (flags.indexOf('HIGH VOLATILITY')>=0) rp.push('high vol');
+          if (flags.indexOf('BEST AVAILABLE')>=0) rp.push('best available');
           if (flags.indexOf('OVER ALLOCATION')>=0) rp.push('over allocation');
           if (o.yield_30d) rp.push(o.yield_30d+'% yield/30d');
           var reason = rp.join(' · ');
