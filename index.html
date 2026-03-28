@@ -608,7 +608,7 @@ function renderOpps() {
       +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
       +       (o.mode === 'LEAPS' && o.trend_label
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
-          : (ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
+          : (o.mode !== 'CSP' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
       +       execBadge
       +     '</div>'
       +   '</div>'
@@ -654,7 +654,7 @@ function renderOpps() {
         })()
       + '</div>'
       + '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
-      +   (o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
+      +   (o.mode !== 'CSP' && o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
       +   (o.position_status ? '<span class="badge b-blue">' + o.position_status + '</span>' : '')
       +   '<span style="font-size:10px;color:#9ca3af;margin-left:auto">' + (o.expiry||'') + '</span>'
       + '</div>'
