@@ -565,28 +565,7 @@ function renderOpps() {
     if (o.mode === 'LEAPS' && o.trend_signal) {
       signalHtml += '<div class="opp-signal" style="margin-top:6px">'+o.trend_signal+'</div>';
     }
-    if (o.mode === 'CSP') {
-      var cspAction = o.action || 'WATCH';
-      var bigC = cspAction==='BUY' ? '#166534' : cspAction==='SKIP' ? '#991b1b' : '#92400e';
-      var bigB = cspAction==='BUY' ? '#dcfce7' : cspAction==='SKIP' ? '#fee2e2' : '#fef3c7';
-      var bigLabel = cspAction==='BUY' ? '● BUY NOW' : cspAction==='SKIP' ? '● SKIP' : '● WATCH';
-      var flags = o.csp_flags || [];
-      var drop = o.drop_type || '';
-      var rp = [];
-      if (drop==='STRONG') rp.push('Strong drop');
-      else if (drop==='MODERATE') rp.push('Moderate drop');
-      if (flags.indexOf('AT LOWS')>=0) rp.push('near lows');
-      if (flags.indexOf('BELOW 200DMA')>=0 || flags.indexOf('BELOW 50DMA')>=0) rp.push('weak trend');
-      if (flags.indexOf('WAIT FOR STABILIZATION')>=0) rp.push('wait for stabilization');
-      if (flags.indexOf('HIGH VOLATILITY')>=0) rp.push('high market volatility');
-      if (flags.indexOf('OVER ALLOCATION')>=0) rp.push('over allocation');
-      if (o.yield_30d) rp.push(o.yield_30d + '% yield/30d');
-      var reason = rp.join(' · ');
-      signalHtml += '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-        + '<span style="font-size:13px;font-weight:700;padding:4px 14px;border-radius:6px;background:'+bigB+';color:'+bigC+'">'+bigLabel+'</span>'
-        + (reason ? '<span style="font-size:12px;color:#374151">'+reason+'</span>' : '')
-        + '</div>';
-    }
+    // CSP decision pill rendered at top of card — not here
     if (o.mode !== 'LEAPS' && o.mode !== 'CSP' && o.signal) {
       var s = o.signal
         .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g,'')
@@ -618,7 +597,29 @@ function renderOpps() {
       +     '<div style="margin-top:2px">' + scoreDisp + '</div>'
       +   '</div>'
       + '</div>'
-      + (o.mode !== 'LEAPS'
+      + (o.mode === 'CSP' ? (function(){
+          var cspAction = o.action || 'WATCH';
+          var bigC = cspAction==='BUY'?'#166534':cspAction==='SKIP'?'#991b1b':'#92400e';
+          var bigB = cspAction==='BUY'?'#dcfce7':cspAction==='SKIP'?'#fee2e2':'#fef3c7';
+          var bigLabel = cspAction==='BUY'?'● BUY NOW':cspAction==='SKIP'?'● SKIP':'● WATCH';
+          var flags = o.csp_flags || [];
+          var drop = o.drop_type || '';
+          var rp = [];
+          if (drop==='STRONG') rp.push('Strong drop');
+          else if (drop==='MODERATE') rp.push('Moderate drop');
+          if (flags.indexOf('AT LOWS')>=0) rp.push('near lows');
+          if (flags.indexOf('BELOW 200DMA')>=0||flags.indexOf('BELOW 50DMA')>=0) rp.push('weak trend');
+          if (flags.indexOf('WAIT FOR STABILIZATION')>=0) rp.push('wait for stabilization');
+          if (flags.indexOf('HIGH VOLATILITY')>=0) rp.push('high market volatility');
+          if (flags.indexOf('OVER ALLOCATION')>=0) rp.push('over allocation');
+          if (o.yield_30d) rp.push(o.yield_30d+'% yield/30d');
+          var reason = rp.join(' · ');
+          return '<div style="margin:8px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+            +'<span style="font-size:13px;font-weight:700;padding:4px 14px;border-radius:6px;background:'+bigB+';color:'+bigC+'">'+bigLabel+'</span>'
+            +(reason?'<span style="font-size:12px;color:#374151">'+reason+'</span>':'')
+            +'</div>';
+        })() : '')
+      + (o.mode !== 'LEAPS' && o.mode !== 'CSP'
         ? '<div class="ivp-row">'
           + '<span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>'
           + '<div class="ivp-bar"><div class="ivp-fill" style="width:' + Math.min(ivp,100) + '%;background:' + ic + '"></div></div>'
@@ -626,7 +627,7 @@ function renderOpps() {
           + '<span style="font-size:10px;color:' + ic + '">' + ilbl + '</span>'
           + '</div>'
         : '')
-      + (o.mode !== 'LEAPS' && o.warnings && o.warnings.length ? '<div class="warn-box">' + o.warnings.join(' | ') + '</div>' : '')
+      + (o.mode !== 'LEAPS' && o.mode !== 'CSP' && o.warnings && o.warnings.length ? '<div class="warn-box">' + o.warnings.join(' | ') + '</div>' : '')
       + '<hr class="divider">'
       + '<div class="stats">'
       +   '<div><div class="stat-l">Strike</div><div class="stat-v">' + strikeDisp + '</div></div>'
