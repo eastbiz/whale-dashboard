@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whale Intelligence</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:#111827;min-height:100vh;}
+.app{max-width:1100px;margin:0 auto;padding:20px 16px 60px;}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.logo{font-size:20px;font-weight:700;}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.refresh-btn{background:#111827;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+.refresh-btn:hover{opacity:0.85;}
+.scan-btn{background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+.scan-btn:hover{opacity:0.85;}
+.scan-btn:disabled{background:#6b7280;cursor:not-allowed;}
+.last-scan{font-size:12px;color:#6b7280;}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #e5e7eb;margin-bottom:20px;}
+.tab{padding:10px 20px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#111827;border-bottom-color:#111827;}
+.page{display:none;}
+.page.active{display:block;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px;}
+.metric{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;}
+.metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;margin-bottom:6px;font-weight:600;}
+.metric-val{font-size:26px;font-weight:700;font-family:monospace;line-height:1;margin-bottom:4px;}
+.metric-sub{font-size:11px;color:#6b7280;line-height:1.5;}
+.exposure-panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px;}
+.exposure-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.exposure-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;}
+.exposure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.exp-cell{padding:10px 12px;background:#f9fafb;border-radius:8px;}
+.exp-lbl{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;}
+.exp-val{font-size:17px;font-weight:700;font-family:monospace;color:#111827;}
+.exp-sub{font-size:11px;color:#6b7280;margin-top:2px;}
+.cap-bar-wrap{margin-top:12px;}
+.cap-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:5px;}
+.cap-bar-track{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
+.cap-bar-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+.cap-ok{background:#22c55e;}.cap-warn{background:#f59e0b;}.cap-over{background:#ef4444;}
+.verdict{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#166534;line-height:1.6;}
+.verdict.warn{background:#fef3c7;border-color:#fcd34d;color:#92400e;}
+.summary-box{background:#f5f3ff;border-radius:10px;padding:16px;margin-bottom:16px;}
+.summary-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7c3aed;margin-bottom:8px;}
+.summary-txt{font-size:13px;color:#4c1d95;line-height:1.7;}
+.notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;font-size:13px;color:#1e40af;margin-bottom:16px;line-height:1.6;}
+.notice.error{background:#fee2e2;border-color:#fca5a5;color:#991b1b;}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.outline-btn{background:none;border:1px solid #d1d5db;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;color:#374151;font-weight:500;}
+.outline-btn:hover{background:#f3f4f6;}
+.outline-btn.active{background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;}
+.b-green{background:#dcfce7;color:#166534;}.b-amber{background:#fef3c7;color:#92400e;}
+.b-red{background:#fee2e2;color:#991b1b;}.b-purple{background:#ede9fe;color:#4c1d95;}
+.b-blue{background:#dbeafe;color:#1e40af;}.b-gray{background:#f3f4f6;color:#374151;}
+.opp-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;transition:border-color 0.15s;}
+.opp-card:hover{border-color:#9ca3af;}
+.opp-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.opp-ticker{font-size:18px;font-weight:700;font-family:monospace;}
+.opp-return{font-size:20px;font-weight:700;font-family:monospace;}
+.opp-meta{font-size:11px;color:#6b7280;margin-top:2px;}
+.divider{border:none;border-top:1px solid #f3f4f6;margin:12px 0;}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.stat-l{font-size:10px;color:#9ca3af;margin-bottom:1px;}
+.stat-v{font-size:12px;font-family:monospace;font-weight:600;color:#111827;}
+.sizing-panel{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-top:10px;}
+.sizing-panel.over{background:#fff7ed;border-color:#fed7aa;}
+.sizing-panel.warn{background:#fef9c3;border-color:#fde047;}
+.sizing-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#166534;margin-bottom:7px;}
+.sizing-panel.over .sizing-hdr{color:#9a3412;}
+.sizing-panel.warn .sizing-hdr{color:#854d0e;}
+.sizing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.sz-lbl{font-size:10px;color:#6b7280;margin-bottom:1px;}
+.sz-val{font-size:12px;font-family:monospace;font-weight:600;color:#111827;}
+.sz-result{margin-top:8px;font-size:11px;color:#374151;padding-top:7px;border-top:1px solid #d1fae5;}
+.sizing-panel.over .sz-result{border-color:#fed7aa;}
+.sizing-panel.warn .sz-result{border-top-color:#fde047;}
+.ivp-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+.ivp-bar{flex:1;height:3px;background:#e5e7eb;border-radius:2px;overflow:hidden;}
+.ivp-fill{height:100%;border-radius:2px;}
+.warn-box{font-size:11px;color:#92400e;background:#fef3c7;border-radius:6px;padding:5px 8px;margin-top:8px;}
+.opp-signal{font-size:11px;color:#6b7280;margin-top:10px;line-height:1.5;}
+.empty{text-align:center;padding:40px 20px;color:#9ca3af;font-size:13px;}
+.spinner{text-align:center;padding:40px;font-size:13px;color:#6b7280;}
+.pos-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+.pos-sum-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;}
+.pos-sum-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;margin-bottom:10px;}
+.pos-sum-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#374151;padding:3px 0;border-bottom:0.5px solid #f3f4f6;}
+.pos-sum-row:last-child{border-bottom:none;}
+.pos-sum-lbl{color:#9ca3af;}
+.pos-sum-val{font-family:monospace;font-weight:600;color:#111827;}
+.acct-filter{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.exp-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.exp-tbl th{padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.7px;color:#9ca3af;font-weight:600;border-bottom:2px solid #e5e7eb;white-space:nowrap;}
+.exp-tbl td{padding:9px 10px;border-bottom:0.5px solid #f3f4f6;vertical-align:middle;}
+.exp-tbl tr:hover td{background:#f9fafb;}
+.cov-bar-wrap{display:flex;align-items:center;gap:6px;}
+.cov-bar{flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;min-width:40px;}
+.cov-bar-fill{height:100%;border-radius:3px;}
+.status-pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}.pos-summary-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div class="logo">&#x1F40B; Whale Intelligence</div>
+    <div class="hdr-right">
+      <span class="last-scan" id="last-scan">Loading...</span>
+      <button class="scan-btn" id="scan-btn" onclick="runScan()">&#9654; Run Scan</button>
+      <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('market',this)">Market</button>
+    <button class="tab" onclick="showTab('opportunities',this)">Opportunities</button>
+    <button class="tab" onclick="showTab('positions',this)">Positions</button>
+  </div>
+
+  <!-- MARKET -->
+  <div class="page active" id="page-market">
+    <div id="market-loading" class="spinner">Loading latest scan results...</div>
+    <div id="market-content" style="display:none">
+      <div class="g4">
+        <div class="metric"><div class="metric-lbl">VIX</div><div class="metric-val" id="vix-val">&#8212;</div><div class="metric-sub" id="vix-sub">&#8212;</div></div>
+        <div class="metric"><div class="metric-lbl">S&amp;P 500</div><div class="metric-val" id="spy-val" style="color:#1e40af">&#8212;</div><div class="metric-sub" id="spy-sub">&#8212;</div></div>
+        <div class="metric"><div class="metric-lbl">Opportunities</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
+        <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">&#8212;</div><div class="metric-sub">holdings tracked</div></div>
+      </div>
+
+      <!-- EXPOSURE PANEL — spec sections 4 and 7 -->
+      <div class="exposure-panel" id="exposure-panel" style="display:none">
+        <div class="exposure-hdr">
+          <span class="exposure-title">Portfolio Exposure &amp; Capacity</span>
+          <span id="exp-limit-badge" class="badge b-green"></span>
+        </div>
+        <div class="exposure-grid">
+          <div class="exp-cell">
+            <div class="exp-lbl">CSP Obligation (total)</div>
+            <div class="exp-val" id="exp-cso">&#8212;</div>
+            <div class="exp-sub" id="exp-cso-pct">Cash secured puts open</div>
+          </div>
+          <div class="exp-cell">
+            <div class="exp-lbl">Remaining CSP Capacity</div>
+            <div class="exp-val" id="exp-room" style="color:#166534">&#8212;</div>
+            <div class="exp-sub" id="exp-room-sub">Available for new CSPs</div>
+          </div>
+          <div class="exp-cell">
+            <div class="exp-lbl">Total Premium (this scan)</div>
+            <div class="exp-val" id="exp-prem">&#8212;</div>
+            <div class="exp-sub" id="exp-prem-sub">CSP + CC combined</div>
+          </div>
+        </div>
+        <div class="cap-bar-wrap">
+          <div class="cap-bar-label">
+            <span>CSP utilization</span>
+            <span id="cap-bar-lbl-r">0% of 25% limit</span>
+          </div>
+          <div class="cap-bar-track">
+            <div class="cap-bar-fill cap-ok" id="cap-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:14px;padding-top:12px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;margin-bottom:10px;">CC Exposure</div>
+          <div class="exposure-grid">
+            <div class="exp-cell">
+              <div class="exp-lbl">CC Notional (total)</div>
+              <div class="exp-val" id="exp-cc-nva">&#8212;</div>
+              <div class="exp-sub" id="exp-cc-sub">Value if all calls assigned</div>
+            </div>
+            <div class="exp-cell">
+              <div class="exp-lbl">Shares covered</div>
+              <div class="exp-val" id="exp-cc-shares">&#8212;</div>
+              <div class="exp-sub">Across all positions</div>
+            </div>
+            <div class="exp-cell">
+              <div class="exp-lbl">Max shares called away</div>
+              <div class="exp-val" id="exp-cc-away">&#8212;</div>
+              <div class="exp-sub">If all CCs assigned</div>
+            </div>
+          </div>
+          <div id="exp-cc-tickers" style="margin-top:8px;font-size:11px;color:#6b7280;line-height:2;"></div>
+        </div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Total premium collected</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSPs</span><span id="exp-risk-csp-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CCs</span><span id="exp-risk-cc-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+        </div>
+      </div>
+
+      <div id="verdict-box" class="verdict"></div>
+      <div id="summary-box" class="summary-box" style="display:none">
+        <div class="summary-lbl">&#x1F9E0; Claude Analysis</div>
+        <div class="summary-txt" id="summary-txt"></div>
+      </div>
+    </div>
+    <div id="market-error" style="display:none" class="notice error"></div>
+  </div>
+
+  <!-- OPPORTUNITIES -->
+  <div class="page" id="page-opportunities">
+    <div class="filter-row">
+      <button class="outline-btn active" onclick="filterOpps('all',this)">All</button>
+      <button class="outline-btn" onclick="filterOpps('CSP',this)">&#x1F4B0; CSP</button>
+      <button class="outline-btn" onclick="filterOpps('CC',this)">&#x1F4C8; CC</button>
+      <button class="outline-btn" onclick="filterOpps('LEAPS',this)">&#x1F680; LEAPS</button>
+      <button class="outline-btn" onclick="filterOpps('BCS',this)">&#x1F4CA; Bull Call Spread</button>
+      <button class="outline-btn" onclick="filterOpps('SPIKE_CC',this)">&#x26A1; Spike CC</button>
+      <button class="outline-btn" onclick="filterOpps('DROP_CSP',this)">&#x1F53B; Post-Drop</button>
+      <button class="outline-btn" onclick="filterOpps('PIO',this)">&#x1F4BC; Position Income</button>
+    </div>
+    <div class="g2" id="opps-grid"><div class="spinner">Loading...</div></div>
+  </div>
+
+  <!-- POSITIONS -->
+  <div class="page" id="page-positions">
+    <div class="filter-row">
+      <button class="outline-btn active" onclick="filterPositions('ALL',this)">All</button>
+      <button class="outline-btn" onclick="filterPositions('IRA',this)">IRA</button>
+      <button class="outline-btn" onclick="filterPositions('CRT',this)">CRT</button>
+      <button class="outline-btn" onclick="filterPositions('IBKR',this)">IBKR</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px" id="pos-table">
+        <thead>
+          <colgroup>
+            <col style="width:58px"><col style="width:44px"><col style="width:44px">
+            <col style="width:40px"><col style="width:54px"><col style="width:66px">
+            <col style="width:76px"><col style="width:64px"><col style="width:58px">
+            <col style="width:96px"><col style="width:76px"><col style="width:50px">
+          </colgroup>
+          <tr style="border-bottom:2px solid #e5e7eb">
+            <th onclick="posSort('ticker')" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="psi-ticker"></span></th>
+            <th onclick="posSort('tier')" style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Tier<span id="psi-tier"></span></th>
+            <th onclick="posSort('status')" style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Status<span id="psi-status"></span></th>
+            <th onclick="posSort('exposure_pct')" style="text-align:right;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Exp%<span id="psi-exposure_pct"></span></th>
+            <th onclick="posSort('target_range')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Target<span id="psi-target_range"></span></th>
+            <th onclick="posSort('pos_status')" style="text-align:center;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none">Position<span id="psi-pos_status"></span></th>
+            <th onclick="posSort('price_opp')" style="text-align:center;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none">Price<span id="psi-price_opp"></span></th>
+            <th onclick="posSort('coverage_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af">CC<br>% cvrd<span id="psi-coverage_pct"></span></th>
+            <th onclick="posSort('csp_obligation')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e">CSP<br>oblig<span id="psi-csp_obligation"></span></th>
+            <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS</th>
+            <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;border-left:2px solid #a5b4fc;background:#eef2ff;color:#3730a3">Bull<br>Call</th>
+            <th onclick="posSort('action')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action<span id="psi-action"></span></th>
+          </tr>
+        </thead>
+        <tbody id="pos-tbody"><tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<script>
+const RESULTS_URL = 'https://cdn.jsdelivr.net/gh/eastbiz/whale-intelligence@main/results.json';
+let data = null;
+let currentFilter = 'all';
+
+function fmtK(v) {
+  v = Math.round(v);
+  if (v >= 1000000) return '$' + (v/1000000).toFixed(2) + 'M';
+  if (v >= 1000)    return '$' + Math.round(v/1000) + 'K';
+  return '$' + v.toLocaleString();
+}
+
+function getGithubToken() {
+  // Token from URL: ?token=ghp_xxx or stored in sessionStorage
+  var params = new URLSearchParams(window.location.search);
+  var t = params.get('token');
+  if (t) { sessionStorage.setItem('gh_token', t); return t; }
+  return sessionStorage.getItem('gh_token') || '';
+}
+
+async function runScan() {
+  var token = getGithubToken();
+  if (!token) {
+    alert('No GitHub token found.\n\nAdd ?token=YOUR_TOKEN to the URL and bookmark it.\nExample: https://eastbiz.github.io/whale-dashboard/?token=ghp_xxx');
+    return;
+  }
+  var btn = document.getElementById('scan-btn');
+  btn.disabled = true;
+  btn.textContent = 'Starting...';
+  try {
+    var r = await fetch(
+      'https://api.github.com/repos/eastbiz/whale-intelligence/actions/workflows/scanner.yml/dispatches',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+    if (r.status === 204) {
+      btn.textContent = 'Scan running...';
+      btn.style.background = '#166534';
+      document.getElementById('last-scan').textContent = 'Scan triggered — check back in ~2 min';
+      // Auto-refresh after 2.5 minutes
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = '\u25B6 Run Scan';
+        btn.style.background = '';
+        loadData();
+      }, 150000);
+    } else {
+      var err = await r.json().catch(function(){ return {}; });
+      alert('Scan failed: ' + (err.message || r.status) + '\n\nCheck your token has workflow scope.');
+      btn.disabled = false;
+      btn.textContent = '\u25B6 Run Scan';
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '\u25B6 Run Scan';
+  }
+}
+
+async function loadData() {
+  document.getElementById('last-scan').textContent = 'Refreshing...';
+  try {
+    const r = await fetch(RESULTS_URL + '?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    data = await r.json();
+    renderAll();
+    document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '&#8212;');
+  } catch(e) {
+    document.getElementById('last-scan').textContent = 'Load failed';
+    document.getElementById('market-loading').style.display = 'none';
+    const err = document.getElementById('market-error');
+    err.style.display = 'block';
+    err.textContent = 'Could not load scan results: ' + e.message + '. The scanner may not have run yet today, or results.json is missing from the repo.';
+  }
+}
+
+function renderAll() {
+  document.getElementById('market-loading').style.display = 'none';
+  document.getElementById('market-content').style.display = 'block';
+  document.getElementById('market-error').style.display = 'none';
+  renderMarket();
+  renderOpps();
+  renderPositions();
+}
+
+function renderMarket() {
+  const m = data.market || {};
+  const vix = m.vix || 0;
+  const vixEl = document.getElementById('vix-val');
+  vixEl.textContent = vix.toFixed(2);
+  vixEl.style.color = vix > 30 ? '#166534' : vix > 20 ? '#92400e' : '#6b7280';
+  document.getElementById('vix-sub').textContent =
+    vix > 30 ? 'Elevated — great for premium selling' :
+    vix > 20 ? 'Moderate — selective opportunities' : 'Low — premiums compressed';
+
+  document.getElementById('spy-val').textContent = '$' + (m.spy || 0).toLocaleString();
+  document.getElementById('spy-sub').textContent = m.spy_above
+    ? 'Above 200MA — normal environment'
+    : 'Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
+
+  const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
+  const execCount = allOpps.filter(function(o){ return o.candidate_type === 'execution'; }).length;
+  document.getElementById('opp-count').textContent = allOpps.length;
+  document.getElementById('opp-sub').textContent = execCount + ' execution ready';
+
+  const pos = data.positions || [];
+  const owned = pos.filter(function(p){ return p.status === 'Owned'; }).length;
+  document.getElementById('port-val').textContent = owned + ' owned';
+
+  const vb = document.getElementById('verdict-box');
+  vb.textContent = m.verdict || '';
+  vb.className = 'verdict' + (m.spy_above ? '' : ' warn');
+
+  if (data.analysis) {
+    document.getElementById('summary-txt').textContent = data.analysis;
+    document.getElementById('summary-box').style.display = 'block';
+  }
+
+  // Exposure panel — always visible. Uses live data if available, shows
+  // placeholder values until new whale_scanner.py has run and written
+  // the "exposure" key into results.json.
+  document.getElementById('exposure-panel').style.display = 'block';
+  const exp     = data.exposure || {};
+  const hasExp  = !!data.exposure;
+
+  // Portfolio size: try to derive from positions data as fallback
+  const portSize = exp.portfolio_size || 0;
+  const maxPct   = exp.max_csp_allocation_pct || 25;
+  const maxCso   = exp.max_csp_allocation_usd || (portSize * maxPct / 100) || 0;
+  const cso      = exp.total_csp_obligation    || 0;
+  const room     = exp.remaining_csp_capacity  || (maxCso > 0 ? Math.max(0, maxCso - cso) : 0);
+  const pct      = exp.csp_allocation_pct      || (maxCso > 0 ? +(cso / maxCso * maxPct).toFixed(1) : 0);
+  const premAll  = exp.total_premium_all || 0;
+  const premCsp  = exp.total_premium_csp || 0;
+  const premCc   = exp.total_premium_cc  || 0;
+  const nPuts    = (exp.csp_positions    || []).length;
+
+  if (!hasExp) {
+    // Scanner not yet updated — show panel with notice
+    document.getElementById('exp-cso').textContent      = 'Pending';
+    document.getElementById('exp-cso-pct').textContent  = 'Deploy new scanner to enable';
+    document.getElementById('exp-room').textContent     = 'Pending';
+    document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% limit configured';
+    document.getElementById('exp-prem').textContent     = 'Pending';
+    document.getElementById('exp-prem-sub').textContent = 'Available after next scan';
+    document.getElementById('cap-bar-lbl-r').textContent = '— awaiting scanner update';
+    document.getElementById('exp-limit-badge').textContent = 'Awaiting data';
+    document.getElementById('exp-limit-badge').className   = 'badge b-gray';
+  } else {
+    document.getElementById('exp-cso').textContent      = fmtK(cso);
+    document.getElementById('exp-cso-pct').textContent  = pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)';
+    document.getElementById('exp-room').textContent     = fmtK(room);
+    document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% = ' + fmtK(maxCso);
+    document.getElementById('exp-prem').textContent     = fmtK(premAll);
+    document.getElementById('exp-prem-sub').textContent = 'CSP ' + fmtK(premCsp) + ' · CC ' + fmtK(premCc);
+
+    const util = Math.min(100, maxCso > 0 ? (cso / maxCso) * 100 : 0);
+    const fill = document.getElementById('cap-bar-fill');
+    fill.style.width = util.toFixed(1) + '%';
+    fill.className = 'cap-bar-fill ' + (util >= 90 ? 'cap-over' : util >= 70 ? 'cap-warn' : 'cap-ok');
+    document.getElementById('cap-bar-lbl-r').textContent = pct.toFixed(1) + '% of ' + maxPct + '% limit';
+
+    const badge = document.getElementById('exp-limit-badge');
+    if (pct >= maxPct)           { badge.textContent = 'At limit';    badge.className = 'badge b-red'; }
+    else if (pct >= maxPct*0.80) { badge.textContent = 'Near limit';  badge.className = 'badge b-amber'; }
+    else                         { badge.textContent = 'Within limit';badge.className = 'badge b-green'; }
+
+    // CC Exposure — spec §4
+    const ccNva      = exp.total_cc_notional || 0;
+    const ccShared   = exp.cc_shares_covered || {};
+    const ccShares   = Object.values(ccShared).reduce(function(a,b){return a+b;}, 0);
+    const ccAway     = exp.max_shares_called_away || ccShares;
+    const ccCovPct   = exp.cc_coverage_pct || {};
+    const ccPosCount = (exp.cc_positions || []).length;
+    const cspCount   = (exp.csp_positions || []).length;
+
+    document.getElementById('exp-cc-nva').textContent    = fmtK(ccNva);
+    document.getElementById('exp-cc-sub').textContent    = ccPosCount + ' open covered call' + (ccPosCount !== 1 ? 's' : '');
+    document.getElementById('exp-cc-shares').textContent = ccShares.toLocaleString();
+    document.getElementById('exp-cc-away').textContent   = ccAway.toLocaleString();
+
+    var tickerLines = Object.keys(ccCovPct).sort(function(a,b){ return ccCovPct[b]-ccCovPct[a]; }).map(function(t){
+      var p = ccCovPct[t];
+      var covered = ccShared[t] || 0;
+      var color = p >= 50 ? '#92400e' : p >= 30 ? '#1e40af' : '#6b7280';
+      return '<span style="margin-right:14px;color:'+color+'"><strong>'+t+'</strong> '+p+'% covered ('+covered.toLocaleString()+' shares)</span>';
+    }).join('');
+    var tickerEl = document.getElementById('exp-cc-tickers');
+    if (tickerEl) tickerEl.innerHTML = tickerLines || '<span style="color:#9ca3af">No covered calls open</span>';
+
+    // Risk Summary — spec §4
+    document.getElementById('exp-risk-assign').textContent    = fmtK(exp.max_assignment_exposure || cso);
+    document.getElementById('exp-risk-prem').textContent      = fmtK(exp.total_premium_all || 0);
+    document.getElementById('exp-risk-csp-count').textContent = cspCount;
+    document.getElementById('exp-risk-cc-count').textContent  = ccPosCount;
+  }
+}
+
+function renderOpps() {
+  const grid = document.getElementById('opps-grid');
+  const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
+  var filtered = currentFilter === 'all' ? allOpps
+    : allOpps.filter(function(o){ return o.mode === currentFilter || (currentFilter === 'CC' && o.mode === 'PIO'); });
+  // LEAPS: sort by extrinsic % ascending (lowest cost first), then score descending
+  if (currentFilter === 'LEAPS') {
+    filtered = filtered.slice().sort(function(a, b) {
+      var ae = a.extrinsic_pct != null ? a.extrinsic_pct : 999;
+      var be = b.extrinsic_pct != null ? b.extrinsic_pct : 999;
+      if (ae !== be) return ae - be;
+      return (b.score || 0) - (a.score || 0);
+    });
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.</div>';
+    return;
+  }
+
+  var modeMap = {
+    CSP:['b-green','CSP'], CC:['b-green','CC'], LEAPS:['b-purple','LEAPS'],
+    BCS:['b-purple','BCS'], SPIKE_CC:['b-amber','Spike CC'],
+    DROP_CSP:['b-red','Post-Drop'], PIO:['b-blue','Position Income']
+  };
+
+  grid.innerHTML = filtered.map(function(o) {
+    var mm    = modeMap[o.mode] || ['b-gray', o.mode];
+    var bc    = mm[0], bl = mm[1];
+    var ret   = o.annualized_return || 0;
+    var ivp   = o.ivp || 0;
+    var rc    = ret > 25 ? '#166534' : ret > 20 ? '#15803d' : ret > 15 ? '#92400e' : '#6b7280';
+    var ic    = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#9ca3af';
+    var ilbl  = ivp > 60 ? 'Elevated' : ivp > 35 ? 'Good' : ivp > 20 ? 'Moderate' : 'Low';
+    var ppd   = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '&#8212;';
+
+    var reasons = [];
+    if (o.warnings && o.warnings.length) reasons = reasons.concat(o.warnings);
+    if (o.delta > 0.35 && o.mode === 'CSP') reasons.push('delta too high');
+    if (o.delta > 0.40 && (o.mode === 'CC' || o.mode === 'PIO')) reasons.push('delta too high');
+    if (ivp < 20 && (o.mode === 'CSP' || o.mode === 'CC')) reasons.push('low IVP');
+    if (ret < 20 && (o.mode === 'CSP' || o.mode === 'DROP_CSP')) reasons.push('below 20% min');
+    var ql = o.quality_label || '';
+    var qlColor = ql === 'Strong' ? 'b-green' : ql === 'Acceptable' ? 'b-amber' : 'b-gray';
+    var qlText  = reasons.length ? ql + ' &#8212; ' + reasons.join(', ') : ql;
+
+    var maxScore = {'CSP':12,'CC':13,'LEAPS':13,'PIO':13,'SPIKE_CC':10,'DROP_CSP':12,'BCS':10}[o.mode] || 12;
+    var scoreDisp = o.score !== undefined
+      ? '<span style="font-size:11px;font-weight:700;color:' + (o.score/maxScore>=0.75?'#166534':o.score/maxScore>=0.50?'#92400e':'#9ca3af') + '" title="Score: '+o.score+'/'+maxScore+'">'+o.score+'/'+maxScore+'</span>'
+      : '';
+
+    // Sizing panel — spec sections 5 and 6
+    var sz = o.sizing || {};
+    var sizingHtml = '';
+    if (sz.suggested_contracts !== undefined) {
+      var contracts = sz.suggested_contracts;
+      var capital   = sz.capital_required || 0;
+      var premium   = sz.premium_received || 0;
+      var actionLbl = sz.action_label || o.action_label || o.mode;
+
+      if ((o.mode === 'CSP' || o.mode === 'DROP_CSP') && sz.cso !== undefined) {
+        var withinLim   = sz.within_limit !== false;
+        var resultPct   = (sz.resulting_pct || 0).toFixed(1);
+        var resultObl   = sz.resulting_obligation || 0;
+        var remainAftr  = sz.remaining_after || 0;
+        var panelCls    = contracts === 0 ? 'sizing-panel over' : !withinLim ? 'sizing-panel warn' : 'sizing-panel';
+        var hdrTxt      = contracts === 0 ? 'No capacity &#8212; CSP budget at limit' : actionLbl;
+        sizingHtml = '<div class="' + panelCls + '">'
+          + '<div class="sizing-hdr">' + hdrTxt + '</div>'
+          + '<div class="sizing-grid">'
+          + '<div><div class="sz-lbl">Contracts</div><div class="sz-val">' + contracts + '</div></div>'
+          + '<div><div class="sz-lbl">Capital (CSO)</div><div class="sz-val">' + fmtK(capital) + '</div></div>'
+          + '<div><div class="sz-lbl">Premium received</div><div class="sz-val">' + fmtK(premium) + '</div></div>'
+          + '</div>'
+          + '<div class="sz-result">After trade: obligation ' + fmtK(resultObl) + ' (' + resultPct + '% portfolio) &#183; remaining ' + fmtK(remainAftr)
+          + (withinLim ? ' &#10003; Within limit' : ' &#9888; Exceeds limit') + '</div>'
+          + '</div>';
+      } else if ((o.mode === 'CC' || o.mode === 'PIO' || o.mode === 'SPIKE_CC') && sz.nva !== undefined) {
+        var nva    = sz.nva || 0;
+        var shares = sz.shares_covered || contracts * 100;
+        sizingHtml = '<div class="sizing-panel">'
+          + '<div class="sizing-hdr">' + actionLbl + '</div>'
+          + '<div class="sizing-grid">'
+          + '<div><div class="sz-lbl">Contracts</div><div class="sz-val">' + contracts + '</div></div>'
+          + '<div><div class="sz-lbl">Shares covered</div><div class="sz-val">' + shares.toLocaleString() + '</div></div>'
+          + '<div><div class="sz-lbl">Premium received</div><div class="sz-val">' + fmtK(premium) + '</div></div>'
+          + '</div>'
+          + '<div class="sz-result">Notional value at assignment: ' + fmtK(nva) + '</div>'
+          + '</div>';
+      }
+    }
+
+    var strikeDisp = o.mode === 'BCS'
+      ? ('$' + o.long_strike + ' / $' + o.short_strike)
+      : ('$' + o.strike);
+
+    var execBadge = o.candidate_type === 'execution'
+      ? '<span class="badge b-green" style="font-size:9px">Exec</span>' : '';
+
+    var signalHtml = '';
+    if (o.mode === 'LEAPS' && o.trend_signal) {
+      signalHtml += '<div class="opp-signal" style="margin-top:6px">'+o.trend_signal+'</div>';
+    }
+    if (o.mode === 'CSP') {
+      var cspAction = o.action || 'WATCH';
+      var bigC = cspAction==='BUY' ? '#166534' : cspAction==='SKIP' ? '#991b1b' : '#92400e';
+      var bigB = cspAction==='BUY' ? '#dcfce7' : cspAction==='SKIP' ? '#fee2e2' : '#fef3c7';
+      var bigLabel = cspAction==='BUY' ? '● BUY NOW' : cspAction==='SKIP' ? '● SKIP' : '● WATCH';
+      var flags = o.csp_flags || [];
+      var drop = o.drop_type || '';
+      var rp = [];
+      if (drop==='STRONG') rp.push('Strong drop');
+      else if (drop==='MODERATE') rp.push('Moderate drop');
+      if (flags.indexOf('AT LOWS')>=0) rp.push('near lows');
+      if (flags.indexOf('BELOW 200DMA')>=0 || flags.indexOf('BELOW 50DMA')>=0) rp.push('weak trend');
+      if (flags.indexOf('WAIT FOR STABILIZATION')>=0) rp.push('wait for stabilization');
+      if (flags.indexOf('HIGH VOLATILITY')>=0) rp.push('high market volatility');
+      if (flags.indexOf('OVER ALLOCATION')>=0) rp.push('over allocation');
+      if (o.yield_30d) rp.push(o.yield_30d + '% yield/30d');
+      var reason = rp.join(' · ');
+      signalHtml += '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+        + '<span style="font-size:13px;font-weight:700;padding:4px 14px;border-radius:6px;background:'+bigB+';color:'+bigC+'">'+bigLabel+'</span>'
+        + (reason ? '<span style="font-size:12px;color:#374151">'+reason+'</span>' : '')
+        + '</div>';
+    }
+    if (o.mode !== 'LEAPS' && o.mode !== 'CSP' && o.signal) {
+      var s = o.signal
+        .replace(/\|?\s*IVP\s*\d+\.?\d*%[^|]*/g,'')
+        .replace(/^\s*\|\s*/,'').replace(/\s*\|\s*$/,'')
+        .replace(/&#8212;\s*$/,'').trim();
+      if (s) signalHtml += '<div class="opp-signal">' + s + '</div>';
+    }
+
+
+    return '<div class="opp-card">'
+      + '<div class="opp-top">'
+      +   '<div>'
+      +     '<div class="opp-ticker">' + o.ticker
+      +       '<span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px">' + (o.price ? '$'+o.price : '') + '</span>'
+      +     '</div>'
+      +     '<div class="opp-meta" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px">'
+      +       '<span class="badge ' + bc + '">' + bl + '</span>'
+      +       '<span style="color:#9ca3af">&#183;</span>'
+      +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
+      +       (o.mode === 'LEAPS' && o.trend_label
+          ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
+          : (ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
+      +       execBadge
+      +     '</div>'
+      +   '</div>'
+      +   '<div style="text-align:right">'
+      +     '<div class="opp-return" style="color:' + rc + '">' + ret + '%</div>'
+      +     '<div class="opp-meta">annualized</div>'
+      +     '<div style="margin-top:2px">' + scoreDisp + '</div>'
+      +   '</div>'
+      + '</div>'
+      + (o.mode !== 'LEAPS'
+        ? '<div class="ivp-row">'
+          + '<span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>'
+          + '<div class="ivp-bar"><div class="ivp-fill" style="width:' + Math.min(ivp,100) + '%;background:' + ic + '"></div></div>'
+          + '<span style="font-family:monospace;font-size:11px;color:' + ic + ';min-width:30px">' + ivp + '%</span>'
+          + '<span style="font-size:10px;color:' + ic + '">' + ilbl + '</span>'
+          + '</div>'
+        : '')
+      + (o.mode !== 'LEAPS' && o.warnings && o.warnings.length ? '<div class="warn-box">' + o.warnings.join(' | ') + '</div>' : '')
+      + '<hr class="divider">'
+      + '<div class="stats">'
+      +   '<div><div class="stat-l">Strike</div><div class="stat-v">' + strikeDisp + '</div></div>'
+      +   '<div><div class="stat-l">DTE</div><div class="stat-v">' + o.dte + '</div></div>'
+      +   '<div><div class="stat-l">Delta</div><div class="stat-v" style="color:' + (Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e') + '">' + o.delta + '</div></div>'
+      +   '<div><div class="stat-l">Premium</div><div class="stat-v">$' + o.premium + '</div></div>'
+      +   (o.mode === 'LEAPS' && o.extrinsic_pct != null
+          ? '<div><div class="stat-l">Extrinsic</div><div class="stat-v" style="color:' + (o.extrinsic_pct<15?'#166534':o.extrinsic_pct<20?'#92400e':'#991b1b') + ';font-weight:700">' + o.extrinsic_pct + '%</div></div>'
+          : '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>')
+      + (function(){
+          var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
+          // Look up LEAPS for this ticker
+          var leapsList = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === o.ticker; });
+          if (!leapsList.length) {
+            return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
+          }
+          var leapsBe = leapsList.map(function(l){
+            return l.breakeven ? (l.contracts ? l.contracts+' x ' : '') + '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
+          }).filter(Boolean).join('<br>');
+          return '<div>'
+            +'<div class="stat-l">Breakeven</div>'
+            +'<div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div>'
+            +(leapsBe ? '<div style="font-size:10px;color:#7c3aed;margin-top:2px">LEAPS: '+leapsBe+'</div>' : '')
+            +'</div>';
+        })()
+      + '</div>'
+      + '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
+      +   (o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
+      +   (o.position_status ? '<span class="badge b-blue">' + o.position_status + '</span>' : '')
+      +   '<span style="font-size:10px;color:#9ca3af;margin-left:auto">' + (o.expiry||'') + '</span>'
+      + '</div>'
+      + signalHtml
+      + sizingHtml
+      + '</div>';
+  }).join('');
+}
+
+function filterOpps(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-row .outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (data) renderOpps();
+}
+
+var currentPosFilter = 'ALL';
+var posSortCol = 'score';
+var posSortAsc = false;
+
+function filterPositions(acct, btn) {
+  currentPosFilter = acct;
+  document.querySelectorAll('.filter-row .outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (data) renderPositions();
+}
+
+function posSort(col) {
+  if (posSortCol === col) { posSortAsc = !posSortAsc; }
+  else { posSortCol = col; posSortAsc = (col === 'ticker' || col === 'tier' || col === 'action'); }
+  // Update sort icons
+  ['ticker','tier','status','exposure_pct','target_range','pos_status','price_opp','coverage_pct','csp_obligation','action'].forEach(function(c) {
+    var el = document.getElementById('psi-' + c);
+    if (el) el.textContent = '';
+  });
+  var el = document.getElementById('psi-' + col);
+  if (el) el.textContent = ' ' + (posSortAsc ? '▲' : '▼');
+  if (data) renderPositions();
+}
+
+function renderPositions() {
+  var allPositions = data.positions || [];
+
+  var positions = currentPosFilter === 'ALL' ? allPositions : allPositions.filter(function(p) {
+    // Use accounts_all (list of all accounts this ticker appears in) for multi-account tickers
+    var accts = p.accounts_all || [p.account || 'IBKR'];
+    var acctUpper = accts.map(function(a){ return (a||'').toUpperCase(); });
+    if (currentPosFilter === 'IBKR') return acctUpper.indexOf('IBKR') !== -1 || accts.length === 0;
+    return acctUpper.indexOf(currentPosFilter) !== -1;
+  });
+
+  // Sort
+  positions = positions.slice().sort(function(a, b) {
+    var av = a[posSortCol] === undefined ? (typeof a[posSortCol] === 'string' ? '' : 0) : a[posSortCol];
+    var bv = b[posSortCol] === undefined ? (typeof bv === 'string' ? '' : 0) : b[posSortCol];
+    if (typeof av === 'string') return posSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return posSortAsc ? av - bv : bv - av;
+  });
+
+  var tbody = document.getElementById('pos-tbody');
+  if (!positions.length) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">No positions found.</td></tr>';
+    return;
+  }
+
+  var actionColor = function(a) { return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':'#991b1b'; };
+  var actionBg    = function(a) { return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':'#fee2e2'; };
+  var tierColor   = function(t) { return t==='Core'?'#1e40af':t==='Growth'?'#4c1d95':t==='Cyclical'?'#92400e':t==='Other'?'#374151':'#374151'; };
+  var tierBg      = function(t) { return t==='Core'?'#dbeafe':t==='Growth'?'#ede9fe':t==='Cyclical'?'#fef3c7':t==='Other'?'#e5e7eb':'#f3f4f6'; };
+  var posColor    = function(s) { return s==='Overweight'?'#991b1b':s==='On Target'?'#166534':'#1e40af'; };
+  var priceColor  = function(p) { return p==='Pullback'?'#166534':p==='Near High'?'#991b1b':'#6b7280'; };
+
+  var owned    = positions.filter(function(p) { return p.status === 'Owned'; });
+  var watchlist = positions.filter(function(p) { return p.status === 'Watchlist'; });
+  var totalCSP = positions.reduce(function(s, p) { return s + (p.csp_obligation || 0); }, 0);
+
+  function makeRow(p) {
+    var covPct  = p.coverage_pct || 0;
+    var cspObl  = p.csp_obligation || 0;
+    var barColor = covPct >= 100 ? '#22c55e' : covPct >= 50 ? '#3b82f6' : covPct > 0 ? '#f59e0b' : '#e5e7eb';
+    var covHtml = covPct > 0
+      ? '<div style="display:flex;align-items:center;gap:5px;justify-content:center">'
+        + '<div style="width:34px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;flex-shrink:0">'
+        + '<div style="height:100%;width:' + Math.min(covPct,100) + '%;background:' + barColor + ';border-radius:3px"></div></div>'
+        + '<span style="font-size:11px;font-family:monospace;color:' + barColor + '">' + covPct + '%</span></div>'
+      : '<span style="color:#d1d5db">&#8212;</span>';
+
+    return '<tr style="border-bottom:0.5px solid #f3f4f6" onmouseover="this.style.background=&apos;#f9fafb&apos;" onmouseout="this.style.background=&apos;&apos;">'
+      + '<td style="padding:6px 6px;font-weight:600;font-family:monospace;font-size:12px">'
+        + p.ticker + (p.status==='Watchlist' ? '<span style="font-size:9px;color:#9ca3af;font-weight:400;margin-left:4px">watch</span>' : '')
+        + '</td>'
+      + '<td style="padding:9px 10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:' + tierBg(p.tier) + ';color:' + tierColor(p.tier) + '">' + p.tier + '</span></td>'
+      + '<td style="padding:6px 5px;font-size:12px;color:#6b7280">' + p.status + '</td>'
+      + (function(){
+          if (!p.exposure_pct || p.exposure_pct <= 0) return '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">&#8212;</td>';
+          // Show account-specific $ if filtered, otherwise total
+          var mv = 0;
+          if (currentPosFilter === 'ALL') {
+            mv = p.market_value || 0;
+          } else {
+            var byAcct = p.mv_by_account || {};
+            mv = byAcct[currentPosFilter] || 0;
+            // If not in mv_by_account, fall back to total (IBKR positions)
+            if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
+          }
+          var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
+          return '<td style="padding:6px 5px;text-align:right">'
+            + '<div style="font-family:monospace;font-weight:600;font-size:13px">'+p.exposure_pct+'%</div>'
+            + mvStr
+            + '</td>';
+        })()
+      + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:#6b7280">' + (p.target_range && p.target_range !== '0–0%' ? p.target_range : '&#8212;') + '</td>'
+      + '<td style="padding:6px 5px;text-align:center;font-size:11px;font-weight:600;color:' + posColor(p.pos_status) + '">' + p.pos_status + '</td>'
+      + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:' + priceColor(p.price_opp) + ';font-weight:500">'
+        + p.price_opp + (p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#9ca3af">' + p.pullback_pct + '% off high</span>' : '')
+        + '</td>'
+      + '<td style="padding:6px 5px;text-align:center;border-left:2px solid #bfdbfe">' + covHtml + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;border-left:2px solid #fed7aa;color:' + (cspObl > 0 ? '#92400e' : '#d1d5db') + '">'
+        + (cspObl > 0 ? fmtK(cspObl) : '&#8212;') + '</td>'
+      + (function(){
+          var leaps = p.leaps || [];
+          if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
+          var lines = leaps.map(function(l){
+            var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">BE $'+l.breakeven+'</div>' : '';
+            var ct = l.contracts ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">'+l.contracts+' x</div>' : '';
+            return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600;white-space:nowrap">$'+l.strike+'</div>'
+              +'<div style="font-size:10px;color:#6d28d9;white-space:nowrap">'+(l.expiry_fmt||l.expiry)+'</div>'
+              +be+ct;
+          }).join('');
+          return '<td style="padding:6px 5px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
+        })()
+      + (function(){
+          var bcs = p.bcs || [];
+          if (!bcs.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #a5b4fc;color:#d1d5db;font-size:11px">&#8212;</td>';
+          var lines = bcs.map(function(b){
+            var ct = b.contracts > 1 ? b.contracts+' x ' : '';
+            return '<div style="font-family:monospace;font-size:11px;color:#3730a3;font-weight:600;white-space:nowrap">'+ct+'$'+b.strike+'</div>'
+              +'<div style="font-size:10px;color:#4338ca;white-space:nowrap">'+(b.expiry_fmt||b.expiry)+'</div>';
+          }).join('');
+          return '<td style="padding:6px 5px;border-left:2px solid #a5b4fc;background:#eef2ff">'+lines+'</td>';
+        })()
+      + '<td style="padding:6px 5px;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;background:' + actionBg(p.action) + ';color:' + actionColor(p.action) + '">' + p.action + '</span></td>'
+      + '</tr>';
+  }
+
+  var html = '';
+  if (owned.length) {
+    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Owned</td></tr>';
+    owned.forEach(function(p) { html += makeRow(p); });
+  }
+  if (watchlist.length) {
+    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Watchlist</td></tr>';
+    watchlist.forEach(function(p) { html += makeRow(p); });
+  }
+
+  // Total row
+  html += '<tr style="border-top:2px solid #e5e7eb;background:#f9fafb">'
+    + '<td colspan="8" style="padding:6px 5px;text-align:right;font-size:11px;color:#6b7280;font-weight:600">Total CSP obligation</td>'
+    + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;border-left:2px solid #fed7aa;color:#92400e">' + fmtK(totalCSP) + '</td>'
+    + '<td></td><td></td><td></td></tr>';
+
+  tbody.innerHTML = html;
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+loadData();
+</script>
+</body>
+</html>
