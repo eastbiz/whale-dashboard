@@ -121,6 +121,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="tab active" onclick="showTab('market',this)">Market</button>
     <button class="tab" onclick="showTab('opportunities',this)">Opportunities</button>
     <button class="tab" onclick="showTab('positions',this)">Positions</button>
+    <button class="tab" onclick="showTab('actions',this)">CSP / CC Actions</button>
   </div>
 
   <!-- MARKET -->
@@ -347,6 +348,7 @@ function renderAll() {
   renderMarket();
   renderOpps();
   renderPositions();
+  renderActions();
 }
 
 function renderMarket() {
@@ -822,6 +824,91 @@ function renderPositions() {
     + '<td></td><td></td><td></td></tr>';
 
   tbody.innerHTML = html;
+}
+
+<div class="page" id="page-actions">
+  <div id="actions-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:8px;border:0.5px solid #e2e8f0"></div>
+  <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
+    <button class="outline-btn" onclick="filterActions('CSP',this)">CSP</button>
+    <button class="outline-btn" onclick="filterActions('CC',this)">CC</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table id="actions-table" style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead id="actions-head"></thead>
+      <tbody id="actions-body"></tbody>
+    </table>
+  </div>
+</div>
+
+var actionsFilter = 'ALL';
+
+function filterActions(f, btn) {
+  actionsFilter = f;
+  document.querySelectorAll('#page-actions .outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (data) renderActions();
+}
+
+function renderActions() {
+  if (!data || !data.position_actions) {
+    document.getElementById('actions-body').innerHTML = '<tr><td colspan="16" style="padding:20px;text-align:center;color:#9ca3af">No position data available — run a scan first</td></tr>';
+    return;
+  }
+
+  var rows = data.position_actions.filter(function(p) {
+    if (actionsFilter === 'ALL') return true;
+    return p.type === actionsFilter;
+  });
+
+  // Summary ribbon
+  var defCount   = rows.filter(function(r){ return r.action==='DEFENSIVE'; }).length;
+  var closeCount = rows.filter(function(r){ return r.action==='CLOSE NOW'; }).length;
+  var reduceCount= rows.filter(function(r){ return r.action==='REDUCE'; }).length;
+  var totalCso   = rows.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
+  var cspPct     = data.exposure ? (totalCso / (data.exposure.portfolio_value||1) * 100).toFixed(1) : '—';
+  document.getElementById('actions-summary').innerHTML =
+    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">DEFENSIVE</div><div style="font-size:22px;font-weight:700;color:#991b1b">'+defCount+'</div></div>' +
+    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CLOSE NOW</div><div style="font-size:22px;font-weight:700;color:#92400e">'+closeCount+'</div></div>' +
+    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">REDUCE</div><div style="font-size:22px;font-weight:700;color:#1e40af">'+reduceCount+'</div></div>' +
+    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CSP Obligation</div><div style="font-size:22px;font-weight:700;color:#374151">$'+Math.round(totalCso/1000)+'k</div></div>' +
+    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CSP % Portfolio</div><div style="font-size:22px;font-weight:700;color:'+(parseFloat(cspPct)>30?'#991b1b':'#374151')+'">'+cspPct+'%</div></div>';
+
+  // Table header
+  document.getElementById('actions-head').innerHTML =
+    '<tr style="background:#1e293b;color:#fff">' +
+    ['Acct','Ticker','Type','Qty','Strike','Expiry','DTE','Price','Mark','Prem Rec','Profit%','Dist%','Extrin%','1D%','3D%','Action','Reason'].map(function(h){
+      return '<th style="padding:6px 8px;text-align:left;white-space:nowrap;font-size:11px">'+h+'</th>';
+    }).join('') + '</tr>';
+
+  // Color for action
+  function actionStyle(a) {
+    if (a==='DEFENSIVE') return 'background:#fee2e2;color:#991b1b;font-weight:700';
+    if (a==='CLOSE NOW') return 'background:#fef3c7;color:#92400e;font-weight:700';
+    if (a==='REDUCE')    return 'background:#dbeafe;color:#1e40af;font-weight:700';
+    return 'color:#374151';
+  }
+
+  document.getElementById('actions-body').innerHTML = rows.map(function(r) {
+    var earnBadge = r.earn_zone && r.earn_zone !== 'SAFE'
+      ? ' <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':r.earn_zone==='DANGER'?'#fef3c7':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+'</span>' : '';
+    return '<tr style="border-bottom:0.5px solid #e2e8f0;'+(r.action==='DEFENSIVE'?'background:#fff5f5':r.action==='CLOSE NOW'?'background:#fffbeb':'')+'">' +
+      td(r.account||'') + td(r.ticker) + td(r.type) + td(r.contracts) +
+      td('$'+r.strike) + td((r.expiry||'').slice(0,10)) + td(r.dte) +
+      td('$'+(r.underlying||0)) + td('$'+(r.mark||0)) + td('$'+(r.premium_received||0)) +
+      td((r.profit_pct||0)+'%', r.profit_pct>=60?'color:#166534;font-weight:600':r.profit_pct>=40?'color:#92400e':'') +
+      td((r.distance_pct||0)+'%', r.distance_pct<=3?'color:#991b1b;font-weight:600':'') +
+      td((r.extrinsic_pct||0)+'%', r.extrinsic_pct<=25?'color:#991b1b;font-weight:600':'') +
+      td((r.day_chg_pct||0)+'%', r.day_chg_pct<=-2?'color:#991b1b':r.day_chg_pct>=2?'color:#166534':'') +
+      td((r.chg_3d_pct||0)+'%', r.chg_3d_pct<=-4?'color:#991b1b;font-weight:600':'') +
+      '<td style="padding:5px 8px;white-space:nowrap;'+actionStyle(r.action)+'">'+r.action+'</td>' +
+      '<td style="padding:5px 8px;font-size:11px;color:#374151;max-width:260px">'+r.reason+earnBadge+'</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function td(val, style) {
+  return '<td style="padding:5px 8px;white-space:nowrap;'+(style||'')+'">'+(val||'—')+'</td>';
 }
 
 function showTab(name, btn) {
