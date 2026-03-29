@@ -121,7 +121,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="tab active" onclick="showTab('market',this)">Market</button>
     <button class="tab" onclick="showTab('opportunities',this)">Opportunities</button>
     <button class="tab" onclick="showTab('positions',this)">Positions</button>
-    <button class="tab" onclick="showTab('actions',this)">CSP / CC Actions</button>
+    <button class="tab" onclick="showTab('actions',this);renderActions()">CSP / CC Actions</button>
   </div>
 
   <!-- MARKET -->
@@ -348,7 +348,6 @@ function renderAll() {
   renderMarket();
   renderOpps();
   renderPositions();
-  renderActions();
 }
 
 function renderMarket() {
