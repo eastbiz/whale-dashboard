@@ -825,21 +825,6 @@ function renderPositions() {
   tbody.innerHTML = html;
 }
 
-<div class="page" id="page-actions">
-  <div id="actions-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:8px;border:0.5px solid #e2e8f0"></div>
-  <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
-    <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
-    <button class="outline-btn" onclick="filterActions('CSP',this)">CSP</button>
-    <button class="outline-btn" onclick="filterActions('CC',this)">CC</button>
-  </div>
-  <div style="overflow-x:auto">
-    <table id="actions-table" style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead id="actions-head"></thead>
-      <tbody id="actions-body"></tbody>
-    </table>
-  </div>
-</div>
-
 var actionsFilter = 'ALL';
 
 function filterActions(f, btn) {
@@ -921,5 +906,19 @@ function showTab(name, btn) {
 
 loadData();
 </script>
+<div class="page" id="page-actions">
+  <div id="actions-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:8px;border:0.5px solid #e2e8f0"></div>
+  <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
+    <button class="outline-btn" onclick="filterActions('CSP',this)">CSP</button>
+    <button class="outline-btn" onclick="filterActions('CC',this)">CC</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table id="actions-table" style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead id="actions-head"></thead>
+      <tbody id="actions-body"></tbody>
+    </table>
+  </div>
+</div>
 </body>
 </html>
