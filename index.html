@@ -851,7 +851,8 @@ function renderActions() {
   var closeCount = rows.filter(function(r){ return r.action==='CLOSE NOW'; }).length;
   var reduceCount= rows.filter(function(r){ return r.action==='REDUCE'; }).length;
   var totalCso   = rows.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
-  var cspPct     = data.exposure ? (totalCso / (data.exposure.portfolio_value||1) * 100).toFixed(1) : '—';
+  var portVal    = (data.exposure && data.exposure.portfolio_size) ? data.exposure.portfolio_size : 13500000;
+  var cspPct     = portVal > 0 ? (totalCso / portVal * 100).toFixed(1) : '—';
   document.getElementById('actions-summary').innerHTML =
     '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">DEFENSIVE</div><div style="font-size:22px;font-weight:700;color:#991b1b">'+defCount+'</div></div>' +
     '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CLOSE NOW</div><div style="font-size:22px;font-weight:700;color:#92400e">'+closeCount+'</div></div>' +
@@ -906,7 +907,7 @@ function showTab(name, btn) {
 
 loadData();
 </script>
-<div class="page" id="page-actions">
+<div class="page" id="page-actions" style="overflow-y:auto;max-height:calc(100vh - 160px)">
   <div id="actions-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:8px;border:0.5px solid #e2e8f0"></div>
   <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
     <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
