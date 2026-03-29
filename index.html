@@ -345,9 +345,9 @@ function renderAll() {
   document.getElementById('market-loading').style.display = 'none';
   document.getElementById('market-content').style.display = 'block';
   document.getElementById('market-error').style.display = 'none';
-  renderMarket();
-  renderOpps();
-  renderPositions();
+  try { renderMarket(); } catch(e) { console.error('renderMarket:', e); }
+  try { renderOpps(); } catch(e) { console.error('renderOpps:', e); }
+  try { renderPositions(); } catch(e) { console.error('renderPositions:', e); }
 }
 
 function renderMarket() {
@@ -850,6 +850,7 @@ function filterActions(f, btn) {
 }
 
 function renderActions() {
+  try {
   if (!data || !data.position_actions) {
     document.getElementById('actions-body').innerHTML = '<tr><td colspan="16" style="padding:20px;text-align:center;color:#9ca3af">No position data available — run a scan first</td></tr>';
     return;
@@ -904,6 +905,7 @@ function renderActions() {
       '<td style="padding:5px 8px;font-size:11px;color:#374151;max-width:260px">'+r.reason+earnBadge+'</td>' +
       '</tr>';
   }).join('');
+} catch(e) { console.error('renderActions:', e); document.getElementById('actions-body').innerHTML = '<tr><td colspan="16" style="padding:20px;color:#991b1b">Error rendering: ' + e.message + '</td></tr>'; }
 }
 
 function td(val, style) {
