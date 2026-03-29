@@ -825,104 +825,127 @@ function renderPositions() {
   tbody.innerHTML = html;
 }
 
-var actionsFilter = 'ALL';
+function fmtExpiry(s) {
+  if (!s) return '—';
+  var raw = String(s).replace(/-/g,'');
+  if (raw.length >= 8) {
+    var yr = raw.slice(0,4), mo = raw.slice(4,6), dy = raw.slice(6,8);
+    var d = new Date(yr+'-'+mo+'-'+dy);
+    if (!isNaN(d)) return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+  return s;
+}
 
-function filterActions(f, btn) {
-  actionsFilter = f;
-  document.querySelectorAll('#page-actions .outline-btn').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  if (data) renderActions();
+function fmtPnl(r) {
+  var pnl = r.pnl_dollar || 0;
+  var pct = r.profit_pct || 0;
+  var sign = pnl >= 0 ? '+' : '-';
+  return sign + '$' + Math.abs(Math.round(pnl)).toLocaleString() + ' (' + (pct>=0?'+':'') + pct + '%)';
 }
 
 function renderActions() {
   try {
-  if (!data || !data.position_actions) {
-    document.getElementById('actions-body').innerHTML = '<tr><td colspan="16" style="padding:20px;text-align:center;color:#9ca3af">No position data available — run a scan first</td></tr>';
-    return;
+    if (!data || !data.position_actions) {
+      document.getElementById('actions-content').innerHTML = '<div style="padding:40px;text-align:center;color:#9ca3af">No position data — run a scan first</div>';
+      return;
+    }
+    var all = data.position_actions;
+    var actNow    = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='CLOSE NOW'; }).length;
+    var takePft   = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'; }).length;
+    var safeCount = all.filter(function(r){ return r.action==='HOLD'; }).length;
+    var totalCso  = all.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
+    var portVal   = (data.exposure && data.exposure.portfolio_size) ? data.exposure.portfolio_size : 13500000;
+    var cspPct    = portVal > 0 ? (totalCso / portVal * 100).toFixed(1) : '0';
+
+    document.getElementById('actions-summary').innerHTML =
+      mbar('&#128308; ACT NOW', actNow, actNow>0?'#991b1b':'#6b7280') +
+      mbar('&#128993; TAKE PROFIT', takePft, takePft>0?'#92400e':'#6b7280') +
+      mbar('&#9898; SAFE', safeCount, '#6b7280') +
+      mbar('CSP Obligation', '$'+Math.round(totalCso/1000)+'k', '#374151') +
+      mbar('CSP % Portfolio', cspPct+'%', parseFloat(cspPct)>30?'#991b1b':'#374151');
+
+    var urgent = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='CLOSE NOW'; })
+      .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
+    var profit = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'||r.action==='REDUCE'; })
+      .sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); });
+    var safeRows = all.filter(function(r){ return r.action==='HOLD'; })
+      .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
+
+    var html = '';
+
+    html += section('&#128308; ACT NOW', urgent.length, urgent.map(function(r){ return card(r,'#fee2e2','#991b1b'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#9ca3af;font-size:13px">No urgent positions</div>');
+    html += section('&#128993; TAKE PROFIT', profit.length, profit.map(function(r){ return card(r,'#fef3c7','#92400e'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#9ca3af;font-size:13px">No profit-taking opportunities</div>');
+
+    html += '<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleSafe()">'
+      + '<span style="font-size:14px;font-weight:600;color:#6b7280">&#9898; SAFE &mdash; NO ACTION</span>'
+      + '<span style="font-size:12px;color:#9ca3af">'+safeRows.length+' positions</span>'
+      + '<span id="safe-chevron" style="font-size:11px;color:#9ca3af">&#9660; expand</span>'
+      + '</div>'
+      + '<div id="safe-section" style="display:none">'
+      + safeRows.map(function(r){ return card(r,'#f9fafb','#6b7280'); }).join('')
+      + '</div></div>';
+
+    document.getElementById('actions-content').innerHTML = html;
+  } catch(e) {
+    console.error('renderActions:', e);
+    document.getElementById('actions-content').innerHTML = '<div style="padding:20px;color:#991b1b">Error: '+e.message+'</div>';
   }
-
-  var rows = data.position_actions.filter(function(p) {
-    if (actionsFilter === 'ALL') return true;
-    return p.type === actionsFilter;
-  });
-  // Sort: DEFENSIVE→CLOSE NOW→OPTIONAL CLOSE→REDUCE→HOLD, then expiry asc
-  rows = rows.slice().sort(function(a,b){
-    if (a.sort_priority !== b.sort_priority) return a.sort_priority - b.sort_priority;
-    return (a.expiry||'').localeCompare(b.expiry||'');
-  });
-
-  // Summary ribbon
-  var defCount   = rows.filter(function(r){ return r.action==='DEFENSIVE'; }).length;
-  var closeCount = rows.filter(function(r){ return r.action==='CLOSE NOW'; }).length;
-  var optCount   = rows.filter(function(r){ return r.action==='OPTIONAL CLOSE'; }).length;
-  var reduceCount= rows.filter(function(r){ return r.action==='REDUCE'; }).length;
-  var totalCso   = rows.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
-  var portVal    = (data.exposure && data.exposure.portfolio_size) ? data.exposure.portfolio_size : 13500000;
-  var cspPct     = portVal > 0 ? (totalCso / portVal * 100).toFixed(1) : '—';
-  document.getElementById('actions-summary').innerHTML =
-    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">DEFENSIVE</div><div style="font-size:22px;font-weight:700;color:#991b1b">'+defCount+'</div></div>' +
-    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CLOSE NOW</div><div style="font-size:22px;font-weight:700;color:#92400e">'+closeCount+'</div></div>' +
-    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">OPTIONAL CLOSE</div><div style="font-size:22px;font-weight:700;color:#166534">'+optCount+'</div></div>' +
-    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">REDUCE</div><div style="font-size:22px;font-weight:700;color:#1e40af">'+reduceCount+'</div></div>' +
-    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CSP Obligation</div><div style="font-size:22px;font-weight:700;color:#374151">$'+Math.round(totalCso/1000)+'k</div></div>' +
-    '<div style="text-align:center"><div style="font-size:11px;color:#6b7280">CSP % Portfolio</div><div style="font-size:22px;font-weight:700;color:'+(parseFloat(cspPct)>30?'#991b1b':'#374151')+'">'+cspPct+'%</div></div>';
-
-  // Table header — v2 columns
-  document.getElementById('actions-head').innerHTML =
-    '<tr style="background:#1e293b;color:#fff">' +
-    ['Acct','Ticker','Type','Qty','Strike','Expiry','DTE','Price','Breakeven','Dist BE%','Dist Strike%','Mark','Prem Rec','P&L','Profit%','Rem Prem%','1D%','3D%','Earnings','Action','Reason'].map(function(h){
-      return '<th style="padding:6px 8px;text-align:left;white-space:nowrap;font-size:11px">'+h+'</th>';
-    }).join('') + '</tr>';
-
-  // Color for action — v2 has OPTIONAL CLOSE
-  function actionStyle(a) {
-    if (a==='DEFENSIVE')     return 'background:#fee2e2;color:#991b1b;font-weight:700';
-    if (a==='CLOSE NOW')     return 'background:#fef3c7;color:#92400e;font-weight:700';
-    if (a==='OPTIONAL CLOSE') return 'background:#dcfce7;color:#166534;font-weight:700';
-    if (a==='REDUCE')        return 'background:#dbeafe;color:#1e40af;font-weight:700';
-    return 'color:#6b7280';
-  }
-
-  function rowBg(a) {
-    if (a==='DEFENSIVE')     return 'background:#fff5f5';
-    if (a==='CLOSE NOW')     return 'background:#fffbeb';
-    if (a==='OPTIONAL CLOSE') return 'background:#f0fdf4';
-    return '';
-  }
-
-  document.getElementById('actions-body').innerHTML = rows.map(function(r) {
-    var earnBadge = r.earn_zone && r.earn_zone !== 'SAFE'
-      ? ' <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':r.earn_zone==='DANGER'?'#fef3c7':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+'</span>' : '';
-    var pnl = r.pnl_dollar || 0;
-    var pnlStr = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toLocaleString();
-    var earnStr = r.earn_days < 999 ? r.earn_days + 'd' : '—';
-    return '<tr style="border-bottom:0.5px solid #e2e8f0;'+rowBg(r.action)+'">' +
-      td(r.account||'') + td(r.ticker) + td(r.type) + td(r.contracts) +
-      td('$'+r.strike) +
-      td((r.expiry||'').slice(0,10)) +
-      td(r.dte, r.dte<=7?'color:#991b1b;font-weight:600':r.dte<=14?'color:#92400e':'') +
-      td('$'+(r.underlying||0)) +
-      td('$'+(r.breakeven||0), 'color:#1e40af') +
-      td((r.dist_to_be_pct||0)+'%', r.dist_to_be_pct<=2?'color:#991b1b;font-weight:700':r.dist_to_be_pct<=5?'color:#92400e':'') +
-      td((r.dist_to_strike||0)+'%', '') +
-      td('$'+(r.mark||0)) +
-      td('$'+(r.premium_received||0)) +
-      td(pnlStr, pnl>=0?'color:#166534;font-weight:600':'color:#991b1b') +
-      td((r.profit_pct||0)+'%', r.profit_pct>=90?'color:#166534;font-weight:700':r.profit_pct>=60?'color:#166534':r.profit_pct<0?'color:#991b1b':'') +
-      td((r.remaining_prem||0)+'%', r.remaining_prem<=25?'color:#991b1b;font-weight:600':'') +
-      td((r.day_chg_pct||0)+'%', r.day_chg_pct<=-2?'color:#991b1b':r.day_chg_pct>=2?'color:#166534':'') +
-      td((r.chg_3d_pct||0)+'%', r.chg_3d_pct<=-4?'color:#991b1b;font-weight:600':'') +
-      td(earnStr + earnBadge) +
-      '<td style="padding:5px 8px;white-space:nowrap;'+actionStyle(r.action)+'">'+r.action+'</td>' +
-      '<td style="padding:5px 8px;font-size:11px;color:#374151;max-width:280px">'+r.reason+'</td>' +
-      '</tr>';
-  }).join('');
-} catch(e) { console.error('renderActions:', e); document.getElementById('actions-body').innerHTML = '<tr><td colspan="16" style="padding:20px;color:#991b1b">Error rendering: ' + e.message + '</td></tr>'; }
 }
 
-function td(val, style) {
-  return '<td style="padding:5px 8px;white-space:nowrap;'+(style||'')+'">'+(val||'—')+'</td>';
+function section(title, count, body) {
+  return '<div style="margin-bottom:24px">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    + '<span style="font-size:14px;font-weight:600">'+title+'</span>'
+    + '<span style="font-size:12px;color:#9ca3af">'+count+' position'+(count!==1?'s':'')+'</span>'
+    + '</div>' + body + '</div>';
 }
+
+function mbar(label, val, color) {
+  return '<div style="text-align:center;min-width:80px">'
+    + '<div style="font-size:11px;color:#6b7280;margin-bottom:2px">'+label+'</div>'
+    + '<div style="font-size:20px;font-weight:700;color:'+color+'">'+val+'</div>'
+    + '</div>';
+}
+
+function card(r, bg, accent) {
+  var pnlColor = (r.pnl_dollar||0) >= 0 ? '#166534' : '#991b1b';
+  var beColor  = (r.dist_to_be_pct||0) <= 3 ? '#991b1b' : (r.dist_to_be_pct||0) <= 8 ? '#92400e' : '#374151';
+  var dteColor = (r.dte||0) <= 7 ? '#991b1b' : (r.dte||0) <= 14 ? '#92400e' : '#374151';
+  var earnBadge = r.earn_zone && r.earn_zone !== 'SAFE'
+    ? '<span style="font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+' earnings</span>' : '';
+  return '<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-left:3px solid '+accent+';border-radius:8px;padding:12px 16px;margin-bottom:8px">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +   '<div style="display:flex;align-items:center;gap:8px">'
+    +     '<span style="font-size:15px;font-weight:700;color:var(--color-text-primary)">'+r.ticker+'</span>'
+    +     '<span style="font-size:11px;color:#6b7280;background:#f1f5f9;padding:1px 7px;border-radius:4px">'+r.type+'</span>'
+    +     '<span style="font-size:11px;color:#9ca3af">'+r.account+'</span>'
+    +     earnBadge
+    +   '</div>'
+    +   '<span style="font-size:12px;font-weight:700;padding:3px 12px;border-radius:5px;background:'+bg+';color:'+accent+'">'+r.action+'</span>'
+    + '</div>'
+    + '<div style="display:flex;gap:20px;margin-bottom:8px;flex-wrap:wrap">'
+    +   kpi('Cushion above breakeven', (r.dist_to_be_pct||0)+'%', beColor)
+    +   kpi('P&amp;L', fmtPnl(r), pnlColor)
+    +   kpi('Time left', (r.dte||0)+' days', dteColor)
+    +   kpi('Expiry', fmtExpiry(r.expiry), '#374151')
+    +   kpi('Strike &times; Qty', '$'+r.strike+' &times; '+r.contracts, '#374151')
+    + '</div>'
+    + '<div style="font-size:12px;color:#6b7280;border-top:0.5px solid var(--color-border-tertiary);padding-top:6px">'+r.reason+'</div>'
+    + '</div>';
+}
+
+function kpi(label, val, color) {
+  return '<div><div style="font-size:10px;color:#9ca3af">'+label+'</div><div style="font-size:13px;font-weight:600;color:'+color+'">'+val+'</div></div>';
+}
+
+function toggleSafe() {
+  var sec = document.getElementById('safe-section');
+  var chev = document.getElementById('safe-chevron');
+  if (sec.style.display === 'none') { sec.style.display = 'block'; chev.innerHTML = '&#9650; collapse'; }
+  else { sec.style.display = 'none'; chev.innerHTML = '&#9660; expand'; }
+}
+
+
 
 function showTab(name, btn) {
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
@@ -933,19 +956,9 @@ function showTab(name, btn) {
 
 loadData();
 </script>
-<div class="page" id="page-actions" style="overflow-y:auto;max-height:calc(100vh - 160px)">
-  <div id="actions-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:8px;border:0.5px solid #e2e8f0"></div>
-  <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
-    <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
-    <button class="outline-btn" onclick="filterActions('CSP',this)">CSP</button>
-    <button class="outline-btn" onclick="filterActions('CC',this)">CC</button>
-  </div>
-  <div style="overflow-x:auto">
-    <table id="actions-table" style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead id="actions-head"></thead>
-      <tbody id="actions-body"></tbody>
-    </table>
-  </div>
+<div class="page" id="page-actions" style="overflow-y:auto;max-height:calc(100vh - 160px);padding-bottom:40px">
+  <div id="actions-summary" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;padding:14px;background:var(--color-background-secondary);border-radius:10px;border:0.5px solid var(--color-border-tertiary)"></div>
+  <div id="actions-content"></div>
 </div>
 </body>
 </html>
