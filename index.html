@@ -849,7 +849,11 @@ function renderActions() {
       document.getElementById('actions-content').innerHTML = '<div style="padding:40px;text-align:center;color:#9ca3af">No position data — run a scan first</div>';
       return;
     }
-    var all = data.position_actions;
+    var accountFilter = window._actionsAccountFilter || 'ALL';
+    var all = (data.position_actions || []).filter(function(r){
+      if (accountFilter === 'ALL') return true;
+      return (r.account||'').toUpperCase().indexOf(accountFilter) >= 0;
+    });
     var actNow    = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='CLOSE NOW'; }).length;
     var takePft   = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'; }).length;
     var safeCount = all.filter(function(r){ return r.action==='HOLD'; }).length;
@@ -947,6 +951,13 @@ function toggleSafe() {
 }
 
 
+
+function filterActions(f, btn) {
+  window._actionsAccountFilter = f;
+  document.querySelectorAll('#page-actions .outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (data) renderActions();
+}
 
 function showTab(name, btn) {
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
