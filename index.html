@@ -912,37 +912,31 @@ function card(r, bg, accent) {
   var beColor  = (r.dist_to_be_pct||0) <= 3 ? '#991b1b' : (r.dist_to_be_pct||0) <= 8 ? '#92400e' : '#166534';
   var dteColor = (r.dte||0) <= 7 ? '#991b1b' : (r.dte||0) <= 14 ? '#92400e' : '#374151';
   var earnBadge = r.earn_zone && r.earn_zone !== 'SAFE'
-    ? ' <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+' earnings</span>' : '';
-  return '<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-left:4px solid '+accent+';border-radius:10px;padding:16px 20px;margin-bottom:12px">'
-    // Header row
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
-    +   '<div style="display:flex;align-items:center;gap:10px">'
-    +     '<span style="font-size:20px;font-weight:800;color:var(--color-text-primary);letter-spacing:-0.5px">'+r.ticker+'</span>'
-    +     '<span style="font-size:12px;color:#6b7280;background:var(--color-background-secondary);padding:2px 9px;border-radius:5px;font-weight:500">'+r.type+'</span>'
-    +     '<span style="font-size:12px;color:#9ca3af">'+r.account+'</span>'
-    +     earnBadge
-    +   '</div>'
-    +   '<span style="font-size:13px;font-weight:700;padding:5px 16px;border-radius:6px;background:'+bg+';color:'+accent+'">'+r.action+'</span>'
+    ? ' <span style="font-size:10px;padding:1px 7px;border-radius:3px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+' earnings</span>' : '';
+  return '<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-left:3px solid '+accent+';border-radius:8px;padding:12px 16px;margin-bottom:8px">'
+    // Row 1: ticker + action + REASON (most important — on same line)
+    + '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap">'
+    +   '<span style="font-size:16px;font-weight:800;color:var(--color-text-primary)">'+r.ticker+'</span>'
+    +   '<span style="font-size:11px;color:#6b7280;background:var(--color-background-secondary);padding:1px 7px;border-radius:4px">'+r.type+'</span>'
+    +   '<span style="font-size:11px;color:#9ca3af">'+r.account+'</span>'
+    +   earnBadge
+    +   '<span style="font-size:13px;font-weight:700;padding:2px 10px;border-radius:5px;background:'+bg+';color:'+accent+'">'+r.action+'</span>'
+    +   '<span style="font-size:13px;color:var(--color-text-primary);font-weight:500">'+r.reason+'</span>'
     + '</div>'
-    // Three key metrics — large and clear
-    + '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px">'
-    +   bigkpi('Cushion', (r.dist_to_be_pct||0)+'%', beColor, 'above breakeven')
-    +   bigkpi('P&amp;L', fmtPnl(r), pnlColor, '')
-    +   bigkpi('Time left', (r.dte||0)+' days', dteColor, fmtExpiry(r.expiry))
-    +   bigkpi('Strike', '$'+r.strike, '#374151', r.contracts+' contract'+(r.contracts>1?'s':''))
-    +   bigkpi('Breakeven', '$'+r.breakeven, '#1e40af', r.type==='CSP'?'stock must stay above':'stock must stay below')
+    // Row 2: compact metrics inline
+    + '<div style="display:flex;gap:20px;flex-wrap:wrap">'
+    +   metric('Cushion', (r.dist_to_be_pct||0)+'%', beColor)
+    +   metric('P&amp;L', fmtPnl(r), pnlColor)
+    +   metric('DTE', (r.dte||0)+' days · '+fmtExpiry(r.expiry), dteColor)
+    +   metric('Strike', '$'+r.strike+' &times; '+r.contracts, '#374151')
+    +   metric('Breakeven', '$'+r.breakeven, '#1e40af')
     + '</div>'
-    // Reason
-    + '<div style="font-size:12px;color:#6b7280;background:var(--color-background-secondary);border-radius:6px;padding:8px 12px">'+r.reason+'</div>'
     + '</div>';
 }
 
-function bigkpi(label, val, color, sub) {
-  return '<div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px">'
-    + '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px">'+label+'</div>'
-    + '<div style="font-size:16px;font-weight:700;color:'+color+'">'+val+'</div>'
-    + (sub ? '<div style="font-size:10px;color:#9ca3af;margin-top:2px">'+sub+'</div>' : '')
-    + '</div>';
+function metric(label, val, color) {
+  return '<div><span style="font-size:10px;color:#9ca3af">'+label+' </span>'
+    + '<span style="font-size:12px;font-weight:600;color:'+color+'">'+val+'</span></div>';
 }
 
 function toggleSafe() {
