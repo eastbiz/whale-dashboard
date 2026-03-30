@@ -260,14 +260,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- CSP / CC ACTIONS -->
   <div class="page" id="page-actions">
-    <div class="filter-row">
-      <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
-      <button class="outline-btn" onclick="filterActions('IRA',this)">IRA</button>
-      <button class="outline-btn" onclick="filterActions('CRT',this)">CRT</button>
-      <button class="outline-btn" onclick="filterActions('IBKR',this)">IBKR</button>
-      <div id="actions-summary" style="display:inline-flex;gap:16px;margin-left:16px;align-items:center"></div>
+    <div class="filter-row" style="justify-content:space-between;align-items:center">
+      <div style="display:flex;gap:6px">
+        <button class="outline-btn active" onclick="filterActions('ALL',this)">All</button>
+        <button class="outline-btn" onclick="filterActions('IRA',this)">IRA</button>
+        <button class="outline-btn" onclick="filterActions('CRT',this)">CRT</button>
+        <button class="outline-btn" onclick="filterActions('IBKR',this)">IBKR</button>
+      </div>
+      <div id="actions-summary" style="display:flex;gap:20px;align-items:center"></div>
     </div>
-    <div id="actions-content" style="padding-bottom:40px;width:100%"></div>
+    <div id="actions-content" style="padding-bottom:40px"></div>
   </div>
 
 </div>
@@ -918,9 +920,9 @@ function section(title, count, body) {
 }
 
 function mbar(label, val, color) {
-  return '<div style="text-align:center;min-width:80px">'
-    + '<div style="font-size:11px;color:#6b7280;margin-bottom:2px">'+label+'</div>'
-    + '<div style="font-size:20px;font-weight:700;color:'+color+'">'+val+'</div>'
+  return '<div style="display:flex;align-items:baseline;gap:5px">'
+    + '<span style="font-size:11px;color:#9ca3af">'+label+'</span>'
+    + '<span style="font-size:15px;font-weight:700;color:'+color+'">'+val+'</span>'
     + '</div>';
 }
 
