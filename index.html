@@ -942,11 +942,12 @@ function card(r, bg, accent) {
     +     earnBadge
     +   '</div>'
     +   '<div style="display:flex;gap:16px;flex-wrap:wrap">'
-    +     metric('Cushion', (r.dist_to_be_pct||0)+'%', beColor)
-    +     metric('P&amp;L', fmtPnl(r), pnlColor)
-    +     metric('DTE', (r.dte||0)+' days · '+fmtExpiry(r.expiry), dteColor)
     +     metric('Strike', '$'+r.strike+' &times; '+r.contracts, '#374151')
+    +     metric('DTE', (r.dte||0)+' days · '+fmtExpiry(r.expiry), dteColor)
+    +     metric('P&amp;L', fmtPnl(r), pnlColor)
+    +     metric('Cushion', (r.dist_to_be_pct||0)+'% above BE', beColor)
     +     metric('Breakeven', '$'+r.breakeven, '#1e40af')
+    +     (r.cso ? metric('Cash obligation', '$'+(r.cso).toLocaleString(), '#374151') : '')
     +   '</div>'
     + '</div>'
     // RIGHT: action + reason
