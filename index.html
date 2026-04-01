@@ -805,7 +805,7 @@ function renderPositions() {
               + (l.breakeven ? '<div style="font-size:11px;color:#4c1d95;font-weight:700;white-space:nowrap">BE $'+l.breakeven+'</div>' : '')
               + '</div>';
           }).join('');
-          return '<td style="padding:6px 5px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
+          return '<td style="padding:6px 5px;border-left:2px solid #c4b5fd;background:#faf5ff;vertical-align:top">'+lines+'</td>';
         })()
       + (function(){
           var bcs = p.bcs || [];
