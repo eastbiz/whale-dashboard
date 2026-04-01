@@ -799,11 +799,11 @@ function renderPositions() {
           var leaps = p.leaps || [];
           if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = leaps.map(function(l){
-            var be = l.breakeven ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">BE $'+l.breakeven+'</div>' : '';
-            var ct = l.contracts ? '<div style="font-size:10px;color:#7c3aed;white-space:nowrap">'+l.contracts+' x</div>' : '';
-            return '<div style="font-family:monospace;font-size:11px;color:#4c1d95;font-weight:600;white-space:nowrap">$'+l.strike+'</div>'
-              +'<div style="font-size:10px;color:#6d28d9;white-space:nowrap">'+(l.expiry_fmt||l.expiry)+'</div>'
-              +be+ct;
+            return '<div style="margin-bottom:4px;padding-bottom:4px;border-bottom:0.5px solid #e9d5ff">'
+              + '<div style="font-size:11px;color:#4c1d95;white-space:nowrap">'+(l.contracts||1)+' x <span style="font-weight:400">$'+l.strike+'</span></div>'
+              + '<div style="font-size:10px;color:#6d28d9;white-space:nowrap">'+(l.expiry_fmt||l.expiry)+'</div>'
+              + (l.breakeven ? '<div style="font-size:11px;color:#4c1d95;font-weight:700;white-space:nowrap">BE $'+l.breakeven+'</div>' : '')
+              + '</div>';
           }).join('');
           return '<td style="padding:6px 5px;border-left:2px solid #c4b5fd;background:#faf5ff">'+lines+'</td>';
         })()
