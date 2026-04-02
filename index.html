@@ -782,9 +782,13 @@ function renderPositions() {
             if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
           }
           var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
+          var leapsForTicker = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === p.ticker; });
+          var leapsMv = leapsForTicker.reduce(function(s,l){ return s + (l.market_value || 0); }, 0);
+          var leapsMvStr = leapsMv > 0 ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+'+fmtK(leapsMv)+' LEAPS</div>' : '';
           return '<td style="padding:6px 5px;text-align:right">'
             + '<div style="font-family:monospace;font-weight:600;font-size:13px">'+p.exposure_pct+'%</div>'
             + mvStr
+            + leapsMvStr
             + '</td>';
         })()
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:#6b7280">' + (p.target_range && p.target_range !== '0–0%' ? p.target_range : '&#8212;') + '</td>'
