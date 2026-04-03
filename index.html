@@ -782,9 +782,16 @@ function renderPositions() {
             if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
           }
           var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
-          var leapsForTicker = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === p.ticker; });
-          var leapsMv = leapsForTicker.reduce(function(s,l){ return s + (l.market_value || 0); }, 0);
-          var leapsMvStr = leapsMv > 0 ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+'+fmtK(leapsMv)+' LEAPS</div>' : '';
+          // p.leaps is already attached per-position — no need to scan data.exposure
+          var leapsForTicker = p.leaps || [];
+          var leapsMv = leapsForTicker.reduce(function(s,l){
+            // Prefer live market_value; fall back to cost basis (avg_cost × contracts × 100)
+            var mv = l.market_value || 0;
+            if (!mv && l.avg_cost && l.contracts) mv = Math.abs(l.avg_cost) * Math.abs(l.contracts) * 100;
+            return s + mv;
+          }, 0);
+          var leapsMvApprox = leapsForTicker.length > 0 && !leapsForTicker[0].market_value;
+          var leapsMvStr = leapsMv > 0 ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+'+(leapsMvApprox?'~':'')+fmtK(leapsMv)+' LEAPS</div>' : '';
           return '<td style="padding:6px 5px;text-align:right">'
             + '<div style="font-family:monospace;font-weight:600;font-size:13px">'+p.exposure_pct+'%</div>'
             + mvStr
