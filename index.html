@@ -659,19 +659,23 @@ function renderOpps() {
           : '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>')
       + (function(){
           var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
-          // Look up LEAPS for this ticker
-          var leapsList = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === o.ticker; });
-          if (!leapsList.length) {
-            return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
+          // For LEAPS cards — show existing positions under breakeven (same style as NVO)
+          if (o.mode === 'LEAPS') {
+            var leapsList = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === o.ticker; });
+            var leapsBe = leapsList.map(function(l){
+              var ct  = l.contracts ? l.contracts + ' x ' : '';
+              var stk = l.strike ? '$' + l.strike : '';
+              var exp = l.expiry_fmt ? ' ' + l.expiry_fmt : '';
+              var be  = l.breakeven ? ' · BE $' + l.breakeven : '';
+              return ct + stk + exp + be;
+            }).filter(Boolean).join('<br>');
+            return '<div>'
+              +'<div class="stat-l">Breakeven</div>'
+              +'<div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div>'
+              +(leapsBe ? '<div style="font-size:10px;color:#7c3aed;margin-top:2px">'+leapsBe+'</div>' : '')
+              +'</div>';
           }
-          var leapsBe = leapsList.map(function(l){
-            return l.breakeven ? (l.contracts ? l.contracts+' x ' : '') + '$'+l.breakeven+' <span style="font-size:9px;color:#6b7280">'+(l.expiry_fmt||'')+'</span>' : '';
-          }).filter(Boolean).join('<br>');
-          return '<div>'
-            +'<div class="stat-l">Breakeven</div>'
-            +'<div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div>'
-            +(leapsBe ? '<div style="font-size:10px;color:#7c3aed;margin-top:2px">LEAPS: '+leapsBe+'</div>' : '')
-            +'</div>';
+          return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
         })()
       + '</div>'
       + '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
@@ -782,16 +786,9 @@ function renderPositions() {
             if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
           }
           var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
-          // p.leaps is already attached per-position — no need to scan data.exposure
-          var leapsForTicker = p.leaps || [];
-          var leapsMv = leapsForTicker.reduce(function(s,l){
-            // Prefer live market_value; fall back to cost basis (avg_cost × contracts × 100)
-            var mv = l.market_value || 0;
-            if (!mv && l.avg_cost && l.contracts) mv = Math.abs(l.avg_cost) * Math.abs(l.contracts) * 100;
-            return s + mv;
-          }, 0);
-          var leapsMvApprox = leapsForTicker.length > 0 && !leapsForTicker[0].market_value;
-          var leapsMvStr = leapsMv > 0 ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+'+(leapsMvApprox?'~':'')+fmtK(leapsMv)+' LEAPS</div>' : '';
+          var leapsForTicker = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === p.ticker; });
+          var leapsMv = leapsForTicker.reduce(function(s,l){ return s + (l.market_value || 0); }, 0);
+          var leapsMvStr = leapsMv > 0 ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+'+fmtK(leapsMv)+' LEAPS</div>' : '';
           return '<td style="padding:6px 5px;text-align:right">'
             + '<div style="font-family:monospace;font-weight:600;font-size:13px">'+p.exposure_pct+'%</div>'
             + mvStr
