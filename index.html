@@ -360,6 +360,20 @@ function renderAll() {
   document.getElementById('market-loading').style.display = 'none';
   document.getElementById('market-content').style.display = 'block';
   document.getElementById('market-error').style.display = 'none';
+
+  // ── Schwab stale-data banner ──────────────────────────────
+  let banner = document.getElementById('schwab-stale-banner');
+  if (data.schwab_live === false) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'schwab-stale-banner';
+      banner.style.cssText = 'position:sticky;top:0;z-index:999;background:#b91c1c;color:#fff;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;letter-spacing:0.01em;';
+      banner.innerHTML = '⚠️ Options data is stale — Schwab token expired. Refresh token on Windows then run a manual scan.';
+      document.getElementById('app').prepend(banner);
+    }
+  } else {
+    if (banner) banner.remove();
+  }
   try { renderMarket(); } catch(e) { console.error('renderMarket:', e); }
   try { renderOpps(); } catch(e) { console.error('renderOpps:', e); }
   try { renderPositions(); } catch(e) { console.error('renderPositions:', e); }
