@@ -363,12 +363,22 @@ function renderAll() {
 
   // ── Schwab stale-data banner ──────────────────────────────
   let banner = document.getElementById('schwab-stale-banner');
-  if (data.schwab_live === false) {
+  var scanStale = false;
+  if (data.scan_time) {
+    try {
+      var scanDate = new Date(data.scan_time.replace(' ET','').replace(' ','T'));
+      scanStale = (Date.now() - scanDate.getTime()) > 18 * 3600 * 1000; // stale if >18h old
+    } catch(e) {}
+  } else {
+    scanStale = true; // no scan time = definitely stale
+  }
+  if (data.schwab_live === false || scanStale) {
     if (!banner) {
       banner = document.createElement('div');
       banner.id = 'schwab-stale-banner';
       banner.style.cssText = 'position:sticky;top:0;z-index:999;background:#b91c1c;color:#fff;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;letter-spacing:0.01em;';
-      banner.innerHTML = '⚠️ Options data is stale — Schwab token expired. Refresh token on Windows then run a manual scan.';
+      var scanMsg = scanStale && data.scan_time ? ' (last scan: ' + data.scan_time + ')' : '';
+      banner.innerHTML = '⚠️ Options data is stale — Schwab token expired. Refresh token on Windows then run a manual scan.' + scanMsg;
       var appEl = document.getElementById('app');
       if (appEl) appEl.prepend(banner);
     }
