@@ -218,6 +218,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="outline-btn" onclick="filterOpps('DROP_CSP',this)">&#x1F53B; Post-Drop</button>
       <button class="outline-btn" onclick="filterOpps('PIO',this)">&#x1F4BC; Position Income</button>
     </div>
+    <!-- Price Watch panel -->
+    <div id="price-watch-panel" style="display:none;margin-bottom:12px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb">
+      <div id="pw-header" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#f3f4f6;border-bottom:1px solid #e5e7eb;cursor:pointer;user-select:none" onclick="togglePriceWatch()">
+        <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH</span>
+        <span id="pw-toggle" style="font-size:11px;color:#9ca3af">&#9660; hide</span>
+      </div>
+      <div id="pw-body">
+        <div id="pw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr))"></div>
+      </div>
+    </div>
     <div class="g2" id="opps-grid"><div class="spinner">Loading...</div></div>
   </div>
 
@@ -356,7 +366,7 @@ async function loadData() {
     // Schwab token status
     var schwabEl = document.getElementById('schwab-status');
     if (schwabEl) {
-      if (data.schwab_live === true && data.schwab_last_success) {
+      if (data.schwab_live === true) {
         schwabEl.textContent = '🟢 Schwab live · token ok';
         schwabEl.style.color = '#166534';
       } else if (data.schwab_live === false) {
@@ -374,6 +384,80 @@ async function loadData() {
     err.style.display = 'block';
     err.textContent = 'Could not load scan results: ' + e.message + '. The scanner may not have run yet today, or results.json is missing from the repo.';
   }
+}
+
+function togglePriceWatch() {
+  var body = document.getElementById('pw-body');
+  var lbl  = document.getElementById('pw-toggle');
+  if (!body) return;
+  var hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  lbl.innerHTML = hidden ? '&#9660; hide' : '&#9658; show';
+}
+
+function renderPriceWatch() {
+  var pw = data.price_watch;
+  var panel = document.getElementById('price-watch-panel');
+  var grid  = document.getElementById('pw-grid');
+  if (!panel || !grid || !pw || !pw.length) return;
+
+  // Only show tickers that are actionable (not FAR on both sides)
+  var items = pw.filter(function(p) {
+    return p.csp_status !== 'FAR' || p.cc_status === 'IN_ZONE' || p.cc_status === 'APPROACHING';
+  });
+  if (!items.length) return;
+
+  var statusMeta = {
+    'IN_ZONE':    { bg: '#dcfce7', border: '#86efac', dot: '#16a34a', label: 'IN ZONE',    tip: 'Price at/below buy target — check options now' },
+    'APPROACHING':{ bg: '#fef9c3', border: '#fde047', dot: '#ca8a04', label: 'APPROACHING', tip: 'Within 5% of buy target' },
+    'WATCHLIST':  { bg: '#f3f4f6', border: '#d1d5db', dot: '#6b7280', label: 'WATCHING',   tip: '5–15% from buy target' },
+    'FAR':        { bg: '#f9fafb', border: '#e5e7eb', dot: '#d1d5db', label: 'FAR',         tip: 'More than 15% from buy target' }
+  };
+  var ccMeta = {
+    'IN_ZONE':    { color: '#166534', label: '💰 write CCs' },
+    'APPROACHING':{ color: '#92400e', label: '📈 CC soon'  },
+    'WAIT':       { color: '#9ca3af', label: ''            }
+  };
+
+  grid.innerHTML = items.map(function(p) {
+    var sm  = statusMeta[p.csp_status] || statusMeta['FAR'];
+    var cm  = ccMeta[p.cc_status]      || ccMeta['WAIT'];
+    var distTxt = p.pct_from_buy === null ? '' :
+      p.pct_from_buy <= 0
+        ? '<span style="color:#16a34a;font-weight:700;font-size:10px">▼ ' + Math.abs(p.pct_from_buy).toFixed(1) + '% under</span>'
+        : '<span style="color:#6b7280;font-size:10px">▲ ' + p.pct_from_buy.toFixed(1) + '% above</span>';
+    var buyTxt  = p.buy_under  ? '<span style="color:#6b7280;font-size:10px">Buy ≤$' + p.buy_under  + '</span>' : '';
+    var sellTxt = p.sell_above && cm.label
+        ? '<div style="margin-top:3px;font-size:10px;color:' + cm.color + '">' + cm.label + ' $' + p.sell_above + '</div>'
+        : '';
+    // Movement: 1d / 5d / 30d in colour-coded mini chips
+    function mCol(v){ return v<=-5?'#dc2626':v<=-2?'#ea580c':v>=5?'#16a34a':v>=2?'#65a30d':'#9ca3af'; }
+    function mChip(v,lbl){
+      if(Math.abs(v||0)<0.5) return '';
+      return '<span style="font-size:9px;color:'+mCol(v)+';margin-right:4px">'+(v>0?'+':'')+v.toFixed(1)+'%<span style="color:#9ca3af;font-size:8px"> '+lbl+'</span></span>';
+    }
+    var movRow = mChip(p.chg_1d_pct||0,'1d')+mChip(p.chg_5d_pct||0,'5d')+mChip(p.chg_30d_pct||0,'30d');
+    // Highlight border if big move today
+    var borderCol = sm.border;
+    if((p.chg_1d_pct||0) <= -5) borderCol = '#dc2626';
+    else if((p.chg_1d_pct||0) >= 6) borderCol = '#16a34a';
+    return '<div title="' + sm.tip + '" style="padding:9px 11px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:' + sm.bg + ';border-left:3px solid ' + borderCol + '">'
+      + '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
+      + '  <span style="width:7px;height:7px;border-radius:50%;background:' + sm.dot + ';flex-shrink:0;display:inline-block"></span>'
+      + '  <span style="font-weight:700;font-size:13px;color:#111">' + p.ticker + '</span>'
+      + '  <span style="font-size:11px;color:#374151;margin-left:auto">$' + p.price.toFixed(2) + '</span>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between">'
+      + '  <span style="font-size:9px;font-weight:700;letter-spacing:0.5px;color:' + sm.dot + '">' + sm.label + '</span>'
+      + '  ' + distTxt
+      + '</div>'
+      + (movRow ? '<div style="margin-top:4px;line-height:1.6">' + movRow + '</div>' : '')
+      + '<div style="margin-top:2px">' + buyTxt + '</div>'
+      + sellTxt
+      + '</div>';
+  }).join('');
+
+  panel.style.display = 'block';
 }
 
 function renderAll() {
@@ -408,6 +492,7 @@ function renderAll() {
   }
   try { renderMarket(); } catch(e) { console.error('renderMarket:', e); }
   try { renderOpps(); } catch(e) { console.error('renderOpps:', e); }
+  try { renderPriceWatch(); } catch(e) { console.error('renderPriceWatch:', e); }
   try { renderPositions(); } catch(e) { console.error('renderPositions:', e); }
 }
 
