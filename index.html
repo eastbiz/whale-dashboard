@@ -112,6 +112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="logo">&#x1F40B; Whale Intelligence</div>
     <div class="hdr-right">
       <span class="last-scan" id="last-scan">Loading...</span>
+      <span id="schwab-status" style="font-size:11px;color:#6b7280;margin-left:8px"></span>
       <button class="scan-btn" id="scan-btn" onclick="runScan()">&#9654; Run Scan</button>
       <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
     </div>
@@ -222,11 +223,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- POSITIONS -->
   <div class="page" id="page-positions">
-    <div class="filter-row">
-      <button class="outline-btn active" onclick="filterPositions('ALL',this)">All</button>
-      <button class="outline-btn" onclick="filterPositions('IRA',this)">IRA</button>
-      <button class="outline-btn" onclick="filterPositions('CRT',this)">CRT</button>
-      <button class="outline-btn" onclick="filterPositions('IBKR',this)">IBKR</button>
+    <div class="filter-row" style="justify-content:space-between;align-items:center">
+      <div style="display:flex;gap:6px">
+        <button class="outline-btn active" onclick="filterPositions('ALL',this)">All</button>
+        <button class="outline-btn" onclick="filterPositions('IRA',this)">IRA</button>
+        <button class="outline-btn" onclick="filterPositions('CRT',this)">CRT</button>
+        <button class="outline-btn" onclick="filterPositions('IBKR',this)">IBKR</button>
+      </div>
+      <button onclick="downloadPositionsCSV()" title="Download positions as CSV" style="background:none;border:1px solid #d1d5db;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;color:#374151;display:flex;align-items:center;gap:5px">
+        ⬇️ CSV
+      </button>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px" id="pos-table">
@@ -347,6 +353,20 @@ async function loadData() {
     data = await r.json();
     renderAll();
     document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '&#8212;');
+    // Schwab token status
+    var schwabEl = document.getElementById('schwab-status');
+    if (schwabEl) {
+      if (data.schwab_live === true && data.schwab_last_success) {
+        schwabEl.textContent = '🟢 Schwab live · token ok';
+        schwabEl.style.color = '#166534';
+      } else if (data.schwab_live === false) {
+        schwabEl.textContent = '🔴 Schwab token expired — refresh on Windows';
+        schwabEl.style.color = '#991b1b';
+      } else {
+        schwabEl.textContent = '⚪ Schwab status unknown';
+        schwabEl.style.color = '#6b7280';
+      }
+    }
   } catch(e) {
     document.getElementById('last-scan').textContent = 'Load failed';
     document.getElementById('market-loading').style.display = 'none';
@@ -366,11 +386,12 @@ function renderAll() {
   var scanStale = false;
   if (data.scan_time) {
     try {
-      var scanDate = new Date(data.scan_time.replace(' ET','').replace(' ','T'));
-      scanStale = (Date.now() - scanDate.getTime()) > 18 * 3600 * 1000; // stale if >18h old
-    } catch(e) {}
+      var scanStr = data.scan_time.replace(' ET','').replace(' UTC','').replace(' ',  'T');
+      var scanDate = new Date(scanStr);
+      scanStale = isNaN(scanDate.getTime()) || (Date.now() - scanDate.getTime()) > 18 * 3600 * 1000;
+    } catch(e) { scanStale = true; }
   } else {
-    scanStale = true; // no scan time = definitely stale
+    scanStale = true;
   }
   if (data.schwab_live === false || scanStale) {
     if (!banner) {
@@ -724,6 +745,115 @@ function filterOpps(f, btn) {
 var currentPosFilter = 'ALL';
 var posSortCol = 'score';
 var posSortAsc = false;
+
+function downloadPositionsCSV() {
+  if (!data || !data.positions) return;
+  var SYMBOL_SETTINGS = {
+    "AAPL": {buy_under:200, sell_above:280, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.85, leaps_delta_max:0.90},
+    "AMZN": {buy_under:185, sell_above:230, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.85, leaps_delta_max:0.90},
+    "CLS":  {buy_under:220, sell_above:340, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "CRDO": {buy_under:80,  sell_above:140, csp_delta_min:0.20, csp_delta_max:0.28, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "DDOG": {buy_under:95,  sell_above:160, csp_delta_min:0.20, csp_delta_max:0.25, cc_delta_min:0.20, cc_delta_max:0.25, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "FIX":  {buy_under:1000,sell_above:1600,csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "GOOGL":{buy_under:250, sell_above:340, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.85, leaps_delta_max:0.90},
+    "GRBK": {buy_under:55,  sell_above:80,  csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "IBIT": {buy_under:34,  sell_above:47,  csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "IBKR": {buy_under:50,  sell_above:74,  csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "MELI": {buy_under:1480,sell_above:1900,csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.85, leaps_delta_max:0.90},
+    "MU":   {buy_under:290, sell_above:450, csp_delta_min:0.20, csp_delta_max:0.28, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "NBIS": {buy_under:70,  sell_above:135, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "NFLX": {buy_under:65,  sell_above:107, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.32, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "NOW":  {buy_under:85,  sell_above:130, csp_delta_min:0.20, csp_delta_max:0.25, cc_delta_min:0.20, cc_delta_max:0.25, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "NVDA": {buy_under:155, sell_above:205, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.85, leaps_delta_max:0.90},
+    "PLTR": {buy_under:80,  sell_above:195, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "TSLA": {buy_under:335, sell_above:440, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+    "TSM":  {buy_under:270, sell_above:380, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.30, leaps_delta_min:0.80, leaps_delta_max:0.90},
+  };
+
+  var headers = [
+    'Ticker','Tier','Status','Price','Exposure%','Market Value ($)',
+    'IRA ($)','CRT ($)','IBKR ($)',
+    'Target Range','Position Status','Price Opp','Pullback%',
+    'Shares Owned','Action','Score',
+    'CC Coverage%','CC Contracts','Shares Covered','Uncovered Shares',
+    'CSP Contracts','CSP Obligation ($)',
+    'LEAPS','BCS',
+    'Buy Under','Sell Above',
+    'CSP Delta Min','CSP Delta Max','CC Delta Min','CC Delta Max',
+    'LEAPS Delta Min','LEAPS Delta Max',
+    'Accounts'
+  ];
+
+  function esc(v) {
+    if (v === null || v === undefined) return '';
+    var s = String(v);
+    if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1)
+      return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  var rows = [headers.map(esc).join(',')];
+  data.positions.forEach(function(p) {
+    var sym = p.ticker || '';
+    var ss  = SYMBOL_SETTINGS[sym] || {};
+    var mv  = p.mv_by_account || {};
+    // LEAPS summary
+    var leapsSummary = (p.leaps || []).map(function(l){
+      return (l.contracts||1)+'x$'+l.strike+' '+(l.expiry_fmt||'');
+    }).join(' | ');
+    // BCS summary
+    var bcsSummary = (p.bcs || []).map(function(b){
+      return (b.contracts||1)+'x$'+b.strike+' '+(b.expiry_fmt||'');
+    }).join(' | ');
+
+    rows.push([
+      esc(sym),
+      esc(p.tier),
+      esc(p.status),
+      esc(p.price),
+      esc(p.exposure_pct),
+      esc(p.market_value),
+      esc(mv['IRA'] || ''),
+      esc(mv['CRT'] || ''),
+      esc(mv['IBKR'] || ''),
+      esc(p.target_range),
+      esc(p.pos_status),
+      esc(p.price_opp),
+      esc(p.pullback_pct),
+      esc(p.shares_owned),
+      esc(p.action),
+      esc(p.score),
+      esc(p.coverage_pct),
+      esc(p.cc_contracts),
+      esc(p.shares_covered),
+      esc(p.uncovered_shares),
+      esc(p.csp_contracts),
+      esc(p.csp_obligation),
+      esc(leapsSummary),
+      esc(bcsSummary),
+      esc(ss.buy_under || ''),
+      esc(ss.sell_above || ''),
+      esc(ss.csp_delta_min || ''),
+      esc(ss.csp_delta_max || ''),
+      esc(ss.cc_delta_min || ''),
+      esc(ss.cc_delta_max || ''),
+      esc(ss.leaps_delta_min || ''),
+      esc(ss.leaps_delta_max || ''),
+      esc((p.accounts_all || [p.account || '']).join(' | '))
+    ].join(','));
+  });
+
+  var csv  = rows.join('\n');
+  var blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'whale_positions_' + (data.scan_date || 'export') + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function filterPositions(acct, btn) {
   currentPosFilter = acct;
