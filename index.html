@@ -441,6 +441,20 @@ function renderPriceWatch() {
     var borderCol = sm.border;
     if((p.chg_1d_pct||0) <= -5) borderCol = '#dc2626';
     else if((p.chg_1d_pct||0) >= 6) borderCol = '#16a34a';
+    // Support levels — starter / main / aggressive
+    var slHtml = '';
+    if (p.support_levels) {
+      var sl = p.support_levels;
+      var slConf = sl.confidence || 0;
+      var confDots = '●'.repeat(Math.min(5, Math.round(slConf/2))) + '○'.repeat(5 - Math.min(5, Math.round(slConf/2)));
+      slHtml = '<div style="margin-top:5px;padding-top:4px;border-top:1px solid #e5e7eb;font-size:9px;color:#6b7280">'
+        + '<span style="letter-spacing:0.3px;text-transform:uppercase;font-weight:600">Support zones</span>'
+        + ' <span style="color:#9ca3af" title="Confidence: ' + slConf + '/10">' + confDots + '</span><br>'
+        + (sl.starter_buy_low ? '<span style="color:#92400e">▸ Starter $' + sl.starter_buy_low + '–' + sl.starter_buy_high + '</span><br>' : '')
+        + (sl.main_buy_low    ? '<span style="color:#1d4ed8;font-weight:600">▸ Main $' + sl.main_buy_low + '–' + sl.main_buy_high + '</span><br>' : '')
+        + (sl.aggressive_buy_low ? '<span style="color:#16a34a">▸ Aggressive $' + sl.aggressive_buy_low + '</span>' : '')
+        + '</div>';
+    }
     return '<div title="' + sm.tip + '" style="padding:9px 11px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:' + sm.bg + ';border-left:3px solid ' + borderCol + '">'
       + '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
       + '  <span style="width:7px;height:7px;border-radius:50%;background:' + sm.dot + ';flex-shrink:0;display:inline-block"></span>'
@@ -454,6 +468,7 @@ function renderPriceWatch() {
       + (movRow ? '<div style="margin-top:4px;line-height:1.6">' + movRow + '</div>' : '')
       + '<div style="margin-top:2px">' + buyTxt + '</div>'
       + sellTxt
+      + slHtml
       + '</div>';
   }).join('');
 
