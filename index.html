@@ -401,74 +401,38 @@ function renderPriceWatch() {
   var grid  = document.getElementById('pw-grid');
   if (!panel || !grid || !pw || !pw.length) return;
 
-  // Only show tickers that are actionable (not FAR on both sides)
+  // Only show tickers at or within 5% of buy target. Everything else hidden.
   var items = pw.filter(function(p) {
-    return p.csp_status !== 'FAR' || p.cc_status === 'IN_ZONE' || p.cc_status === 'APPROACHING';
+    return p.csp_status === 'IN_ZONE' || p.csp_status === 'APPROACHING';
   });
-  if (!items.length) return;
+  if (!items.length) { panel.style.display = 'none'; return; }
 
   var statusMeta = {
-    'IN_ZONE':    { bg: '#dcfce7', border: '#86efac', dot: '#16a34a', label: 'IN ZONE',    tip: 'Price at/below buy target — check options now' },
-    'APPROACHING':{ bg: '#fef9c3', border: '#fde047', dot: '#ca8a04', label: 'APPROACHING', tip: 'Within 5% of buy target' },
-    'WATCHLIST':  { bg: '#f3f4f6', border: '#d1d5db', dot: '#6b7280', label: 'WATCHING',   tip: '5–15% from buy target' },
-    'FAR':        { bg: '#f9fafb', border: '#e5e7eb', dot: '#d1d5db', label: 'FAR',         tip: 'More than 15% from buy target' }
-  };
-  var ccMeta = {
-    'IN_ZONE':    { color: '#166534', label: '💰 write CCs' },
-    'APPROACHING':{ color: '#92400e', label: '📈 CC soon'  },
-    'WAIT':       { color: '#9ca3af', label: ''            }
+    'IN_ZONE':    { bg: '#dcfce7', border: '#16a34a', dot: '#16a34a', tip: 'At or below buy target — check options now' },
+    'APPROACHING':{ bg: '#fef9c3', border: '#ca8a04', dot: '#ca8a04', tip: 'Within 5% of buy target' },
   };
 
+  function mCol(v){ return v<=-5?'#dc2626':v<=-2?'#ea580c':v>=5?'#16a34a':v>=2?'#65a30d':'#9ca3af'; }
+  function mChip(v,lbl){
+    if(Math.abs(v||0)<0.5) return '';
+    return '<span style="font-size:9px;color:'+mCol(v)+';margin-right:5px">'+(v>0?'+':'')+v.toFixed(1)+'%<span style="color:#9ca3af;font-size:8px"> '+lbl+'</span></span>';
+  }
+
   grid.innerHTML = items.map(function(p) {
-    var sm  = statusMeta[p.csp_status] || statusMeta['FAR'];
-    var cm  = ccMeta[p.cc_status]      || ccMeta['WAIT'];
+    var sm = statusMeta[p.csp_status] || statusMeta['APPROACHING'];
     var distTxt = p.pct_from_buy === null ? '' :
       p.pct_from_buy <= 0
-        ? '<span style="color:#16a34a;font-weight:700;font-size:10px">▼ ' + Math.abs(p.pct_from_buy).toFixed(1) + '% under</span>'
-        : '<span style="color:#6b7280;font-size:10px">▲ ' + p.pct_from_buy.toFixed(1) + '% above</span>';
-    var buyTxt  = p.buy_under  ? '<span style="color:#6b7280;font-size:10px">Buy ≤$' + p.buy_under  + '</span>' : '';
-    var sellTxt = p.sell_above && cm.label
-        ? '<div style="margin-top:3px;font-size:10px;color:' + cm.color + '">' + cm.label + ' $' + p.sell_above + '</div>'
-        : '';
-    // Movement: 1d / 5d / 30d in colour-coded mini chips
-    function mCol(v){ return v<=-5?'#dc2626':v<=-2?'#ea580c':v>=5?'#16a34a':v>=2?'#65a30d':'#9ca3af'; }
-    function mChip(v,lbl){
-      if(Math.abs(v||0)<0.5) return '';
-      return '<span style="font-size:9px;color:'+mCol(v)+';margin-right:4px">'+(v>0?'+':'')+v.toFixed(1)+'%<span style="color:#9ca3af;font-size:8px"> '+lbl+'</span></span>';
-    }
+        ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▼ ' + Math.abs(p.pct_from_buy).toFixed(1) + '% under target</span>'
+        : '<span style="color:#ca8a04;font-size:11px">▲ ' + p.pct_from_buy.toFixed(1) + '% above target</span>';
     var movRow = mChip(p.chg_1d_pct||0,'1d')+mChip(p.chg_5d_pct||0,'5d')+mChip(p.chg_30d_pct||0,'30d');
-    // Highlight border if big move today
-    var borderCol = sm.border;
-    if((p.chg_1d_pct||0) <= -5) borderCol = '#dc2626';
-    else if((p.chg_1d_pct||0) >= 6) borderCol = '#16a34a';
-    // Support levels — starter / main / aggressive
-    var slHtml = '';
-    if (p.support_levels) {
-      var sl = p.support_levels;
-      var slConf = sl.confidence || 0;
-      var confDots = '●'.repeat(Math.min(5, Math.round(slConf/2))) + '○'.repeat(5 - Math.min(5, Math.round(slConf/2)));
-      slHtml = '<div style="margin-top:5px;padding-top:4px;border-top:1px solid #e5e7eb;font-size:9px;color:#6b7280">'
-        + '<span style="letter-spacing:0.3px;text-transform:uppercase;font-weight:600">Support zones</span>'
-        + ' <span style="color:#9ca3af" title="Confidence: ' + slConf + '/10">' + confDots + '</span><br>'
-        + (sl.starter_buy_low ? '<span style="color:#92400e">▸ Starter $' + sl.starter_buy_low + '–' + sl.starter_buy_high + '</span><br>' : '')
-        + (sl.main_buy_low    ? '<span style="color:#1d4ed8;font-weight:600">▸ Main $' + sl.main_buy_low + '–' + sl.main_buy_high + '</span><br>' : '')
-        + (sl.aggressive_buy_low ? '<span style="color:#16a34a">▸ Aggressive $' + sl.aggressive_buy_low + '</span>' : '')
-        + '</div>';
-    }
-    return '<div title="' + sm.tip + '" style="padding:9px 11px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:' + sm.bg + ';border-left:3px solid ' + borderCol + '">'
-      + '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
-      + '  <span style="width:7px;height:7px;border-radius:50%;background:' + sm.dot + ';flex-shrink:0;display:inline-block"></span>'
-      + '  <span style="font-weight:700;font-size:13px;color:#111">' + p.ticker + '</span>'
-      + '  <span style="font-size:11px;color:#374151;margin-left:auto">$' + p.price.toFixed(2) + '</span>'
+    return '<div style="padding:10px 13px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:'+sm.bg+';border-left:4px solid '+sm.border+'">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
+      + '  <span style="font-weight:700;font-size:14px;color:#111">'+p.ticker+'</span>'
+      + '  <span style="font-size:12px;color:#374151;margin-left:auto;font-family:monospace">$'+p.price.toFixed(2)+'</span>'
       + '</div>'
-      + '<div style="display:flex;align-items:center;justify-content:space-between">'
-      + '  <span style="font-size:9px;font-weight:700;letter-spacing:0.5px;color:' + sm.dot + '">' + sm.label + '</span>'
-      + '  ' + distTxt
-      + '</div>'
-      + (movRow ? '<div style="margin-top:4px;line-height:1.6">' + movRow + '</div>' : '')
-      + '<div style="margin-top:2px">' + buyTxt + '</div>'
-      + sellTxt
-      + slHtml
+      + '<div style="margin-bottom:4px">'+distTxt+'</div>'
+      + '<div style="font-size:10px;color:#6b7280">Buy ≤$'+p.buy_under+'</div>'
+      + (movRow ? '<div style="margin-top:5px;line-height:1.8">'+movRow+'</div>' : '')
       + '</div>';
   }).join('');
 
@@ -700,6 +664,7 @@ function renderOpps() {
           + '</div>'
           + '<div class="sz-result">After trade: obligation ' + fmtK(resultObl) + ' (' + resultPct + '% portfolio) &#183; remaining ' + fmtK(remainAftr)
           + (withinLim ? ' &#10003; Within limit' : ' &#9888; Exceeds limit') + '</div>'
+          + (sz.profit_target_price ? '<div class="sz-result" style="margin-top:4px;color:#1e40af">&#127919; 80% target: close at <strong>$' + sz.profit_target_price.toFixed(2) + '</strong> &#183; est. <strong>~' + sz.profit_target_days + ' days</strong></div>' : '')
           + '</div>';
       } else if ((o.mode === 'CC' || o.mode === 'PIO' || o.mode === 'SPIKE_CC') && sz.nva !== undefined) {
         var nva    = sz.nva || 0;
@@ -1004,11 +969,11 @@ function renderPositions() {
     return;
   }
 
-  var actionColor = function(a) { return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':'#991b1b'; };
-  var actionBg    = function(a) { return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':'#fee2e2'; };
+  var actionColor = function(a) { return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':a==='WATCH'?'#6b7280':'#991b1b'; };
+  var actionBg    = function(a) { return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':a==='WATCH'?'#f3f4f6':'#fee2e2'; };
   var tierColor   = function(t) { return t==='Core'?'#1e40af':t==='Growth'?'#4c1d95':t==='Cyclical'?'#92400e':t==='Other'?'#374151':'#374151'; };
   var tierBg      = function(t) { return t==='Core'?'#dbeafe':t==='Growth'?'#ede9fe':t==='Cyclical'?'#fef3c7':t==='Other'?'#e5e7eb':'#f3f4f6'; };
-  var posColor    = function(s) { return s==='Overweight'?'#991b1b':s==='On Target'?'#166534':'#1e40af'; };
+  var posColor    = function(s) { return s==='Overweight'?'#991b1b':s==='On Target'?'#166534':s==='Not Held'?'#6b7280':'#1e40af'; };
   var priceColor  = function(p) { return p==='Pullback'?'#166534':p==='Near High'?'#991b1b':'#6b7280'; };
 
   var owned    = positions.filter(function(p) { return p.status === 'Owned'; });
