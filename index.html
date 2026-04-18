@@ -433,6 +433,7 @@ function renderPriceWatch() {
       + '<div style="margin-bottom:4px">'+distTxt+'</div>'
       + '<div style="font-size:10px;color:#6b7280">Buy ≤$'+p.buy_under+'</div>'
       + (movRow ? '<div style="margin-top:5px;line-height:1.8">'+movRow+'</div>' : '')
+      + (p.days_to_earnings && p.days_to_earnings <= 35 ? '<div style="margin-top:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:' + (p.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (p.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + ';display:inline-block">&#9888; Earnings in ' + p.days_to_earnings + 'd</div>' : '')
       + '</div>';
   }).join('');
 
@@ -712,6 +713,7 @@ function renderOpps() {
       +       '<span class="badge ' + bc + '">' + bl + '</span>'
       +       '<span style="color:#9ca3af">&#183;</span>'
       +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
+      +       (o.days_to_earnings && o.days_to_earnings <= 35 ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:' + (o.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (o.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + '">&#9888; Earn ' + o.days_to_earnings + 'd</span>' : '')
       +       (o.mode === 'LEAPS' && o.trend_label
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
           : (o.mode !== 'CSP' && o.mode !== 'CC' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
@@ -969,8 +971,8 @@ function renderPositions() {
     return;
   }
 
-  var actionColor = function(a) { return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':a==='WATCH'?'#6b7280':'#991b1b'; };
-  var actionBg    = function(a) { return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':a==='WATCH'?'#f3f4f6':'#fee2e2'; };
+  var actionColor = function(a) { return a==='BUY'?'#166534':a==='ADD'?'#15803d':a==='HOLD'?'#1e40af':a==='TRIM'?'#92400e':a==='WATCH'?'#6b7280':a==='TAKE PROFIT'?'#166534':a==='EARNINGS WARNING'?'#92400e':'#991b1b'; };
+  var actionBg    = function(a) { return a==='BUY'?'#dcfce7':a==='ADD'?'#f0fdf4':a==='HOLD'?'#dbeafe':a==='TRIM'?'#fef3c7':a==='WATCH'?'#f3f4f6':a==='TAKE PROFIT'?'#dcfce7':a==='EARNINGS WARNING'?'#fef3c7':'#fee2e2'; };
   var tierColor   = function(t) { return t==='Core'?'#1e40af':t==='Growth'?'#4c1d95':t==='Cyclical'?'#92400e':t==='Other'?'#374151':'#374151'; };
   var tierBg      = function(t) { return t==='Core'?'#dbeafe':t==='Growth'?'#ede9fe':t==='Cyclical'?'#fef3c7':t==='Other'?'#e5e7eb':'#f3f4f6'; };
   var posColor    = function(s) { return s==='Overweight'?'#991b1b':s==='On Target'?'#166534':s==='Not Held'?'#6b7280':'#1e40af'; };
