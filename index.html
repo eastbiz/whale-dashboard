@@ -386,6 +386,92 @@ async function loadData() {
   }
 }
 
+function setLeapsView(mode) {
+  leapsView = mode;
+  ['cards','table'].forEach(function(m) {
+    var btn = document.getElementById('leaps-view-'+m);
+    if (!btn) return;
+    var active = m === mode;
+    btn.style.fontWeight = active ? '700' : '400';
+    btn.style.background  = active ? '#eef2ff' : '#f3f4f6';
+    btn.style.borderColor = active ? '#6366f1' : '#d1d5db';
+    btn.style.color = active ? '#4338ca' : '#374151';
+  });
+  renderOpps();
+}
+
+var leapsSortCol = 'breakeven_pct';
+var leapsSortAsc = true;
+
+function renderLeapsTable(leaps) {
+  var sel = document.getElementById('leaps-ticker-filter');
+  var tickerFilter = sel ? sel.value : 'all';
+  var tickers = [...new Set(leaps.map(function(o){ return o.ticker; }))].sort();
+  if (sel) {
+    var cv = sel.value;
+    sel.innerHTML = '<option value="all">All tickers</option>' +
+      tickers.map(function(t){ return '<option value="'+t+'"'+(t===cv?' selected':'')+'>'+t+'</option>'; }).join('');
+  }
+  var rows = tickerFilter === 'all' ? leaps : leaps.filter(function(o){ return o.ticker === tickerFilter; });
+  if (!rows.length) { document.getElementById('leaps-table-view').innerHTML = '<div style="padding:20px;color:#9ca3af">No LEAPS data.</div>'; return; }
+  rows = rows.slice().sort(function(a,b){
+    var av = a[leapsSortCol]; var bv = b[leapsSortCol];
+    if (av==null) av = leapsSortAsc?9999:-9999;
+    if (bv==null) bv = leapsSortAsc?9999:-9999;
+    return leapsSortAsc ? av-bv : bv-av;
+  });
+  function sico(col){ return col!==leapsSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(leapsSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
+  function th(col,lbl){ return '<th onclick="leapsSortCol=\''+col+'\';leapsSortAsc=(\''+col+'\'===leapsSortCol)?!leapsSortAsc:true;renderOpps()" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">'+lbl+sico(col)+'</th>'; }
+  var html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
+    + '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Band</th>'
+    + th('strike','Strike') + th('premium','Cost') 
+    + '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Expiry</th>'
+    + th('delta','\u03B4 Delta')
+    + '<th onclick="leapsSortCol=\'extrinsic_pct\';leapsSortAsc=(\'extrinsic_pct\'===leapsSortCol)?!leapsSortAsc:true;renderOpps()" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;background:#f5f3ff;white-space:nowrap">Extrinsic%'+sico('extrinsic_pct')+'</th>'
+    + th('breakeven','Breakeven')
+    + '<th onclick="leapsSortCol=\'breakeven_pct\';leapsSortAsc=(\'breakeven_pct\'===leapsSortCol)?!leapsSortAsc:true;renderOpps()" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;background:#f5f3ff;white-space:nowrap">BE% above'+sico('breakeven_pct')+'</th>'
+    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
+    + '</tr></thead><tbody>';
+  var bandOrder = {conservative:0,sweet_spot:1,aggressive:2};
+  var groups = {};
+  rows.forEach(function(o){ if(!groups[o.ticker]) groups[o.ticker]=[]; groups[o.ticker].push(o); });
+  Object.keys(groups).sort().forEach(function(ticker) {
+    var tRows = groups[ticker].slice().sort(function(a,b){ return (bandOrder[a.leaps_band]||9)-(bandOrder[b.leaps_band]||9); });
+    var first = tRows[0];
+    var bu = first.buy_under;
+    var buDist = bu ? ((first.price-bu)/bu*100) : null;
+    var tNote = '';
+    if (buDist!==null) {
+      if (buDist<=0) tNote='<span style="color:#16a34a;font-weight:700">\u25BC '+Math.abs(buDist).toFixed(1)+'% below buy target $'+bu+' \u2014 strong timing</span>';
+      else if (buDist<=5) tNote='<span style="color:#ca8a04">\u25B2 '+buDist.toFixed(1)+'% above $'+bu+' \u2014 approaching</span>';
+      else tNote='<span style="color:#9ca3af">'+buDist.toFixed(1)+'% above buy target $'+bu+'</span>';
+    }
+    var eNote = first.days_to_earnings&&first.days_to_earnings<=35
+      ? ' <span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:'+(first.days_to_earnings<=14?'#fee2e2':'#fef9c3')+';color:'+(first.days_to_earnings<=14?'#991b1b':'#92400e')+'">&#9888; Earn '+first.days_to_earnings+'d</span>' : '';
+    html += '<tr style="background:#f0f9ff;border-top:2px solid #bfdbfe"><td colspan="9" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1e40af">'
+      + ticker+' <span style="font-size:11px;font-weight:400;color:#374151;font-family:monospace">$'+first.price.toFixed(2)+'</span>'
+      + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
+    tRows.forEach(function(o) {
+      var ec = o.extrinsic_pct<15?'#166534':o.extrinsic_pct<20?'#92400e':'#991b1b';
+      var bc = o.breakeven_pct<8?'#166534':o.breakeven_pct<15?'#92400e':'#6b7280';
+      var rb = o.is_recommended?'#fefce8':'#fff';
+      html += '<tr style="border-bottom:1px solid #f3f4f6;background:'+rb+'">'
+        + '<td style="padding:7px 10px;white-space:nowrap">'+o.leaps_label+(o.is_recommended?' <span style="font-size:10px;font-weight:700;background:#fef08a;color:#713f12;padding:1px 6px;border-radius:3px">&#9733; REC</span>':'')+'</td>'
+        + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
+        + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:700;color:#1e40af">$'+o.premium.toFixed(2)+'</td>'
+        + '<td style="padding:7px 6px;text-align:center;color:#6b7280">'+fmtExpiry(o.expiry)+'</td>'
+        + '<td style="padding:7px 6px;text-align:right">'+o.delta+'</td>'
+        + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+ec+';background:#faf5ff">'+o.extrinsic_pct+'%</td>'
+        + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
+        + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+bc+';background:#faf5ff">+'+o.breakeven_pct+'%</td>'
+        + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:180px">'+o.leaps_note+'</td>'
+        + '</tr>';
+    });
+  });
+  html += '</tbody></table>';
+  document.getElementById('leaps-table-view').innerHTML = html;
+}
+
 function togglePriceWatch() {
   var body = document.getElementById('pw-body');
   var lbl  = document.getElementById('pw-toggle');
@@ -594,13 +680,23 @@ function renderOpps() {
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
   var filtered = currentFilter === 'all' ? allOpps
     : allOpps.filter(function(o){ return o.mode === currentFilter || (currentFilter === 'CC' && o.mode === 'PIO'); });
-  // LEAPS: sort by extrinsic % ascending (lowest cost first), then score descending
+  // LEAPS: show table or cards based on leapsView toggle
   if (currentFilter === 'LEAPS') {
+    var tableView = document.getElementById('leaps-table-view');
+    var gridView  = document.getElementById('opps-grid');
+    if (leapsView === 'table') {
+      if (tableView) { tableView.style.display = 'block'; renderLeapsTable(filtered); }
+      if (gridView)  gridView.style.display = 'none';
+      return;
+    } else {
+      if (tableView) tableView.style.display = 'none';
+      if (gridView)  gridView.style.display = '';
+    }
+    // Card view: sort by breakeven_pct ascending
     filtered = filtered.slice().sort(function(a, b) {
-      var ae = a.extrinsic_pct != null ? a.extrinsic_pct : 999;
-      var be = b.extrinsic_pct != null ? b.extrinsic_pct : 999;
-      if (ae !== be) return ae - be;
-      return (b.score || 0) - (a.score || 0);
+      var ae = a.breakeven_pct != null ? a.breakeven_pct : 999;
+      var be = b.breakeven_pct != null ? b.breakeven_pct : 999;
+      return ae - be;
     });
   }
 
@@ -806,6 +902,8 @@ function filterOpps(f, btn) {
   currentFilter = f;
   document.querySelectorAll('.filter-row .outline-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
+  var ctrl = document.getElementById('leaps-table-controls');
+  if (ctrl) ctrl.style.display = f === 'LEAPS' ? 'flex' : 'none';
   if (data) renderOpps();
 }
 
