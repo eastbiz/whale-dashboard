@@ -413,6 +413,7 @@ function setLeapsView(mode) {
 
 var leapsSortCol = 'breakeven_pct';
 var leapsSortAsc = true;
+function leapsSortBy(col){ if(leapsSortCol===col){ leapsSortAsc=!leapsSortAsc; } else { leapsSortCol=col; leapsSortAsc=true; } renderOpps(); }
 
 function renderLeapsTable(leaps) {
   var sel = document.getElementById('leaps-ticker-filter');
@@ -432,7 +433,6 @@ function renderLeapsTable(leaps) {
     return leapsSortAsc ? av-bv : bv-av;
   });
   function sico(col){ return col!==leapsSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(leapsSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
-  function leapsSortBy(col){ if(leapsSortCol===col){ leapsSortAsc=!leapsSortAsc; } else { leapsSortCol=col; leapsSortAsc=true; } renderOpps(); }
   function th(col,lbl,extra){ return '<th onclick="leapsSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
   var html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
     + '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Band</th>'
@@ -476,7 +476,7 @@ function renderLeapsTable(leaps) {
     var ownedLeaps = ((data.exposure||{}).leaps_positions||[]).filter(function(l){ return l.ticker===ticker; });
     var ownedBEs = ownedLeaps.map(function(l){ return parseFloat(l.breakeven)||0; }).filter(function(v){ return v>0; });
     tRows.forEach(function(o) {
-      var ec = o.extrinsic_pct<15?'#166534':o.extrinsic_pct<20?'#92400e':'#991b1b';
+      var ec = o.extrinsic_pct<20?'#166534':o.extrinsic_pct<30?'#92400e':o.extrinsic_pct<40?'#b45309':'#991b1b';
       var bc = o.breakeven_pct<8?'#166534':o.breakeven_pct<15?'#92400e':'#6b7280';
       var rb = o.is_recommended?'#fefce8':'#fff';
       html += '<tr style="border-bottom:1px solid #f3f4f6;background:'+rb+'">'
@@ -904,7 +904,7 @@ function renderOpps() {
       +   '<div><div class="stat-l">Delta</div><div class="stat-v" style="color:' + (Math.abs((o.delta||0)-0.275)<0.075?'#166534':'#92400e') + '">' + o.delta + '</div></div>'
       +   '<div><div class="stat-l">Premium</div><div class="stat-v">$' + o.premium + '</div></div>'
       +   (o.mode === 'LEAPS' && o.extrinsic_pct != null
-          ? '<div><div class="stat-l">Extrinsic</div><div class="stat-v" style="color:' + (o.extrinsic_pct<15?'#166534':o.extrinsic_pct<20?'#92400e':'#991b1b') + ';font-weight:700">' + o.extrinsic_pct + '%</div></div>'
+          ? '<div><div class="stat-l">Extrinsic</div><div class="stat-v" style="color:' + (o.extrinsic_pct<20?'#166534':o.extrinsic_pct<30?'#92400e':o.extrinsic_pct<40?'#b45309':'#991b1b') + ';font-weight:700">' + o.extrinsic_pct + '%</div></div>'
           : '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>')
       + (function(){
           var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
