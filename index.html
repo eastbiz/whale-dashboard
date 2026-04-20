@@ -442,6 +442,7 @@ function renderLeapsTable(leaps) {
     + th('extrinsic_pct','Extrinsic%','background:#f5f3ff')
     + th('breakeven','Breakeven')
     + th('breakeven_pct','BE% above','background:#f5f3ff')
+    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">vs Owned</th>'
     + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
     + '</tr></thead><tbody>';
   var bandOrder = {conservative:0,sweet_spot:1,aggressive:2};
@@ -471,6 +472,9 @@ function renderLeapsTable(leaps) {
     html += '<tr style="background:#f0f9ff;border-top:2px solid #bfdbfe"><td colspan="9" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1e40af">'
       + ticker+' <span style="font-size:11px;font-weight:400;color:#374151;font-family:monospace">$'+first.price.toFixed(2)+'</span>'
       + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
+    // Build owned LEAPS breakevens for this ticker
+    var ownedLeaps = ((data.exposure||{}).leaps_positions||[]).filter(function(l){ return l.ticker===ticker; });
+    var ownedBEs = ownedLeaps.map(function(l){ return parseFloat(l.breakeven)||0; }).filter(function(v){ return v>0; });
     tRows.forEach(function(o) {
       var ec = o.extrinsic_pct<15?'#166534':o.extrinsic_pct<20?'#92400e':'#991b1b';
       var bc = o.breakeven_pct<8?'#166534':o.breakeven_pct<15?'#92400e':'#6b7280';
@@ -484,6 +488,22 @@ function renderLeapsTable(leaps) {
         + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+ec+';background:#faf5ff">'+o.extrinsic_pct+'%</td>'
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+bc+';background:#faf5ff">+'+o.breakeven_pct+'%</td>'
+        + (function(){
+          if (!ownedBEs.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          // Use the lowest (best) owned BE for comparison
+          var bestOwned = Math.min.apply(null, ownedBEs);
+          var newBe = parseFloat(o.breakeven) || 0;
+          if (!newBe) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          var diff = ((newBe - bestOwned) / bestOwned * 100);
+          var absDiff = Math.abs(diff).toFixed(1);
+          if (diff < -1) {
+            return '<td style="padding:7px 6px;text-align:right;font-weight:700;color:#166534;font-size:11px;white-space:nowrap" title="New BE $'+newBe+' vs your BE $'+bestOwned+'">&#8595; '+absDiff+'% better</td>';
+          } else if (diff > 1) {
+            return '<td style="padding:7px 6px;text-align:right;font-weight:700;color:#92400e;font-size:11px;white-space:nowrap" title="New BE $'+newBe+' vs your BE $'+bestOwned+'">&#8593; '+absDiff+'% worse</td>';
+          } else {
+            return '<td style="padding:7px 6px;text-align:right;color:#6b7280;font-size:11px;white-space:nowrap">&#8776; same</td>';
+          }
+        })()
         + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:180px">'+o.leaps_note+'</td>'
         + '</tr>';
     });
@@ -898,9 +918,25 @@ function renderOpps() {
               var be  = l.breakeven ? ' · BE $' + l.breakeven : '';
               return ct + stk + exp + be;
             }).filter(Boolean).join('<br>');
+            // Build vs-owned comparison for cards
+            var ownedBEsCard = leapsList.map(function(l){ return parseFloat(l.breakeven)||0; }).filter(function(v){ return v>0; });
+            var vsOwnedHtml = '';
+            if (ownedBEsCard.length && o.breakeven) {
+              var bestOwnedCard = Math.min.apply(null, ownedBEsCard);
+              var diffCard = ((parseFloat(o.breakeven) - bestOwnedCard) / bestOwnedCard * 100);
+              var absDiffCard = Math.abs(diffCard).toFixed(1);
+              if (diffCard < -1) {
+                vsOwnedHtml = '<div style="font-size:10px;font-weight:700;color:#166534;margin-top:2px">&#8595; '+absDiffCard+'% below your BE $'+bestOwnedCard+'</div>';
+              } else if (diffCard > 1) {
+                vsOwnedHtml = '<div style="font-size:10px;font-weight:700;color:#92400e;margin-top:2px">&#8593; '+absDiffCard+'% above your BE $'+bestOwnedCard+'</div>';
+              } else {
+                vsOwnedHtml = '<div style="font-size:10px;color:#6b7280;margin-top:2px">&#8776; same as your BE $'+bestOwnedCard+'</div>';
+              }
+            }
             return '<div>'
               +'<div class="stat-l">Breakeven</div>'
               +'<div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div>'
+              +vsOwnedHtml
               +(leapsBe ? '<div style="font-size:10px;color:#7c3aed;margin-top:2px">'+leapsBe+'</div>' : '')
               +'</div>';
           }
