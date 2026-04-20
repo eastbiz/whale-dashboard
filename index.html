@@ -432,22 +432,31 @@ function renderLeapsTable(leaps) {
     return leapsSortAsc ? av-bv : bv-av;
   });
   function sico(col){ return col!==leapsSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(leapsSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
-  function th(col,lbl){ return '<th onclick="leapsSortCol=\''+col+'\';leapsSortAsc=(\''+col+'\'===leapsSortCol)?!leapsSortAsc:true;renderOpps()" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">'+lbl+sico(col)+'</th>'; }
+  function leapsSortBy(col){ if(leapsSortCol===col){ leapsSortAsc=!leapsSortAsc; } else { leapsSortCol=col; leapsSortAsc=true; } renderOpps(); }
+  function th(col,lbl,extra){ return '<th onclick="leapsSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
   var html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
     + '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Band</th>'
     + th('strike','Strike') + th('premium','Cost') 
     + '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Expiry</th>'
     + th('delta','\u03B4 Delta')
-    + '<th onclick="leapsSortCol=\'extrinsic_pct\';leapsSortAsc=(\'extrinsic_pct\'===leapsSortCol)?!leapsSortAsc:true;renderOpps()" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;background:#f5f3ff;white-space:nowrap">Extrinsic%'+sico('extrinsic_pct')+'</th>'
+    + th('extrinsic_pct','Extrinsic%','background:#f5f3ff')
     + th('breakeven','Breakeven')
-    + '<th onclick="leapsSortCol=\'breakeven_pct\';leapsSortAsc=(\'breakeven_pct\'===leapsSortCol)?!leapsSortAsc:true;renderOpps()" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;background:#f5f3ff;white-space:nowrap">BE% above'+sico('breakeven_pct')+'</th>'
+    + th('breakeven_pct','BE% above','background:#f5f3ff')
     + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
     + '</tr></thead><tbody>';
   var bandOrder = {conservative:0,sweet_spot:1,aggressive:2};
+  // When sorting by ticker, group by ticker and sort bands within; otherwise flat sort
+  var isByTicker = (leapsSortCol === 'ticker');
   var groups = {};
   rows.forEach(function(o){ if(!groups[o.ticker]) groups[o.ticker]=[]; groups[o.ticker].push(o); });
-  Object.keys(groups).sort().forEach(function(ticker) {
-    var tRows = groups[ticker].slice().sort(function(a,b){ return (bandOrder[a.leaps_band]||9)-(bandOrder[b.leaps_band]||9); });
+  // Build ordered ticker list: by ticker alpha if ticker sort, else preserve row order from global sort
+  var orderedTickers = isByTicker
+    ? Object.keys(groups).sort(function(a,b){ return leapsSortAsc?(a<b?-1:1):(a>b?-1:1); })
+    : rows.reduce(function(acc,o){ if(acc.indexOf(o.ticker)===-1) acc.push(o.ticker); return acc; }, []);
+  orderedTickers.forEach(function(ticker) {
+    var tRows = isByTicker
+      ? groups[ticker].slice().sort(function(a,b){ return (bandOrder[a.leaps_band]||9)-(bandOrder[b.leaps_band]||9); })
+      : rows.filter(function(o){ return o.ticker===ticker; });
     var first = tRows[0];
     var bu = first.buy_under;
     var buDist = bu ? ((first.price-bu)/bu*100) : null;
