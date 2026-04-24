@@ -1177,7 +1177,7 @@ function renderPositions() {
           var combinedPct = portSize > 0 ? Math.round((stockMv + leapsMv) / portSize * 1000) / 10 : stockPct;
           var hasLeaps    = leapsMv > 0;
           var leapsBreakdown = hasLeaps
-            ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+' + fmtK(leapsMv) + ' LEAPS · stk ' + stockPct + '%</div>'
+            ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+' + fmtK(leapsMv) + ' LEAPS</div>'
             : '';
           return '<td style="padding:6px 5px;text-align:right">'
             + '<div style="font-family:monospace;font-weight:700;font-size:13px">' + combinedPct.toFixed(1) + '%</div>'
