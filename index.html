@@ -1166,13 +1166,27 @@ function renderPositions() {
             if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
           }
           var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
-          var leapsForTicker = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === p.ticker; });
-          var leapsMv = leapsForTicker.reduce(function(s,l){ return s + (l.market_value || 0); }, 0);
-          var leapsMvStr = leapsMv > 0 ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">+'+fmtK(leapsMv)+' LEAPS</div>' : '';
+          var combinedPct = p.combined_exposure_pct || p.exposure_pct || 0;
+          var stockPct    = p.exposure_pct || 0;
+          var leapsMv     = p.leaps_mv || 0;
+          var hasLeaps    = leapsMv > 0;
+          // Color: combined vs target range
+          var tgt = p.target_range || '';
+          var tgtMatch = tgt.match(/([\d.]+)–([\d.]+)%/);
+          var tgtLo = tgtMatch ? parseFloat(tgtMatch[1]) : 0;
+          var tgtHi = tgtMatch ? parseFloat(tgtMatch[2]) : 999;
+          var pctColor = combinedPct >= tgtLo && combinedPct <= tgtHi ? '#166534'
+                       : combinedPct < tgtLo ? '#92400e' : '#991b1b';
+          var leapsBreakdown = hasLeaps
+            ? '<div style="font-size:10px;color:#7c3aed;font-weight:500;margin-top:1px">'
+              + fmtK(leapsMv) + ' LEAPS · stk ' + stockPct + '%'
+              + '</div>'
+            : '';
           return '<td style="padding:6px 5px;text-align:right">'
-            + '<div style="font-family:monospace;font-weight:600;font-size:13px">'+p.exposure_pct+'%</div>'
+            + '<div style="font-family:monospace;font-weight:700;font-size:13px;color:'+(hasLeaps?pctColor:'inherit')+'">'
+              + combinedPct.toFixed(1) + '%</div>'
             + mvStr
-            + leapsMvStr
+            + leapsBreakdown
             + '</td>';
         })()
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:#6b7280">' + (p.target_range && p.target_range !== '0–0%' ? p.target_range : '&#8212;') + '</td>'
