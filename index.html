@@ -374,12 +374,24 @@ async function loadData() {
     data = await r.json();
     renderAll();
     document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '&#8212;');
-    // Schwab token status
+    // Schwab token status — also check scan age, not just schwab_live flag
     var schwabEl = document.getElementById('schwab-status');
     if (schwabEl) {
-      if (data.schwab_live === true) {
+      var scanAgeHours = 0;
+      if (data.scan_time) {
+        try {
+          var _st = data.scan_time.replace(' ET','').replace(' UTC','').replace(' ','T');
+          scanAgeHours = (Date.now() - new Date(_st).getTime()) / 3600000;
+        } catch(e) { scanAgeHours = 99; }
+      }
+      var scanIsStale = scanAgeHours > 8; // stale if last scan >8 hours ago
+      if (data.schwab_live === true && !scanIsStale) {
         schwabEl.textContent = '🟢 Schwab live · token ok';
         schwabEl.style.color = '#166534';
+      } else if (data.schwab_live === true && scanIsStale) {
+        // Token was ok at last scan but that scan is old — could be expired since
+        schwabEl.textContent = '🟡 Schwab · last scan ' + Math.round(scanAgeHours) + 'h ago — token may have expired';
+        schwabEl.style.color = '#92400e';
       } else if (data.schwab_live === false) {
         schwabEl.textContent = '🔴 Schwab token expired — refresh on Windows';
         schwabEl.style.color = '#991b1b';
