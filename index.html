@@ -1117,9 +1117,10 @@ function renderPositions() {
 
   var positions = currentPosFilter === 'ALL' ? allPositions : allPositions.filter(function(p) {
     // Use accounts_all (list of all accounts this ticker appears in) for multi-account tickers
-    var accts = p.accounts_all || [p.account || 'IBKR'];
-    var acctUpper = accts.map(function(a){ return (a||'').toUpperCase(); });
-    if (currentPosFilter === 'IBKR') return acctUpper.indexOf('IBKR') !== -1 || accts.length === 0;
+    var accts = p.accounts_all || [p.account || ''];
+    // Treat empty/missing account as IBKR (IBKR Flex doesn't label accounts)
+    var acctUpper = accts.map(function(a){ return (a||'IBKR').toUpperCase(); });
+    if (currentPosFilter === 'IBKR') return acctUpper.indexOf('IBKR') !== -1;
     return acctUpper.indexOf(currentPosFilter) !== -1;
   });
 
