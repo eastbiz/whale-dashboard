@@ -1094,7 +1094,7 @@ function downloadPositionsCSV() {
 
 function filterPositions(acct, btn) {
   currentPosFilter = acct;
-  document.querySelectorAll('.filter-row .outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.closest('.filter-row').querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   if (data) renderPositions();
 }
@@ -1208,6 +1208,12 @@ function renderPositions() {
         + (cspObl > 0 ? fmtK(cspObl) : '&#8212;') + '</td>'
       + (function(){
           var leaps = p.leaps || [];
+          // When an account filter is active, show only LEAPS for that account
+          if (currentPosFilter !== 'ALL') {
+            leaps = leaps.filter(function(l){
+              return (l.account || 'IBKR').toUpperCase() === currentPosFilter;
+            });
+          }
           if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
           var lines = leaps.map(function(l){
             return '<div style="margin-bottom:4px;padding-bottom:4px;border-bottom:0.5px solid #e9d5ff">'
