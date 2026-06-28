@@ -252,15 +252,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <select id="convex-ticker-filter" onchange="renderOpps()" style="font-size:12px;border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;color:#374151;background:#fff;cursor:pointer">
         <option value="all">All tickers</option>
       </select>
-      <select id="convex-class-filter" onchange="renderOpps()" style="font-size:12px;border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;color:#374151;background:#fff;cursor:pointer">
-        <option value="all">All classes</option>
-        <option value="A">&#x1F48E; Cheap Convexity</option>
-        <option value="B">&#x2696; Balanced</option>
-        <option value="C">&#x1F336; Speculative</option>
-        <option value="D">&#x1F3B0; Lottery</option>
-        <option value="E">&#x1F501; Stock Replacement</option>
-        <option value="F">&#x274C; Reject</option>
-      </select>
       <div style="margin-left:auto;display:flex;gap:4px">
         <button id="convex-view-cards" onclick="setConvexView('cards')" style="font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:5px;cursor:pointer;background:#f3f4f6;color:#374151;font-weight:400">&#x1F4C7; Cards</button>
         <button id="convex-view-table" onclick="setConvexView('table')" style="font-size:11px;padding:4px 10px;border:1px solid #6366f1;border-radius:5px;cursor:pointer;background:#eef2ff;color:#4338ca;font-weight:700">&#x1F4CB; Table</button>
@@ -570,23 +561,78 @@ function setConvexView(mode) {
 
 // Classification → row tint + badge colors
 var CVX_CLASS_STYLE = {
-  A: {bg:'#ecfdf5', badge:'#065f46', badgeBg:'#a7f3d0'},  // Cheap — green
-  B: {bg:'#eff6ff', badge:'#1e40af', badgeBg:'#bfdbfe'},  // Balanced — blue
-  C: {bg:'#fff7ed', badge:'#9a3412', badgeBg:'#fed7aa'},  // Speculative — orange
-  D: {bg:'#fdf4ff', badge:'#86198f', badgeBg:'#f5d0fe'},  // Lottery — magenta
-  E: {bg:'#f8fafc', badge:'#334155', badgeBg:'#e2e8f0'},  // Stock Replacement — slate
-  F: {bg:'#fef2f2', badge:'#991b1b', badgeBg:'#fecaca'}   // Reject — red
+  A: {bg:'#ecfdf5', badge:'#065f46', badgeBg:'#a7f3d0'},  // Excellent — green
+  B: {bg:'#eff6ff', badge:'#1e40af', badgeBg:'#bfdbfe'},  // Good — blue
+  N: {bg:'#f9fafb', badge:'#6b7280', badgeBg:'#e5e7eb'}   // Near Miss — gray
 };
 
-var convexSortCol = 'score';
-var convexSortAsc = false;
-function convexSortBy(col){ if(convexSortCol===col){ convexSortAsc=!convexSortAsc; } else { convexSortCol=col; convexSortAsc=(col==='required_cagr'||col==='premium_pct'); } renderOpps(); }
+// near-miss panel expand state (persisted for session)
+var convexShowNearMiss = false;
+function toggleConvexNearMiss(){ convexShowNearMiss = !convexShowNearMiss; renderOpps(); }
+
+var convexSortCol = 'required_cagr';
+var convexSortAsc = true;
+function convexSortBy(col){ if(convexSortCol===col){ convexSortAsc=!convexSortAsc; } else { convexSortCol=col; convexSortAsc=(col==='required_cagr'||col==='premium_pct'||col==='dte'||col==='ann_burden_pct'||col==='spread_pct'); } renderOpps(); }
+
+function _cvxHeaderRow(){
+  function sico(col){ return col!==convexSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(convexSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
+  function th(col,lbl,extra){ return '<th onclick="convexSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
+  function thx(lbl,extra){ return '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600'+(extra?';'+extra:'')+'">'+lbl+'</th>'; }
+  return '<tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
+    + th('ticker','Ticker','text-align:left')
+    + th('strike','Strike')
+    + th('premium','Ask') + thx('Mid')
+    + thx('Expiry') + th('dte','DTE')
+    + th('breakeven','Breakeven')
+    + th('required_cagr','Req CAGR','background:#f5f3ff')
+    + th('convexity_score','Conv \u00D7','background:#f5f3ff')
+    + th('premium_pct','Prem%')
+    + th('ann_burden_pct','Burden/yr')
+    + th('cov20','Cov@20%') + th('cov25','Cov@25%')
+    + th('cov30','Cov@30%','background:#f5f3ff')
+    + thx('IV Rank') + th('spread_pct','Spread') + th('open_interest','OI')
+    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Class</th>'
+    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Explanation</th>'
+    + '</tr>';
+}
+
+function _cvxDataRow(o){
+  var st = CVX_CLASS_STYLE[o.classification] || CVX_CLASS_STYLE.N;
+  var rb = o.is_recommended ? '#fefce8' : st.bg;
+  var cagrColor = o.required_cagr<20?'#166534':o.required_cagr<=25?'#15803d':'#991b1b';
+  var convColor = o.convexity_score>=25?'#166534':o.convexity_score>=20?'#15803d':'#991b1b';
+  var covColor  = o.cov30>=1.15?'#166534':o.cov30>=1.05?'#15803d':'#991b1b';
+  var premColor = o.premium_pct<8?'#166534':o.premium_pct<=12?'#15803d':'#991b1b';
+  var burdColor = o.ann_burden_pct<3?'#166534':o.ann_burden_pct<5?'#15803d':'#991b1b';
+  var spreadColor = o.spread_pct<10?'#166534':o.spread_pct<15?'#92400e':'#991b1b';
+  var classBadge = '<span style="font-size:10px;font-weight:700;background:'+st.badgeBg+';color:'+st.badge+';padding:1px 6px;border-radius:3px;white-space:nowrap">'+o.class_label+'</span>';
+  function cov(v){ if(v==null) return '\u2014'; var c=v>=1.15?'#166534':v>=1.05?'#15803d':v>=1.00?'#92400e':'#991b1b'; return '<span style="color:'+c+';font-weight:600">'+v.toFixed(2)+'</span>'; }
+  return '<tr style="border-bottom:1px solid #f3f4f6;background:'+rb+'">'
+    + '<td style="padding:7px 10px;font-weight:600;color:#374151">'+o.ticker+(o.is_recommended?' <span style="font-size:9px;font-weight:700;background:#fef08a;color:#713f12;padding:1px 5px;border-radius:3px">&#9733; REC</span>':'')+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:700;color:#6b21a8">$'+o.premium.toFixed(2)+'</td>'
+    + '<td style="padding:7px 6px;text-align:center;font-family:monospace;color:#6b7280">$'+o.mid.toFixed(2)+'</td>'
+    + '<td style="padding:7px 6px;text-align:center;color:#6b7280">'+fmtExpiry(o.expiry)+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;color:#6b7280">'+o.dte+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+cagrColor+';background:#faf5ff">'+o.required_cagr+'%</td>'
+    + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+convColor+';background:#faf5ff">'+o.convexity_score+'\u00D7</td>'
+    + '<td style="padding:7px 6px;text-align:right;font-weight:600;color:'+premColor+'">'+o.premium_pct+'%</td>'
+    + '<td style="padding:7px 6px;text-align:right;color:'+burdColor+'">'+o.ann_burden_pct+'%</td>'
+    + '<td style="padding:7px 6px;text-align:right">'+cov(o.cov20)+'</td>'
+    + '<td style="padding:7px 6px;text-align:right">'+cov(o.cov25)+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;background:#faf5ff">'+cov(o.cov30)+'</td>'
+    + '<td style="padding:7px 6px;text-align:center;color:#9ca3af;font-size:11px">N/A</td>'
+    + '<td style="padding:7px 6px;text-align:right;color:'+spreadColor+'">'+o.spread_pct+'%</td>'
+    + '<td style="padding:7px 6px;text-align:right;color:#6b7280">'+o.open_interest+'</td>'
+    + '<td style="padding:7px 6px">'+classBadge+'</td>'
+    + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:260px">'+o.convexity_note+'</td>'
+    + '</tr>';
+}
 
 function renderConvexityTable(rows) {
   var selT = document.getElementById('convex-ticker-filter');
-  var selC = document.getElementById('convex-class-filter');
   var tickerFilter = selT ? selT.value : 'all';
-  var classFilter  = selC ? selC.value : 'all';
   var tickers = [...new Set(rows.map(function(o){ return o.ticker; }))].sort();
   if (selT) {
     var cv = selT.value;
@@ -595,78 +641,44 @@ function renderConvexityTable(rows) {
   }
   var view = rows.slice();
   if (tickerFilter !== 'all') view = view.filter(function(o){ return o.ticker === tickerFilter; });
-  if (classFilter  !== 'all') view = view.filter(function(o){ return o.classification === classFilter; });
-  if (!view.length) { document.getElementById('convex-table-view').innerHTML = '<div style="padding:20px;color:#9ca3af">No convexity candidates match this filter.</div>'; return; }
-  view.sort(function(a,b){
-    var av = a[convexSortCol]; var bv = b[convexSortCol];
-    if (av==null) av = convexSortAsc?9e9:-9e9;
-    if (bv==null) bv = convexSortAsc?9e9:-9e9;
-    if (typeof av === 'string') return convexSortAsc ? (av<bv?-1:1) : (av>bv?-1:1);
-    return convexSortAsc ? av-bv : bv-av;
-  });
-  function sico(col){ return col!==convexSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(convexSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
-  function th(col,lbl,extra){ return '<th onclick="convexSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
-  var html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
-    + th('ticker','Ticker','text-align:left')
-    + th('strike','Strike')
-    + th('premium','Cost (ask)')
-    + '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Expiry</th>'
-    + th('dte','DTE')
-    + th('required_cagr','Req CAGR','background:#f5f3ff')
-    + th('convexity_score','Conv \u00D7','background:#f5f3ff')
-    + th('premium_pct','Prem%')
-    + th('cov30','Cov@30%','background:#f5f3ff')
-    + th('breakeven','Breakeven')
-    + th('score','Score')
-    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Class</th>'
-    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
-    + '</tr></thead><tbody>';
-  // Group rows by ticker so each ticker gets a header band (like LEAPS)
-  var isByTicker = (convexSortCol === 'ticker');
-  var orderedTickers = isByTicker
-    ? [...new Set(view.map(function(o){return o.ticker;}))].sort(function(a,b){ return convexSortAsc?(a<b?-1:1):(a>b?-1:1); })
-    : view.reduce(function(acc,o){ if(acc.indexOf(o.ticker)===-1) acc.push(o.ticker); return acc; }, []);
-  orderedTickers.forEach(function(ticker) {
-    var tRows = view.filter(function(o){ return o.ticker===ticker; });
-    var first = tRows[0];
-    var bu = first.buy_under;
-    var buDist = bu ? ((first.price-bu)/bu*100) : null;
-    var tNote = '';
-    if (buDist!==null) {
-      if (buDist<=0) tNote='<span style="color:#16a34a;font-weight:700">\u25BC '+Math.abs(buDist).toFixed(1)+'% below buy target $'+bu+' \u2014 cheap entry</span>';
-      else if (buDist<=5) tNote='<span style="color:#ca8a04">\u25B2 '+buDist.toFixed(1)+'% above $'+bu+' \u2014 approaching</span>';
-      else tNote='<span style="color:#9ca3af">'+buDist.toFixed(1)+'% above buy target $'+bu+'</span>';
-    }
-    var eNote = first.days_to_earnings&&first.days_to_earnings<=35
-      ? ' <span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:'+(first.days_to_earnings<=14?'#fee2e2':'#fef9c3')+';color:'+(first.days_to_earnings<=14?'#991b1b':'#92400e')+'">&#9888; Earn '+first.days_to_earnings+'d</span>' : '';
-    html += '<tr style="background:#faf5ff;border-top:2px solid #e9d5ff"><td colspan="13" style="padding:8px 10px;font-weight:700;font-size:13px;color:#6b21a8">'
-      + ticker+' <span style="font-size:11px;font-weight:400;color:#374151;font-family:monospace">$'+first.price.toFixed(2)+'</span>'
-      + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
-    tRows.forEach(function(o) {
-      var st = CVX_CLASS_STYLE[o.classification] || CVX_CLASS_STYLE.F;
-      var rb = o.is_recommended ? '#fefce8' : st.bg;
-      var cagrColor = o.required_cagr<20?'#166534':o.required_cagr<25?'#15803d':o.required_cagr<30?'#92400e':o.required_cagr<35?'#b45309':'#991b1b';
-      var covColor  = o.cov30>=1.30?'#166534':o.cov30>=1.15?'#15803d':o.cov30>=1.00?'#92400e':'#991b1b';
-      var premColor = o.premium_pct<8?'#166534':o.premium_pct<12?'#15803d':o.premium_pct<20?'#92400e':'#991b1b';
-      var classBadge = '<span style="font-size:10px;font-weight:700;background:'+st.badgeBg+';color:'+st.badge+';padding:1px 6px;border-radius:3px;white-space:nowrap">'+o.class_label+'</span>';
-      html += '<tr style="border-bottom:1px solid #f3f4f6;background:'+rb+'">'
-        + '<td style="padding:7px 10px;font-weight:600;color:#374151">'+o.ticker+(o.is_recommended?' <span style="font-size:9px;font-weight:700;background:#fef08a;color:#713f12;padding:1px 5px;border-radius:3px">&#9733; REC</span>':'')+'</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:700;color:#6b21a8">$'+o.premium.toFixed(2)+'</td>'
-        + '<td style="padding:7px 6px;text-align:center;color:#6b7280">'+fmtExpiry(o.expiry)+'</td>'
-        + '<td style="padding:7px 6px;text-align:right;color:#6b7280">'+o.dte+'</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+cagrColor+';background:#faf5ff">'+o.required_cagr+'%</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-weight:600;background:#faf5ff">'+o.convexity_score+'\u00D7</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-weight:600;color:'+premColor+'">'+o.premium_pct+'%</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+covColor+';background:#faf5ff">'+(o.cov30!=null?o.cov30.toFixed(2):'\u2014')+'</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:#4338ca">'+o.score+'</td>'
-        + '<td style="padding:7px 6px">'+classBadge+'</td>'
-        + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:240px">'+o.convexity_note+'</td>'
-        + '</tr>';
+  var passers   = view.filter(function(o){ return !o.is_nearmiss; });
+  var nearmiss  = view.filter(function(o){ return o.is_nearmiss; });
+  function srt(arr){
+    arr.sort(function(a,b){
+      var av=a[convexSortCol], bv=b[convexSortCol];
+      if(av==null) av=convexSortAsc?9e9:-9e9;
+      if(bv==null) bv=convexSortAsc?9e9:-9e9;
+      if(typeof av==='string') return convexSortAsc?(av<bv?-1:1):(av>bv?-1:1);
+      return convexSortAsc?av-bv:bv-av;
     });
-  });
-  html += '</tbody></table>';
+    return arr;
+  }
+  srt(passers); srt(nearmiss);
+
+  var html = '';
+  // ── MAIN: strict passers only ──
+  if (passers.length) {
+    html += '<div style="font-size:12px;font-weight:700;color:#065f46;margin:4px 0 6px">'
+      + '&#x1F48E; Actionable Cheap Convexity LEAPS &mdash; '+passers.length+' passing strict filters</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead>'+_cvxHeaderRow()+'</thead><tbody>'
+      + passers.map(_cvxDataRow).join('') + '</tbody></table>';
+  } else {
+    html += '<div style="padding:24px;text-align:center;color:#6b7280;background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;font-size:14px">'
+      + '&#x1F50D; No actionable Cheap Convexity LEAPS found.'
+      + '<div style="font-size:11px;color:#9ca3af;margin-top:6px">Zero results is expected &mdash; strict filters only surface rare, high-quality setups.</div></div>';
+  }
+  // ── DIAGNOSTICS: near-misses, collapsed ──
+  if (nearmiss.length) {
+    html += '<div style="margin-top:14px">'
+      + '<div onclick="toggleConvexNearMiss()" style="cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;user-select:none;padding:6px 0">'
+      + (convexShowNearMiss?'&#9660;':'&#9658;')+' Near Misses / Diagnostics ('+nearmiss.length+')'
+      + '<span style="font-weight:400;color:#9ca3af;margin-left:8px">'+(convexShowNearMiss?'click to hide':'click to expand &mdash; fail just one or two hard filters')+'</span></div>';
+    if (convexShowNearMiss) {
+      html += '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead>'+_cvxHeaderRow()+'</thead><tbody>'
+        + nearmiss.map(_cvxDataRow).join('') + '</tbody></table>';
+    }
+    html += '</div>';
+  }
   document.getElementById('convex-table-view').innerHTML = html;
 }
 
@@ -921,10 +933,21 @@ function renderOpps() {
       if (cTableView) cTableView.style.display = 'none';
       if (cGridView)  cGridView.style.display = '';
     }
-    // Card view: sort by score descending
-    filtered = filtered.slice().sort(function(a, b) {
-      return (b.score != null ? b.score : -1) - (a.score != null ? a.score : -1);
+    // Card view: passers only, sorted per spec (Req CAGR asc, then Cov@30% desc)
+    var cvxPass = filtered.filter(function(o){ return !o.is_nearmiss; }).sort(function(a, b) {
+      if (a.required_cagr !== b.required_cagr) return a.required_cagr - b.required_cagr;
+      return (b.cov30||0) - (a.cov30||0);
     });
+    var cvxNmCount = filtered.filter(function(o){ return o.is_nearmiss; }).length;
+    if (!cvxPass.length) {
+      grid.innerHTML = '<div style="padding:24px;text-align:center;color:#6b7280;background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;font-size:14px">'
+        + '&#x1F50D; No actionable Cheap Convexity LEAPS found.'
+        + '<div style="font-size:11px;color:#9ca3af;margin-top:6px">Zero results is expected &mdash; strict filters only surface rare, high-quality setups.'
+        + (cvxNmCount ? ' '+cvxNmCount+' near-miss'+(cvxNmCount>1?'es':'')+' available in Table view &rarr; Diagnostics.' : '')
+        + '</div></div>';
+      return;
+    }
+    filtered = cvxPass;
   }
 
   if (!filtered.length) {
@@ -942,16 +965,19 @@ function renderOpps() {
   grid.innerHTML = filtered.map(function(o) {
     // CONVEXITY: dedicated card layout (distinct fields from premium-selling cards)
     if (o.mode === 'CONVEXITY') {
-      var st = CVX_CLASS_STYLE[o.classification] || CVX_CLASS_STYLE.F;
-      var cagrColor = o.required_cagr<20?'#166534':o.required_cagr<25?'#15803d':o.required_cagr<30?'#92400e':o.required_cagr<35?'#b45309':'#991b1b';
-      var covColor  = o.cov30>=1.30?'#166534':o.cov30>=1.15?'#15803d':o.cov30>=1.00?'#92400e':'#991b1b';
-      var premColor = o.premium_pct<8?'#166534':o.premium_pct<12?'#15803d':o.premium_pct<20?'#92400e':'#991b1b';
+      // Card view shows MAIN output only (passers). Near-misses live in the
+      // Table view's collapsible Diagnostics section.
+      if (o.is_nearmiss) return '';
+      var st = CVX_CLASS_STYLE[o.classification] || CVX_CLASS_STYLE.N;
+      var cagrColor = o.required_cagr<20?'#166534':o.required_cagr<=25?'#15803d':'#991b1b';
+      var covColor  = o.cov30>=1.15?'#166534':o.cov30>=1.05?'#15803d':'#991b1b';
+      var premColor = o.premium_pct<8?'#166534':o.premium_pct<=12?'#15803d':'#991b1b';
       var recBadge = o.is_recommended ? ' <span style="font-size:9px;font-weight:700;background:#fef08a;color:#713f12;padding:1px 5px;border-radius:3px">&#9733; REC</span>' : '';
       var covRows = '';
       if (o.coverage) {
         covRows = Object.keys(o.coverage).map(function(k){ return parseInt(k); }).sort(function(a,b){return a-b;}).map(function(g){
           var v = o.coverage[g];
-          var c = v>=1.30?'#166534':v>=1.15?'#15803d':v>=1.00?'#92400e':'#991b1b';
+          var c = v>=1.15?'#166534':v>=1.05?'#15803d':v>=1.00?'#92400e':'#991b1b';
           return '<div style="text-align:center"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase">'+g+'% CAGR</div><div style="font-weight:700;color:'+c+';font-size:12px">'+(v!=null?v.toFixed(2):'\u2014')+'</div></div>';
         }).join('');
       }
@@ -961,8 +987,8 @@ function renderOpps() {
         +   '<span style="font-size:10px;font-weight:700;background:'+st.badgeBg+';color:'+st.badge+';padding:2px 7px;border-radius:4px;white-space:nowrap">'+o.class_label+'</span>'
         + '</div>'
         + '<div style="display:flex;gap:14px;margin-top:8px;font-size:13px">'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Strike</span><br><strong style="font-family:monospace">$'+o.strike+'</strong></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Cost (ask)</span><br><strong style="font-family:monospace;color:#6b21a8">$'+o.premium.toFixed(2)+'</strong></div>'
+        +   '<div><span style="color:#9ca3af;font-size:11px">Strike</span><br><strong style="font-family:monospace">$'+o.strike+'</strong> <span style="color:#9ca3af;font-size:10px">('+o.strike_pct+'%)</span></div>'
+        +   '<div><span style="color:#9ca3af;font-size:11px">Ask / Mid</span><br><strong style="font-family:monospace;color:#6b21a8">$'+o.premium.toFixed(2)+'</strong> <span style="color:#9ca3af;font-size:10px">/ $'+o.mid.toFixed(2)+'</span></div>'
         +   '<div><span style="color:#9ca3af;font-size:11px">Expiry</span><br><strong>'+fmtExpiry(o.expiry)+'</strong> <span style="color:#9ca3af;font-size:11px">('+o.dte+'d)</span></div>'
         +   '<div><span style="color:#9ca3af;font-size:11px">Breakeven</span><br><strong style="font-family:monospace">$'+o.breakeven+'</strong></div>'
         + '</div>'
@@ -970,7 +996,8 @@ function renderOpps() {
         +   '<div><span style="color:#9ca3af;font-size:11px">Req CAGR</span><br><strong style="color:'+cagrColor+'">'+o.required_cagr+'%</strong></div>'
         +   '<div><span style="color:#9ca3af;font-size:11px">Convexity</span><br><strong>'+o.convexity_score+'\u00D7</strong></div>'
         +   '<div><span style="color:#9ca3af;font-size:11px">Premium%</span><br><strong style="color:'+premColor+'">'+o.premium_pct+'%</strong></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Score</span><br><strong style="color:#4338ca">'+o.score+'</strong></div>'
+        +   '<div><span style="color:#9ca3af;font-size:11px">Burden/yr</span><br><strong>'+o.ann_burden_pct+'%</strong></div>'
+        +   '<div><span style="color:#9ca3af;font-size:11px">Cov@30%</span><br><strong style="color:'+covColor+'">'+(o.cov30!=null?o.cov30.toFixed(2):'\u2014')+'</strong></div>'
         + '</div>'
         + (covRows ? '<div style="display:flex;justify-content:space-around;margin-top:10px;padding:8px;background:#faf5ff;border-radius:6px">'+covRows+'</div>' : '')
         + '<div class="opp-reasoning" style="margin-top:8px">'+o.convexity_note+'</div>'
