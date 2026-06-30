@@ -449,14 +449,6 @@ var leapsSortAsc = true;
 function leapsSortBy(col){ if(leapsSortCol===col){ leapsSortAsc=!leapsSortAsc; } else { leapsSortCol=col; leapsSortAsc=true; } renderOpps(); }
 
 function renderLeapsTable(leaps) {
-  // Annualized breakeven growth: the CAGR the stock must achieve from today's
-  // price to reach breakeven by expiration. Normalizes options of different DTE
-  // so a Dec 2027 and a Dec 2028 LEAPS can be compared fairly.
-  function beCagr(be, price, dte) {
-    be = parseFloat(be)||0; price = parseFloat(price)||0; dte = parseInt(dte)||0;
-    if (be<=0 || price<=0 || dte<=0) return null;
-    return (Math.pow(be/price, 365/dte) - 1) * 100;  // percent per year
-  }
   var sel = document.getElementById('leaps-ticker-filter');
   var tickerFilter = sel ? sel.value : 'all';
   var tickers = [...new Set(leaps.map(function(o){ return o.ticker; }))].sort();
@@ -483,8 +475,7 @@ function renderLeapsTable(leaps) {
     + th('extrinsic_pct','Extrinsic%','background:#f5f3ff')
     + th('breakeven','Breakeven')
     + th('breakeven_pct','BE% above','background:#f5f3ff')
-    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f5f3ff" title="Annual stock growth needed to reach breakeven \u2014 time-fair across different expirations">BE CAGR/yr</th>'
-    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Compares annualized breakeven vs your owned position \u2014 DTE-fair">vs Owned</th>'
+    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Breakeven vs your owned position. Note the DTE column \u2014 a longer-dated option naturally has a higher breakeven.">vs Owned</th>'
     + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
     + '</tr></thead><tbody>';
   var bandOrder = {conservative:0,sweet_spot:1,aggressive:2};
@@ -511,7 +502,7 @@ function renderLeapsTable(leaps) {
     }
     var eNote = first.days_to_earnings&&first.days_to_earnings<=35
       ? ' <span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:'+(first.days_to_earnings<=14?'#fee2e2':'#fef9c3')+';color:'+(first.days_to_earnings<=14?'#991b1b':'#92400e')+'">&#9888; Earn '+first.days_to_earnings+'d</span>' : '';
-    html += '<tr style="background:#f0f9ff;border-top:2px solid #bfdbfe"><td colspan="11" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1e40af">'
+    html += '<tr style="background:#f0f9ff;border-top:2px solid #bfdbfe"><td colspan="10" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1e40af">'
       + ticker+' <span style="font-size:11px;font-weight:400;color:#374151;font-family:monospace">$'+first.price.toFixed(2)+'</span>'
       + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
     // Build owned LEAPS for this ticker (used for DTE-fair annualized comparison)
@@ -520,8 +511,6 @@ function renderLeapsTable(leaps) {
       var ec = o.extrinsic_pct<20?'#166534':o.extrinsic_pct<30?'#92400e':o.extrinsic_pct<40?'#b45309':'#991b1b';
       var bc = o.breakeven_pct<8?'#166534':o.breakeven_pct<15?'#92400e':'#6b7280';
       var rb = o.is_recommended?'#fefce8':'#fff';
-      var newCagr = beCagr(o.breakeven, o.price, o.dte);
-      var cagrColor = newCagr==null?'#9ca3af':newCagr<8?'#166534':newCagr<15?'#15803d':newCagr<22?'#92400e':'#991b1b';
       html += '<tr style="border-bottom:1px solid #f3f4f6;background:'+rb+'">'
         + '<td style="padding:7px 10px;white-space:nowrap">'+o.leaps_label+(o.is_recommended?' <span style="font-size:10px;font-weight:700;background:#fef08a;color:#713f12;padding:1px 6px;border-radius:3px">&#9733; REC</span>':'')+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
@@ -531,26 +520,37 @@ function renderLeapsTable(leaps) {
         + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+ec+';background:#faf5ff">'+o.extrinsic_pct+'%</td>'
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+bc+';background:#faf5ff">+'+o.breakeven_pct+'%</td>'
-        + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+cagrColor+';background:#faf5ff" title="Stock must rise this much per year to reach breakeven by expiry">'+(newCagr==null?'\u2014':newCagr.toFixed(1)+'%')+'</td>'
         + (function(){
           if (!ownedLeaps.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
-          // Compare ANNUALIZED breakeven (CAGR) so different DTEs are fair.
-          // Pick the owned position with the lowest BE CAGR (best) as the benchmark.
-          var ownedCagrs = ownedLeaps.map(function(l){
-            return beCagr(l.breakeven, first.price, l.dte);
-          }).filter(function(v){ return v!=null; });
-          if (!ownedCagrs.length || newCagr==null) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
-          var bestOwnedCagr = Math.min.apply(null, ownedCagrs);
-          var diff = newCagr - bestOwnedCagr;   // percentage points/yr
+          // Raw breakeven comparison vs your best (lowest-BE) owned position.
+          // A DTE-mismatch flag warns when the expiries differ enough that the
+          // lower/higher breakeven is partly just a function of time, not value.
+          var ownedWithBE = ownedLeaps.filter(function(l){ return (parseFloat(l.breakeven)||0) > 0; });
+          if (!ownedWithBE.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          var newBe = parseFloat(o.breakeven) || 0;
+          if (!newBe) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          // Benchmark = owned position with the lowest (best) breakeven
+          var bench = ownedWithBE.reduce(function(a,b){ return (parseFloat(b.breakeven)||9e9) < (parseFloat(a.breakeven)||9e9) ? b : a; });
+          var bestOwned = parseFloat(bench.breakeven) || 0;
+          var diff = ((newBe - bestOwned) / bestOwned * 100);
           var ad = Math.abs(diff).toFixed(1);
-          var ttl = 'New '+newCagr.toFixed(1)+'%/yr vs your best owned '+bestOwnedCagr.toFixed(1)+'%/yr (DTE-fair)';
-          if (diff < -0.5) {
-            return '<td style="padding:7px 6px;text-align:right;font-weight:700;color:#166534;font-size:11px;white-space:nowrap" title="'+ttl+'">&#8595; '+ad+'pp easier</td>';
-          } else if (diff > 0.5) {
-            return '<td style="padding:7px 6px;text-align:right;font-weight:700;color:#92400e;font-size:11px;white-space:nowrap" title="'+ttl+'">&#8593; '+ad+'pp harder</td>';
-          } else {
-            return '<td style="padding:7px 6px;text-align:right;color:#6b7280;font-size:11px;white-space:nowrap" title="'+ttl+'">&#8776; same</td>';
+          // DTE mismatch flag (this option's DTE vs the benchmark owned DTE)
+          var dteGap = (parseInt(o.dte)||0) - (parseInt(bench.dte)||0);
+          var dteFlag = '';
+          if (Math.abs(dteGap) > 90) {
+            var longer = dteGap > 0;
+            dteFlag = '<div style="font-size:9px;font-weight:400;color:#b45309;white-space:nowrap" title="Your owned expires '+(bench.expiry_fmt||bench.expiry||'')+'. '+(longer?'This option is longer-dated, so a higher breakeven is expected.':'This option is shorter-dated, so a lower breakeven is expected.')+'">&#9888; '+(longer?'+':'\u2212')+Math.round(Math.abs(dteGap)/30)+'mo DTE</div>';
           }
+          var ttl = 'New BE $'+newBe+' vs your best owned BE $'+bestOwned+' ('+(bench.expiry_fmt||bench.expiry||'owned')+')';
+          var main;
+          if (diff < -1) {
+            main = '<span style="font-weight:700;color:#166534">&#8595; '+ad+'% better</span>';
+          } else if (diff > 1) {
+            main = '<span style="font-weight:700;color:#92400e">&#8593; '+ad+'% worse</span>';
+          } else {
+            main = '<span style="color:#6b7280">&#8776; same</span>';
+          }
+          return '<td style="padding:7px 6px;text-align:right;font-size:11px;white-space:nowrap" title="'+ttl+'">'+main+dteFlag+'</td>';
         })()
         + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:180px">'+o.leaps_note+'</td>'
         + '</tr>';
