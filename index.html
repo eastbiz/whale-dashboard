@@ -1563,7 +1563,7 @@ function renderActions() {
       if (accountFilter === 'ALL') return true;
       return (r.account||'').toUpperCase().indexOf(accountFilter) >= 0;
     });
-    var actNow    = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='CLOSE NOW'||r.action==='ESCAPE ASSIGNMENT'; }).length;
+    var actNow    = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'; }).length;
     var takePft   = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'; }).length;
     var safeCount = all.filter(function(r){ return r.action==='HOLD'; }).length;
     var totalCso  = all.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
@@ -1577,7 +1577,7 @@ function renderActions() {
       mbar('CSP Obligation', '$'+Math.round(totalCso/1000)+'k', '#374151') +
       mbar('CSP % Portfolio', cspPct+'%', parseFloat(cspPct)>30?'#991b1b':'#374151');
 
-    var urgent = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='CLOSE NOW'||r.action==='ESCAPE ASSIGNMENT'; })
+    var urgent = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'; })
       .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
     var profit = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'||r.action==='REDUCE'; })
       .sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); });
