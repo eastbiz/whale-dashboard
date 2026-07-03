@@ -316,6 +316,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="actions-summary" style="display:flex;gap:20px;align-items:center"></div>
     </div>
     <div id="actions-content" style="padding-bottom:40px"></div>
+
+    <div style="margin-top:8px;padding-bottom:40px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:600">&#128203; All Open CSP/CC Positions</span>
+        <span style="font-size:12px;color:#9ca3af" id="actions-table-count"></span>
+        <span style="font-size:11px;color:#9ca3af">&mdash; every account, one table</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="actions-table">
+          <thead>
+            <colgroup>
+              <col style="width:66px"><col style="width:52px"><col style="width:58px">
+              <col style="width:70px"><col style="width:42px"><col style="width:90px">
+              <col style="width:66px"><col style="width:84px"><col style="width:88px">
+              <col style="width:56px"><col style="width:68px"><col style="width:78px">
+              <col style="width:64px"><col style="width:230px">
+            </colgroup>
+            <tr style="border-bottom:2px solid #e5e7eb">
+              <th onclick="actionsSort('ticker')" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="atsi-ticker"></span></th>
+              <th onclick="actionsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="atsi-account"></span></th>
+              <th onclick="actionsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="atsi-strike"></span></th>
+              <th onclick="actionsSort('dte')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">DTE<span id="atsi-dte"></span></th>
+              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Ctr</th>
+              <th onclick="actionsSort('premium_received')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Fill<span id="atsi-premium_received"></span></th>
+              <th onclick="actionsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="atsi-mark"></span></th>
+              <th onclick="actionsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="atsi-pnl_dollar"></span></th>
+              <th onclick="actionsSort('remaining_prem')" title="Cost to buy the option back right now" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #e5e7eb">Cost to<br>close<span id="atsi-remaining_prem"></span></th>
+              <th onclick="actionsSort('ann_roi_remaining')" title="Annualized return on capital if held to expiry and the option decays to zero. Only shown for profitable positions — meaningless for a position that's currently a loss." style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ann. ROI<br>if held<span id="atsi-ann_roi_remaining"></span></th>
+              <th onclick="actionsSort('day_chg_pct')" title="Underlying move: 1-day and 3-day % change" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Move<span id="atsi-day_chg_pct"></span></th>
+              <th onclick="actionsSort('dist_to_be_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Cushion<span id="atsi-dist_to_be_pct"></span></th>
+              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Earnings</th>
+              <th onclick="actionsSort('action')" style="text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action / Reason<span id="atsi-action"></span></th>
+            </tr>
+          </thead>
+          <tbody id="actions-tbody"><tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -1599,6 +1637,7 @@ function renderActions() {
       + '</div></div>';
 
     document.getElementById('actions-content').innerHTML = html;
+    renderActionsTable();
   } catch(e) {
     console.error('renderActions:', e);
     document.getElementById('actions-content').innerHTML = '<div style="padding:20px;color:#991b1b">Error: '+e.message+'</div>';
@@ -1664,6 +1703,128 @@ function toggleSafe() {
   var chev = document.getElementById('safe-chevron');
   if (sec.style.display === 'none') { sec.style.display = 'block'; chev.innerHTML = '&#9650; collapse'; }
   else { sec.style.display = 'none'; chev.innerHTML = '&#9660; expand'; }
+}
+
+// Derived, decision-support numbers not present verbatim in position_actions:
+//  - remaining $ value = cost to buy the option back right now (what's still "at risk" by holding)
+//  - annualized ROI left = return you'd earn (annualized) by holding that remaining value to expiry
+function actionsDerive(r) {
+  var totalCredit  = (r.premium_received || 0) * (r.contracts || 0) * 100;
+  var remainingVal = (r.mark || 0) * (r.contracts || 0) * 100;
+  var capitalBase  = r.cso || (r.strike && r.shares_covered ? r.strike * r.shares_covered : 0);
+  // Only meaningful for a position that's currently profitable — assumes the option decays
+  // toward zero, which isn't a reasonable expectation to annualize for a position at a loss.
+  var annRoi = ((r.pnl_dollar || 0) >= 0 && capitalBase > 0 && r.dte > 0) ? (remainingVal / capitalBase) * (365 / r.dte) * 100 : null;
+  return { totalCredit: totalCredit, remainingVal: remainingVal, capitalBase: capitalBase, annRoi: annRoi };
+}
+
+var actionsSortCol = 'dte';
+var actionsSortAsc = true;
+var ACTIONS_SORT_COLS = ['ticker','account','strike','dte','premium_received','mark','pnl_dollar','remaining_prem','ann_roi_remaining','day_chg_pct','dist_to_be_pct','action'];
+
+function actionsSort(col) {
+  if (actionsSortCol === col) actionsSortAsc = !actionsSortAsc;
+  else { actionsSortCol = col; actionsSortAsc = true; }
+  ACTIONS_SORT_COLS.forEach(function(c) {
+    var el = document.getElementById('atsi-' + c);
+    if (el) el.textContent = '';
+  });
+  var el = document.getElementById('atsi-' + col);
+  if (el) el.textContent = ' ' + (actionsSortAsc ? '▲' : '▼');
+  if (data) renderActionsTable();
+}
+
+function renderActionsTable() {
+  var tbody = document.getElementById('actions-tbody');
+  if (!tbody) return;
+  if (!data || !data.position_actions) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No position data — run a scan first</td></tr>';
+    return;
+  }
+
+  var accountFilter = window._actionsAccountFilter || 'ALL';
+  var rows = (data.position_actions || []).filter(function(r) {
+    if (accountFilter === 'ALL') return true;
+    return (r.account || '').toUpperCase().indexOf(accountFilter) >= 0;
+  });
+
+  var countEl = document.getElementById('actions-table-count');
+  if (countEl) countEl.textContent = rows.length + ' position' + (rows.length !== 1 ? 's' : '');
+
+  rows = rows.slice().sort(function(a, b) {
+    var av, bv;
+    if (actionsSortCol === 'ann_roi_remaining') {
+      av = actionsDerive(a).annRoi; bv = actionsDerive(b).annRoi;
+      av = av == null ? -Infinity : av; bv = bv == null ? -Infinity : bv;
+    } else {
+      av = a[actionsSortCol]; bv = b[actionsSortCol];
+      if (av === undefined || av === null) av = typeof bv === 'string' ? '' : -Infinity;
+      if (bv === undefined || bv === null) bv = typeof av === 'string' ? '' : -Infinity;
+    }
+    if (typeof av === 'string') return actionsSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return actionsSortAsc ? av - bv : bv - av;
+  });
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No open CSP/CC positions'
+      + (accountFilter !== 'ALL' ? ' in ' + accountFilter : '') + '.</td></tr>';
+    return;
+  }
+
+  var actionColor = function(a) { return (a === 'DEFENSIVE' || a === 'BIG MOVE') ? '#991b1b' : (a === 'OPTIONAL CLOSE' || a === 'REDUCE') ? '#92400e' : '#6b7280'; };
+  var actionBg    = function(a) { return (a === 'DEFENSIVE' || a === 'BIG MOVE') ? '#fee2e2' : (a === 'OPTIONAL CLOSE' || a === 'REDUCE') ? '#fef3c7' : '#f3f4f6'; };
+  var dteColor    = function(d) { return (d || 0) <= 7 ? '#991b1b' : (d || 0) <= 14 ? '#92400e' : '#374151'; };
+  var beColor     = function(p) { return (p || 0) <= 3 ? '#991b1b' : (p || 0) <= 8 ? '#92400e' : '#166534'; };
+  // Direction matters: a big underlying drop is bad for a CSP (assignment risk) but fine for a CC;
+  // a big rally is bad for a CC (called-away risk) but fine for a CSP.
+  var moveColor = function(r, val) {
+    if (val === undefined || val === null) return '#9ca3af';
+    var bad  = r.type === 'CSP' ? val <= -5 : val >= 5;
+    var good = r.type === 'CSP' ? val >= 5  : val <= -5;
+    return bad ? '#991b1b' : good ? '#166534' : '#6b7280';
+  };
+  var fmtPct = function(v) { return v == null ? '&#8212;' : (v >= 0 ? '+' : '') + v + '%'; };
+
+  var html = rows.map(function(r) {
+    var d = actionsDerive(r);
+    var pnlColor = (r.pnl_dollar || 0) >= 0 ? '#166534' : '#991b1b';
+    var stale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near';
+    var earnHtml = r.earn_zone && r.earn_zone !== 'SAFE'
+      ? '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:' + (r.earn_zone === 'CRITICAL' ? '#fee2e2' : '#fef9c3') + ';color:' + (r.earn_zone === 'CRITICAL' ? '#991b1b' : '#92400e') + '">' + r.earn_zone + ' &middot; ' + r.earn_days + 'd</span>'
+      : '<span style="color:#d1d5db">&#8212;</span>';
+
+    return '<tr style="border-bottom:0.5px solid #f3f4f6" onmouseover="this.style.background=&apos;#f9fafb&apos;" onmouseout="this.style.background=&apos;&apos;">'
+      + '<td style="padding:6px 6px;font-weight:700;font-family:monospace;font-size:12px">' + r.ticker
+        + '<span style="font-size:9px;font-weight:500;color:#9ca3af;margin-left:5px">' + r.type + '</span></td>'
+      + '<td style="padding:6px 5px;font-size:11px;color:#6b7280">' + (r.account || '') + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.strike || 0) + '</td>'
+      + '<td style="padding:6px 5px;text-align:center">'
+        + '<span style="font-weight:700;color:' + dteColor(r.dte) + '">' + r.dte + 'd</span>'
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + fmtExpiry(r.expiry) + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:center">' + (r.contracts || 0) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.premium_received || 0).toFixed(2)
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(d.totalCredit).toLocaleString() + ' credit</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace' + (stale ? ';color:#92400e' : '') + '">$' + (r.mark || 0).toFixed(2)
+        + (stale ? '<div style="font-size:9px;color:#92400e;white-space:nowrap">stale</div>' : '') + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
+        + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString()
+        + '<div style="font-size:10px">' + fmtPct(r.profit_pct) + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #e5e7eb">$' + Math.round(d.remainingVal).toLocaleString()
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + (r.remaining_prem || 0) + '% left</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + (d.annRoi != null ? d.annRoi.toFixed(0) + '%' : '&#8212;') + '</td>'
+      + '<td style="padding:6px 5px;text-align:center">'
+        + '<span style="color:' + moveColor(r, r.day_chg_pct) + ';font-weight:700">' + fmtPct(r.day_chg_pct) + '</span>'
+        + '<div style="font-size:10px;color:' + moveColor(r, r.chg_3d_pct) + ';white-space:nowrap">3d ' + fmtPct(r.chg_3d_pct) + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:center;color:' + beColor(r.dist_to_be_pct) + ';font-weight:600">' + (r.dist_to_be_pct || 0) + '%'
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">BE $' + r.breakeven + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:center">' + earnHtml + '</td>'
+      + '<td style="padding:6px 8px">'
+        + '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:' + actionBg(r.action) + ';color:' + actionColor(r.action) + '">' + r.action + '</span>'
+        + '<div style="font-size:11px;color:#374151;margin-top:3px" title="' + (r.reason || '').replace(/"/g, '&quot;') + '">' + (r.reason || '') + '</div></td>'
+      + '</tr>';
+  }).join('');
+
+  tbody.innerHTML = html;
 }
 
 
