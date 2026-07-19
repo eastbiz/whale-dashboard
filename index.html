@@ -229,7 +229,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- Price Watch panel -->
     <div id="price-watch-panel" style="display:none;margin-bottom:12px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb">
       <div id="pw-header" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#f3f4f6;border-bottom:1px solid #e5e7eb;cursor:pointer;user-select:none" onclick="togglePriceWatch()">
-        <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH</span>
+        <span id="pw-title" style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH</span>
         <span id="pw-toggle" style="font-size:11px;color:#9ca3af">&#9660; hide</span>
       </div>
       <div id="pw-body">
@@ -724,15 +724,26 @@ function renderPriceWatch() {
   var pw = data.price_watch;
   var panel = document.getElementById('price-watch-panel');
   var grid  = document.getElementById('pw-grid');
+  var title = document.getElementById('pw-title');
   if (!panel || !grid || !pw || !pw.length) return;
 
-  // Only show tickers at or within 5% of buy target. Everything else hidden.
+  // CC tab: show sell-side (approaching/at sell_above) since that's what matters
+  // when deciding what covered calls to write. All other tabs: buy-side (CSP).
+  var isCC = currentFilter === 'CC';
+
   var items = pw.filter(function(p) {
-    return p.csp_status === 'IN_ZONE' || p.csp_status === 'APPROACHING';
+    return isCC
+      ? (p.cc_status === 'IN_ZONE' || p.cc_status === 'APPROACHING')
+      : (p.csp_status === 'IN_ZONE' || p.csp_status === 'APPROACHING');
   });
   if (!items.length) { panel.style.display = 'none'; return; }
 
-  var statusMeta = {
+  if (title) title.innerHTML = isCC ? '&#x23F3; PRICE WATCH &mdash; CC sell targets' : '&#x23F3; PRICE WATCH';
+
+  var statusMeta = isCC ? {
+    'IN_ZONE':    { bg: '#dcfce7', border: '#16a34a', dot: '#16a34a', tip: 'At or above sell target — write covered calls' },
+    'APPROACHING':{ bg: '#fef9c3', border: '#ca8a04', dot: '#ca8a04', tip: 'Within 8% of sell target' },
+  } : {
     'IN_ZONE':    { bg: '#dcfce7', border: '#16a34a', dot: '#16a34a', tip: 'At or below buy target — check options now' },
     'APPROACHING':{ bg: '#fef9c3', border: '#ca8a04', dot: '#ca8a04', tip: 'Within 5% of buy target' },
   };
@@ -744,11 +755,21 @@ function renderPriceWatch() {
   }
 
   grid.innerHTML = items.map(function(p) {
-    var sm = statusMeta[p.csp_status] || statusMeta['APPROACHING'];
-    var distTxt = p.pct_from_buy === null ? '' :
-      p.pct_from_buy <= 0
-        ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▼ ' + Math.abs(p.pct_from_buy).toFixed(1) + '% under target</span>'
-        : '<span style="color:#ca8a04;font-size:11px">▲ ' + p.pct_from_buy.toFixed(1) + '% above target</span>';
+    var status = isCC ? p.cc_status : p.csp_status;
+    var sm = statusMeta[status] || statusMeta['APPROACHING'];
+    var distTxt;
+    if (isCC) {
+      distTxt = p.pct_from_sell === null ? '' :
+        p.pct_from_sell <= 0
+          ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▲ ' + Math.abs(p.pct_from_sell).toFixed(1) + '% above target</span>'
+          : '<span style="color:#ca8a04;font-size:11px">▼ ' + p.pct_from_sell.toFixed(1) + '% below target</span>';
+    } else {
+      distTxt = p.pct_from_buy === null ? '' :
+        p.pct_from_buy <= 0
+          ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▼ ' + Math.abs(p.pct_from_buy).toFixed(1) + '% under target</span>'
+          : '<span style="color:#ca8a04;font-size:11px">▲ ' + p.pct_from_buy.toFixed(1) + '% above target</span>';
+    }
+    var targetTxt = isCC ? ('Sell ≥$'+p.sell_above) : ('Buy ≤$'+p.buy_under);
     var movRow = mChip(p.chg_1d_pct||0,'1d')+mChip(p.chg_5d_pct||0,'5d')+mChip(p.chg_30d_pct||0,'30d');
     return '<div style="padding:10px 13px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:'+sm.bg+';border-left:4px solid '+sm.border+'">'
       + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
@@ -756,7 +777,7 @@ function renderPriceWatch() {
       + '  <span style="font-size:12px;color:#374151;margin-left:auto;font-family:monospace">$'+p.price.toFixed(2)+'</span>'
       + '</div>'
       + '<div style="margin-bottom:4px">'+distTxt+'</div>'
-      + '<div style="font-size:10px;color:#6b7280">Buy ≤$'+p.buy_under+'</div>'
+      + '<div style="font-size:10px;color:#6b7280">'+targetTxt+'</div>'
       + (movRow ? '<div style="margin-top:5px;line-height:1.8">'+movRow+'</div>' : '')
       + (p.days_to_earnings && p.days_to_earnings <= 35 ? '<div style="margin-top:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:' + (p.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (p.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + ';display:inline-block">&#9888; Earnings in ' + p.days_to_earnings + 'd</div>' : '')
       + '</div>';
@@ -1243,6 +1264,7 @@ function filterOpps(f, btn) {
   if (f !== 'CONVEXITY') { var cvv = document.getElementById('convex-table-view'); if (cvv) cvv.style.display = 'none'; }
   if (f !== 'LEAPS' && f !== 'CONVEXITY') { var gv = document.getElementById('opps-grid'); if (gv) gv.style.display = ''; }
   if (data) renderOpps();
+  if (data) renderPriceWatch();
 }
 
 // Phase 1.6: In-Zone Only toggle — hides opportunities whose stock price
