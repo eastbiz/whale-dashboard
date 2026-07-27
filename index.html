@@ -425,6 +425,22 @@ async function runScan() {
   }
 }
 
+// Scan timestamps are Pacific. Newer results.json carries scan_time_iso with a
+// real UTC offset; older files only have scan_time, whose " ET" suffix was a
+// mislabel (the value was always Pacific). Returns null when unparseable so
+// callers can fail safe.
+function parseScanDate(d) {
+  if (!d) return null;
+  if (d.scan_time_iso) {
+    var iso = new Date(d.scan_time_iso);
+    if (!isNaN(iso.getTime())) return iso;
+  }
+  if (!d.scan_time) return null;
+  var s = d.scan_time.replace(' ET','').replace(' PT','').replace(' UTC','').replace(' ','T');
+  var dt = new Date(s);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
 async function loadData() {
   document.getElementById('last-scan').textContent = 'Refreshing...';
   try {
@@ -436,13 +452,9 @@ async function loadData() {
     // Schwab token status — also check scan age, not just schwab_live flag
     var schwabEl = document.getElementById('schwab-status');
     if (schwabEl) {
-      var scanAgeHours = 0;
-      if (data.scan_time) {
-        try {
-          var _st = data.scan_time.replace(' ET','').replace(' UTC','').replace(' ','T');
-          scanAgeHours = (Date.now() - new Date(_st).getTime()) / 3600000;
-        } catch(e) { scanAgeHours = 99; }
-      }
+      var _scanDate = parseScanDate(data);
+      // Unparseable/missing timestamp must read as stale, not as "token ok".
+      var scanAgeHours = _scanDate ? (Date.now() - _scanDate.getTime()) / 3600000 : 99;
       var scanIsStale = scanAgeHours > 8; // stale if last scan >8 hours ago
       if (data.schwab_live === true && !scanIsStale) {
         schwabEl.textContent = '🟢 Schwab live · token ok';
@@ -772,16 +784,8 @@ function renderAll() {
 
   // ── Schwab stale-data banner ──────────────────────────────
   let banner = document.getElementById('schwab-stale-banner');
-  var scanStale = false;
-  if (data.scan_time) {
-    try {
-      var scanStr = data.scan_time.replace(' ET','').replace(' UTC','').replace(' ',  'T');
-      var scanDate = new Date(scanStr);
-      scanStale = isNaN(scanDate.getTime()) || (Date.now() - scanDate.getTime()) > 18 * 3600 * 1000;
-    } catch(e) { scanStale = true; }
-  } else {
-    scanStale = true;
-  }
+  var scanDate = parseScanDate(data);
+  var scanStale = !scanDate || (Date.now() - scanDate.getTime()) > 18 * 3600 * 1000;
   if (data.schwab_live === false || scanStale) {
     if (!banner) {
       banner = document.createElement('div');
