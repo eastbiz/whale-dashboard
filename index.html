@@ -319,7 +319,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <div style="margin-top:8px;padding-bottom:40px">
       <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
-        <span style="font-size:14px;font-weight:600">&#128203; All Open CSP/CC Positions</span>
+        <span style="font-size:14px;font-weight:600">&#128203; All Open Positions</span>
         <span style="font-size:12px;color:#9ca3af" id="actions-table-count"></span>
         <span style="font-size:11px;color:#9ca3af">&mdash; every account, one table</span>
       </div>
@@ -1605,9 +1605,15 @@ function renderActions() {
       if (accountFilter === 'ALL') return true;
       return (r.account||'').toUpperCase().indexOf(accountFilter) >= 0;
     });
-    var actNow    = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'; }).length;
-    var takePft   = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'; }).length;
-    var safeCount = all.filter(function(r){ return r.action==='HOLD'; }).length;
+    // Held long calls (type LEAPS_CALL) surface their own action vocabulary,
+    // not the CSP/CC one — map them into the same three severity buckets.
+    var isUrgent = function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'||r.action==='SELL TARGET HIT'; };
+    var isReview = function(r){ return r.action==='OPTIONAL CLOSE'||r.action==='REDUCE'||r.action==='NEAR 52W HIGH'||r.action==='DECIDE: EXPIRING SOON'; };
+    var isSafe   = function(r){ return r.action==='HOLD'; };
+
+    var actNow    = all.filter(isUrgent).length;
+    var takePft   = all.filter(isReview).length;
+    var safeCount = all.filter(isSafe).length;
     var totalCso  = all.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
     var portVal   = (data.exposure && data.exposure.portfolio_size) ? data.exposure.portfolio_size : 13500000;
     var cspPct    = portVal > 0 ? (totalCso / portVal * 100).toFixed(1) : '0';
@@ -1619,11 +1625,11 @@ function renderActions() {
       mbar('CSP Obligation', '$'+Math.round(totalCso/1000)+'k', '#374151') +
       mbar('CSP % Portfolio', cspPct+'%', parseFloat(cspPct)>30?'#991b1b':'#374151');
 
-    var urgent = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'; })
+    var urgent = all.filter(isUrgent)
       .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
-    var profit = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'||r.action==='REDUCE'; })
+    var profit = all.filter(isReview)
       .sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); });
-    var safeRows = all.filter(function(r){ return r.action==='HOLD'; })
+    var safeRows = all.filter(isSafe)
       .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
 
     var html = '';
@@ -1665,7 +1671,7 @@ function mbar(label, val, color) {
 
 function card(r, bg, accent) {
   var pnlColor = (r.pnl_dollar||0) >= 0 ? '#166534' : '#991b1b';
-  var _markStale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near';
+  var _markStale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near' && r.mark_src !== 'leaps_mv';
   if (_markStale) pnlColor = '#92400e';
   var beColor  = (r.dist_to_be_pct||0) <= 3 ? '#991b1b' : (r.dist_to_be_pct||0) <= 8 ? '#92400e' : '#166534';
   var dteColor = (r.dte||0) <= 7 ? '#991b1b' : (r.dte||0) <= 14 ? '#92400e' : '#374151';
@@ -1770,13 +1776,13 @@ function renderActionsTable() {
   });
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No open CSP/CC positions'
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No open positions'
       + (accountFilter !== 'ALL' ? ' in ' + accountFilter : '') + '.</td></tr>';
     return;
   }
 
-  var actionColor = function(a) { return (a === 'DEFENSIVE' || a === 'BIG MOVE') ? '#991b1b' : (a === 'OPTIONAL CLOSE' || a === 'REDUCE') ? '#92400e' : '#6b7280'; };
-  var actionBg    = function(a) { return (a === 'DEFENSIVE' || a === 'BIG MOVE') ? '#fee2e2' : (a === 'OPTIONAL CLOSE' || a === 'REDUCE') ? '#fef3c7' : '#f3f4f6'; };
+  var actionColor = function(a) { return (a === 'DEFENSIVE' || a === 'BIG MOVE' || a === 'SELL TARGET HIT') ? '#991b1b' : (a === 'OPTIONAL CLOSE' || a === 'REDUCE' || a === 'NEAR 52W HIGH' || a === 'DECIDE: EXPIRING SOON') ? '#92400e' : '#6b7280'; };
+  var actionBg    = function(a) { return (a === 'DEFENSIVE' || a === 'BIG MOVE' || a === 'SELL TARGET HIT') ? '#fee2e2' : (a === 'OPTIONAL CLOSE' || a === 'REDUCE' || a === 'NEAR 52W HIGH' || a === 'DECIDE: EXPIRING SOON') ? '#fef3c7' : '#f3f4f6'; };
   var dteColor    = function(d) { return (d || 0) <= 7 ? '#991b1b' : (d || 0) <= 14 ? '#92400e' : '#374151'; };
   var beColor     = function(p) { return (p || 0) <= 3 ? '#991b1b' : (p || 0) <= 8 ? '#92400e' : '#166534'; };
   // Direction matters: a big underlying drop is bad for a CSP (assignment risk) but fine for a CC;
@@ -1792,7 +1798,7 @@ function renderActionsTable() {
   var html = rows.map(function(r) {
     var d = actionsDerive(r);
     var pnlColor = (r.pnl_dollar || 0) >= 0 ? '#166534' : '#991b1b';
-    var stale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near';
+    var stale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near' && r.mark_src !== 'leaps_mv';
     var earnHtml = r.earn_zone && r.earn_zone !== 'SAFE'
       ? '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:' + (r.earn_zone === 'CRITICAL' ? '#fee2e2' : '#fef9c3') + ';color:' + (r.earn_zone === 'CRITICAL' ? '#991b1b' : '#92400e') + '">' + r.earn_zone + ' &middot; ' + r.earn_days + 'd</span>'
       : '<span style="color:#d1d5db">&#8212;</span>';
