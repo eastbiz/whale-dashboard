@@ -155,9 +155,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="exp-sub" id="exp-room-sub">Available for new CSPs</div>
           </div>
           <div class="exp-cell">
-            <div class="exp-lbl">Total Premium (this scan)</div>
-            <div class="exp-val" id="exp-prem">&#8212;</div>
-            <div class="exp-sub" id="exp-prem-sub">CSP + CC combined</div>
+            <div class="exp-lbl">Close Candidates</div>
+            <div class="exp-val" id="exp-close" style="cursor:pointer" onclick="gotoActions()">&#8212;</div>
+            <div class="exp-sub" id="exp-close-sub">Positions ready to close</div>
           </div>
         </div>
         <div class="cap-bar-wrap">
@@ -190,9 +190,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
           <div id="exp-cc-tickers" style="margin-top:8px;font-size:11px;color:#6b7280;line-height:2;"></div>
         </div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:14px;padding-top:12px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;margin-bottom:10px;">Top CSP Positions</div>
+          <div id="exp-top-csp"></div>
+        </div>
         <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
           <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
-          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Total premium collected</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
+          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Premium collected (open book)</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
           <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSPs</span><span id="exp-risk-csp-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
           <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CCs</span><span id="exp-risk-cc-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
         </div>
@@ -369,6 +373,27 @@ function fmtK(v) {
   if (v >= 1000000) return '$' + (v/1000000).toFixed(2) + 'M';
   if (v >= 1000)    return '$' + Math.round(v/1000) + 'K';
   return '$' + v.toLocaleString();
+}
+
+// HTML-escape for values interpolated into innerHTML. Distinct from the
+// CSV-quoting esc() used by the export helpers — do not mix them up.
+function escHtml(v) {
+  if (v === null || v === undefined) return '';
+  return String(v).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+// Jump from the exposure panel's Close Candidates tile to the Actions tab.
+function gotoActions() {
+  var btns = document.querySelectorAll('.tab');
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].textContent.indexOf('Actions') >= 0) {
+      showTab('actions', btns[i]);
+      renderActions();
+      return;
+    }
+  }
 }
 
 function getGithubToken() {
@@ -852,10 +877,23 @@ function renderMarket() {
   const cso      = exp.total_csp_obligation    || 0;
   const room     = exp.remaining_csp_capacity  || (maxCso > 0 ? Math.max(0, maxCso - cso) : 0);
   const pct      = exp.csp_allocation_pct      || (maxCso > 0 ? +(cso / maxCso * maxPct).toFixed(1) : 0);
-  const premAll  = exp.total_premium_all || 0;
-  const premCsp  = exp.total_premium_csp || 0;
-  const premCc   = exp.total_premium_cc  || 0;
   const nPuts    = (exp.csp_positions    || []).length;
+
+  // Premium actually collected on the open short book. Prefer the scanner's
+  // field; fall back to summing the positions so this is correct even against
+  // a results.json written before that field existed. NOT total_premium_all —
+  // that is hypothetical premium from this scan's candidates.
+  const premCollected = exp.total_premium_collected != null
+    ? exp.total_premium_collected
+    : (exp.csp_positions || []).concat(exp.cc_positions || []).reduce(function(s,p){
+        return s + (p.premium_received || 0) * 100 * (p.contracts || 0);
+      }, 0);
+
+  // Close candidates — the actions that mean "you can take this off today".
+  const CLOSE_ACTIONS = ['TAKE PROFIT','BIG MOVE','P&L SWING'];
+  const posActs  = data.position_actions || [];
+  const closable = posActs.filter(function(r){ return CLOSE_ACTIONS.indexOf(r.action) >= 0; })
+                          .sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); });
 
   if (!hasExp) {
     // Scanner not yet updated — show panel with notice
@@ -863,8 +901,8 @@ function renderMarket() {
     document.getElementById('exp-cso-pct').textContent  = 'Deploy new scanner to enable';
     document.getElementById('exp-room').textContent     = 'Pending';
     document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% limit configured';
-    document.getElementById('exp-prem').textContent     = 'Pending';
-    document.getElementById('exp-prem-sub').textContent = 'Available after next scan';
+    document.getElementById('exp-close').textContent     = 'Pending';
+    document.getElementById('exp-close-sub').textContent = 'Available after next scan';
     document.getElementById('cap-bar-lbl-r').textContent = '— awaiting scanner update';
     document.getElementById('exp-limit-badge').textContent = 'Awaiting data';
     document.getElementById('exp-limit-badge').className   = 'badge b-gray';
@@ -873,8 +911,38 @@ function renderMarket() {
     document.getElementById('exp-cso-pct').textContent  = pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)';
     document.getElementById('exp-room').textContent     = fmtK(room);
     document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% = ' + fmtK(maxCso);
-    document.getElementById('exp-prem').textContent     = fmtK(premAll);
-    document.getElementById('exp-prem-sub').textContent = 'CSP ' + fmtK(premCsp) + ' · CC ' + fmtK(premCc);
+    // Close candidates. When nothing is closeable the tile would read a bare
+    // "0", so it falls back to the open short closest to its take-profit
+    // level — always something decision-relevant, never a dead tile.
+    var closeEl    = document.getElementById('exp-close');
+    var closeSubEl = document.getElementById('exp-close-sub');
+    if (closable.length) {
+      closeEl.textContent  = String(closable.length);
+      closeEl.style.color  = '#92400e';
+      closeSubEl.innerHTML = closable.slice(0,2).map(function(r){
+        return escHtml(r.ticker) + ' $' + r.strike + (r.type === 'CSP' ? 'P' : 'C')
+             + ' ' + Math.round(r.profit_pct||0) + '%';
+      }).join(' · ') + (closable.length > 2 ? ' +' + (closable.length-2) + ' more' : '');
+    } else {
+      closeEl.textContent = '0';
+      closeEl.style.color = '';
+      // Nearest to target — credible marks only, so a stale price can't
+      // advertise a close that isn't real.
+      var next = posActs.filter(function(r){
+        return r.mark_src === 'chain' || r.mark_src === 'chain_near';
+      }).sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); })[0];
+      if (next) {
+        // Mirrors whale_scanner.py: 80% for Opportunistic/speculative, else 90%.
+        // The scanner exports the exact value; the tier fallback keeps this
+        // correct against a results.json written before that field existed.
+        var tgt = next.take_profit_threshold || (next.tier === 'Opportunistic' ? 80 : 90);
+        closeSubEl.innerHTML = 'Next: ' + escHtml(next.ticker) + ' $' + next.strike
+          + (next.type === 'CSP' ? 'P' : 'C') + ' ' + Math.round(next.profit_pct||0)
+          + '% <span style="color:#9ca3af">(target ' + Math.round(tgt) + '%)</span>';
+      } else {
+        closeSubEl.textContent = posActs.length ? 'Nothing near target' : 'No open positions';
+      }
+    }
 
     const util = Math.min(100, maxCso > 0 ? (cso / maxCso) * 100 : 0);
     const fill = document.getElementById('cap-bar-fill');
@@ -910,9 +978,46 @@ function renderMarket() {
     var tickerEl = document.getElementById('exp-cc-tickers');
     if (tickerEl) tickerEl.innerHTML = tickerLines || '<span style="color:#9ca3af">No covered calls open</span>';
 
+    // Top CSP positions — aggregated per ticker, biggest obligation first.
+    // Premium is the credit actually received; P&L comes from position_actions
+    // (credible marks only, so a stale price cannot show a fake number).
+    var cspAgg = {};
+    (exp.csp_positions || []).forEach(function(p){
+      var t = p.ticker || '?';
+      if (!cspAgg[t]) cspAgg[t] = { cso:0, contracts:0, prem:0, pnl:0, pnlOk:true };
+      cspAgg[t].cso       += p.cso || 0;
+      cspAgg[t].contracts += p.contracts || 0;
+      cspAgg[t].prem      += (p.premium_received || 0) * 100 * (p.contracts || 0);
+    });
+    posActs.forEach(function(r){
+      if (r.type !== 'CSP' || !cspAgg[r.ticker]) return;
+      if (r.mark_src === 'chain' || r.mark_src === 'chain_near') cspAgg[r.ticker].pnl += (r.pnl_dollar || 0);
+      else cspAgg[r.ticker].pnlOk = false;
+    });
+    var topCsp = Object.keys(cspAgg).sort(function(a,b){ return cspAgg[b].cso - cspAgg[a].cso; }).slice(0,5);
+    var topEl  = document.getElementById('exp-top-csp');
+    if (topEl) {
+      topEl.innerHTML = topCsp.length ? topCsp.map(function(t){
+        var a = cspAgg[t];
+        var pnlTxt = a.pnlOk
+          ? '<span style="color:' + (a.pnl >= 0 ? '#166534' : '#991b1b') + '">'
+            + (a.pnl >= 0 ? '+' : '−') + fmtK(Math.abs(a.pnl)) + '</span>'
+          : '<span style="color:#92400e" title="stale mark">&#8212;</span>';
+        var pctBook = cso > 0 ? (a.cso / cso * 100) : 0;
+        return '<div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#6b7280;padding:3px 0;">'
+          + '<span style="font-weight:700;color:#374151;min-width:52px">' + escHtml(t) + '</span>'
+          + '<span style="min-width:64px;font-family:monospace">' + fmtK(a.cso) + '</span>'
+          + '<span style="min-width:78px">' + a.contracts + ' contract' + (a.contracts !== 1 ? 's' : '') + '</span>'
+          + '<span style="min-width:92px">' + fmtK(a.prem) + ' premium</span>'
+          + '<span style="min-width:60px">' + pnlTxt + '</span>'
+          + '<span style="color:#9ca3af">' + pctBook.toFixed(0) + '% of book</span>'
+          + '</div>';
+      }).join('') : '<span style="color:#9ca3af;font-size:11px">No open CSPs</span>';
+    }
+
     // Risk Summary — spec §4
     document.getElementById('exp-risk-assign').textContent    = fmtK(exp.max_assignment_exposure || cso);
-    document.getElementById('exp-risk-prem').textContent      = fmtK(exp.total_premium_all || 0);
+    document.getElementById('exp-risk-prem').textContent      = fmtK(premCollected);
     document.getElementById('exp-risk-csp-count').textContent = cspCount;
     document.getElementById('exp-risk-cc-count').textContent  = ccPosCount;
   }
@@ -1605,8 +1710,12 @@ function renderActions() {
       if (accountFilter === 'ALL') return true;
       return (r.account||'').toUpperCase().indexOf(accountFilter) >= 0;
     });
-    var actNow    = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'; }).length;
-    var takePft   = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'; }).length;
+    // Must match the action names position_management_engine actually emits:
+    // BIG MOVE, P&L SWING, TAKE PROFIT, EARNINGS WARNING, HOLD.
+    var isUrgent  = function(r){ return r.action==='BIG MOVE'||r.action==='P&L SWING'||r.action==='EARNINGS WARNING'; };
+    var isProfit  = function(r){ return r.action==='TAKE PROFIT'; };
+    var actNow    = all.filter(isUrgent).length;
+    var takePft   = all.filter(isProfit).length;
     var safeCount = all.filter(function(r){ return r.action==='HOLD'; }).length;
     var totalCso  = all.filter(function(r){ return r.type==='CSP'; }).reduce(function(s,r){ return s+(r.cso||0); },0);
     var portVal   = (data.exposure && data.exposure.portfolio_size) ? data.exposure.portfolio_size : 13500000;
@@ -1619,9 +1728,9 @@ function renderActions() {
       mbar('CSP Obligation', '$'+Math.round(totalCso/1000)+'k', '#374151') +
       mbar('CSP % Portfolio', cspPct+'%', parseFloat(cspPct)>30?'#991b1b':'#374151');
 
-    var urgent = all.filter(function(r){ return r.action==='DEFENSIVE'||r.action==='BIG MOVE'; })
+    var urgent = all.filter(isUrgent)
       .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
-    var profit = all.filter(function(r){ return r.action==='OPTIONAL CLOSE'||r.action==='REDUCE'; })
+    var profit = all.filter(isProfit)
       .sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); });
     var safeRows = all.filter(function(r){ return r.action==='HOLD'; })
       .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
