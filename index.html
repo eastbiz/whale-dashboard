@@ -384,6 +384,30 @@ function escHtml(v) {
   });
 }
 
+// Day-over-day change chip. `riskUp` marks metrics where an INCREASE means
+// more exposure (CSP obligation), so growth reads amber rather than green.
+// Returns '' when there is no prior day or the prior value was zero — a
+// missing baseline must not render as "0%".
+function dayChg(pct, riskUp) {
+  if (pct === null || pct === undefined || isNaN(pct)) return '';
+  var up   = pct > 0;
+  var flat = Math.abs(pct) < 0.05;
+  var color = flat ? '#9ca3af' : (riskUp ? (up ? '#92400e' : '#166534')
+                                         : (up ? '#166534' : '#92400e'));
+  var arrow = flat ? '' : (up ? '▲ ' : '▼ ');
+  var txt   = flat ? 'unchanged' : arrow + (up ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
+  return '<span style="color:' + color + ';font-weight:600">' + txt + '</span>';
+}
+
+// Format a YYYY-MM-DD baseline date as a short "vs Jul 30".
+function vsDay(d) {
+  if (!d) return '';
+  var p = String(d).split('-');
+  if (p.length !== 3) return '';
+  var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];
+  return ' vs ' + mo + ' ' + (+p[2]);
+}
+
 // Jump from the exposure panel's Close Candidates tile to the Actions tab.
 function gotoActions() {
   var btns = document.querySelectorAll('.tab');
@@ -908,7 +932,11 @@ function renderMarket() {
     document.getElementById('exp-limit-badge').className   = 'badge b-gray';
   } else {
     document.getElementById('exp-cso').textContent      = fmtK(cso);
-    document.getElementById('exp-cso-pct').textContent  = pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)';
+    var csoChg = dayChg(exp.csp_obligation_change_pct, true);
+    document.getElementById('exp-cso-pct').innerHTML   =
+      pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)'
+      + (csoChg ? '<br>' + csoChg + '<span style="color:#9ca3af">'
+                  + escHtml(vsDay(exp.prev_day_date)) + '</span>' : '');
     document.getElementById('exp-room').textContent     = fmtK(room);
     document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% = ' + fmtK(maxCso);
     // Close candidates. When nothing is closeable the tile would read a bare
@@ -1017,7 +1045,10 @@ function renderMarket() {
 
     // Risk Summary — spec §4
     document.getElementById('exp-risk-assign').textContent    = fmtK(exp.max_assignment_exposure || cso);
-    document.getElementById('exp-risk-prem').textContent      = fmtK(premCollected);
+    var premChg = dayChg(exp.premium_collected_change_pct, false);
+    document.getElementById('exp-risk-prem').innerHTML =
+      fmtK(premCollected)
+      + (premChg ? ' <span style="font-size:12px">' + premChg + '</span>' : '');
     document.getElementById('exp-risk-csp-count').textContent = cspCount;
     document.getElementById('exp-risk-cc-count').textContent  = ccPosCount;
   }
