@@ -223,11 +223,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="outline-btn" onclick="filterOpps('SPIKE_CC',this)">&#x26A1; Spike CC</button>
       <button class="outline-btn" onclick="filterOpps('DROP_CSP',this)">&#x1F53B; Post-Drop</button>
       <button class="outline-btn" onclick="filterOpps('PIO',this)">&#x1F4BC; Position Income</button>
-      <!-- Phase 1.6: In-Zone Only toggle (default off) -->
+      <!-- A32: At / Near Target toggle (default off) -->
       <button id="in-zone-toggle" class="outline-btn" onclick="toggleInZone(this)"
               style="margin-left:auto;background:#fff;border:1px solid #d1d5db;color:#6b7280"
-              title="Hide opportunities where stock price hasn't reached the actionable zone yet (Buy Below for CSP/LEAPS, Sell Above for CC). IVR override allows high-IV trades through.">
-        &#x1F3AF; In Zone Only
+              title="Show only what has reached your own buy/sell target, or is close to it.&#10;CSP: at or below Buy Below (near = within 5% above).&#10;CC: at or above Sell Above (near = within 8% below).&#10;LEAPS: at or below Buy Below, or inside the growth allowance for that contract's expiry.&#10;Convexity is exempt — a far-OTM long call has no assignment risk.">
+        &#x1F3AF; At / Near Target
       </button>
     </div>
     <!-- Price Watch panel -->
@@ -1060,13 +1060,18 @@ function renderOpps() {
   var filtered = currentFilter === 'all' ? allOpps
     : allOpps.filter(function(o){ return o.mode === currentFilter || (currentFilter === 'CC' && o.mode === 'PIO'); });
 
-  // Phase 1.6: In-Zone Only filter (independent of mode filter)
-  // When toggled on, hide opportunities where stock hasn't reached the
-  // actionable zone (CSP/LEAPS: price <= buy_under, CC: price >= sell_above).
-  // Opportunities without an in_zone field (older data) are shown to be safe.
+  // A32: "At / Near Target" filter (independent of the mode filter).
+  // Keeps only rows the scanner marked AT or NEAR their target:
+  //   CSP   AT price <= buy_under      NEAR within 5% above
+  //   CC    AT price >= sell_above     NEAR within 8% below
+  //   LEAPS AT price <= buy_under      NEAR inside the growth allowance
+  // Convexity is EXEMPT (zone_tier "EXEMPT") and is never hidden — a far-OTM
+  // long call carries no assignment risk, so buy_under does not apply (EX-15).
+  // There is no IV override any more: it used to let out-of-zone rows through
+  // on high IVP, and on 2026-08-13 every row the filter kept was out of zone.
   if (window.inZoneOnly) {
     filtered = filtered.filter(function(o){
-      // Strict: only show if scanner explicitly set in_zone=true
+      // Strict: only show if the scanner explicitly set in_zone = true.
       // Anything else (undefined, false) is hidden.
       return o.in_zone === true;
     });
@@ -1233,6 +1238,22 @@ function renderOpps() {
     var execBadge = (o.mode !== 'CSP' && o.mode !== 'CC' && o.candidate_type === 'execution')
       ? '<span class="badge b-green" style="font-size:9px">Exec</span>' : '';
 
+    // A32: where this row sits against John's own buy/sell target. AT and NEAR
+    // are the two tiers the "At / Near Target" filter keeps; OUT rows still
+    // render (filter off) but say how far away they are. Convexity is exempt
+    // from buy_under (EX-15) and only shows a tag when the name is NO BUY.
+    var zoneBadge = (function(){
+      var t = o.zone_tier, r = o.zone_reason || '';
+      if (!t) return '';                       // older results.json — no tier
+      if (t === 'AT')   return '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#dcfce7;color:#166534" title="' + escHtml(r) + '">&#127919; At target</span>';
+      if (t === 'NEAR') return '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#fef9c3;color:#92400e" title="' + escHtml(r) + '">Near target</span>';
+      if (t === 'NO_BUY') return '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#fee2e2;color:#991b1b" title="' + escHtml(r) + '">NO BUY</span>';
+      if (t === 'EXEMPT') return o.no_buy_name
+        ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#fee2e2;color:#991b1b" title="' + escHtml(r) + '">&#9888; NO BUY name</span>' : '';
+      if (t === 'OUT')  return '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:#f3f4f6;color:#6b7280" title="' + escHtml(r) + '">Off target</span>';
+      return '';
+    })();
+
     var signalHtml = '';
     if (o.mode === 'LEAPS' && o.trend_signal) {
       signalHtml += '<div class="opp-signal" style="margin-top:6px">'+o.trend_signal+'</div>';
@@ -1266,6 +1287,7 @@ function renderOpps() {
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
           : (o.mode !== 'CSP' && o.mode !== 'CC' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
       +       execBadge
+      +       zoneBadge
       +     '</div>'
       +   '</div>'
       +   '<div style="text-align:right">'
@@ -1318,6 +1340,14 @@ function renderOpps() {
       +   (o.mode === 'LEAPS' && o.extrinsic_pct != null
           ? '<div><div class="stat-l">Extrinsic</div><div class="stat-v" style="color:' + (o.extrinsic_pct<20?'#166534':o.extrinsic_pct<30?'#92400e':o.extrinsic_pct<40?'#b45309':'#991b1b') + ';font-weight:700">' + o.extrinsic_pct + '%</div></div>'
           : '<div><div class="stat-l">$/day</div><div class="stat-v">$' + (o.premium_per_day || ppd) + '</div></div>')
+      // A32: growth this entry assumes from the buy target over the option's
+      // life, against the allowance for the name's bucket. This is the number
+      // that decides a LEAPS entry, and nothing showed it before.
+      +   (o.mode === 'LEAPS' && o.implied_growth_pct != null
+          ? '<div><div class="stat-l">Assumes/yr</div><div class="stat-v" style="font-weight:700;color:' + (o.growth_allowed_pct != null && o.implied_growth_pct > o.growth_allowed_pct ? '#991b1b' : '#166534') + '" title="Entry assumes this annual growth from your Buy Below to expiry'
+            + (o.growth_allowed_pct != null ? ' · allowance for this name: ' + o.growth_allowed_pct + '%/yr' : '') + '">' + o.implied_growth_pct.toFixed(0) + '%'
+            + (o.growth_allowed_pct != null ? '<span style="font-size:9px;font-weight:400;color:#6b7280"> / ' + o.growth_allowed_pct.toFixed(0) + '%</span>' : '') + '</div></div>'
+          : '')
       + (function(){
           var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
           // For LEAPS cards — show existing positions under breakeven (same style as NVO)
