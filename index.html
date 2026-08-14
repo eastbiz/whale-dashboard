@@ -1453,7 +1453,14 @@ var posSortAsc = false;
 
 function downloadPositionsCSV() {
   if (!data || !data.positions) return;
-  var SYMBOL_SETTINGS = {
+  // A34: buy/sell targets come from the SCANNER via results.json. This page
+  // used to hand-maintain its own copy, and by 2026-08-13 all 29 tickers
+  // disagreed with the scanner (AAPL 200 vs 0, NBIS 90/190 vs 150/280, PLTR
+  // 115 vs 85) with 6 missing outright — wrong targets exported into a CSV.
+  // whale_scanner.py SYMBOL_SETTINGS is the single source of truth. The literal
+  // below is a LAST-RESORT fallback for a results.json written before A34;
+  // do NOT edit it to change a target — edit the scanner.
+  var SYMBOL_SETTINGS = (data && data.symbol_settings) || {
     "AAPL": {buy_under:200, sell_above:330, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.75, leaps_delta_max:0.99},
     "AMZN": {buy_under:200, sell_above:300, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.75, leaps_delta_max:0.99},
     "GOOGL":{buy_under:280, sell_above:395, csp_delta_min:0.20, csp_delta_max:0.30, cc_delta_min:0.20, cc_delta_max:0.28, leaps_delta_min:0.75, leaps_delta_max:0.99},
