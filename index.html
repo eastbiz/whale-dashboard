@@ -103,6 +103,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cov-bar{flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;min-width:40px;}
 .cov-bar-fill{height:100%;border-radius:3px;}
 .status-pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+/* Wide position tables: the app column is capped at 1100px, so these scroll
+   horizontally. The ticker column is pinned left so the symbol stays readable
+   while you scroll out to the Action / Reason note on the right. */
+.wide-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.wide-tbl th.stick,.wide-tbl td.stick{position:sticky;left:0;z-index:2;background:#fff;box-shadow:inset -1px 0 0 #e5e7eb;}
+.wide-tbl thead th.stick{z-index:3;}
+.wide-tbl tbody tr:hover td{background:#f9fafb;}
 @media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}.pos-summary-grid{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -321,40 +328,75 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div id="actions-content" style="padding-bottom:40px"></div>
 
-    <div style="margin-top:8px;padding-bottom:40px">
+    <div style="margin-top:8px;padding-bottom:28px">
       <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
         <span style="font-size:14px;font-weight:600">&#128203; All Open CSP/CC Positions</span>
         <span style="font-size:12px;color:#9ca3af" id="actions-table-count"></span>
-        <span style="font-size:11px;color:#9ca3af">&mdash; every account, one table</span>
+        <span style="font-size:11px;color:#9ca3af">&mdash; short options only, every account</span>
       </div>
       <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:12px" id="actions-table">
+        <table class="wide-tbl" id="actions-table">
+          <colgroup>
+            <col style="width:70px"><col style="width:46px"><col style="width:54px">
+            <col style="width:66px"><col style="width:34px"><col style="width:84px">
+            <col style="width:60px"><col style="width:80px"><col style="width:84px">
+            <col style="width:54px"><col style="width:64px"><col style="width:74px">
+            <col style="width:60px"><col style="width:240px">
+          </colgroup>
           <thead>
-            <colgroup>
-              <col style="width:66px"><col style="width:52px"><col style="width:58px">
-              <col style="width:70px"><col style="width:42px"><col style="width:90px">
-              <col style="width:66px"><col style="width:84px"><col style="width:88px">
-              <col style="width:56px"><col style="width:68px"><col style="width:78px">
-              <col style="width:64px"><col style="width:230px">
-            </colgroup>
             <tr style="border-bottom:2px solid #e5e7eb">
-              <th onclick="actionsSort('ticker')" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="atsi-ticker"></span></th>
-              <th onclick="actionsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="atsi-account"></span></th>
-              <th onclick="actionsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="atsi-strike"></span></th>
-              <th onclick="actionsSort('dte')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">DTE<span id="atsi-dte"></span></th>
+              <th class="stick" onclick="actionsSort('ticker')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="atsi-ticker"></span></th>
+              <th onclick="actionsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="atsi-account"></span></th>
+              <th onclick="actionsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="atsi-strike"></span></th>
+              <th onclick="actionsSort('dte')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">DTE<span id="atsi-dte"></span></th>
               <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Ctr</th>
-              <th onclick="actionsSort('premium_received')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Fill<span id="atsi-premium_received"></span></th>
-              <th onclick="actionsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="atsi-mark"></span></th>
-              <th onclick="actionsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="atsi-pnl_dollar"></span></th>
-              <th onclick="actionsSort('remaining_prem')" title="Cost to buy the option back right now" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #e5e7eb">Cost to<br>close<span id="atsi-remaining_prem"></span></th>
-              <th onclick="actionsSort('ann_roi_remaining')" title="Annualized return on capital if held to expiry and the option decays to zero. Only shown for profitable positions — meaningless for a position that's currently a loss." style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ann. ROI<br>if held<span id="atsi-ann_roi_remaining"></span></th>
-              <th onclick="actionsSort('day_chg_pct')" title="Underlying move: 1-day and 3-day % change" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Move<span id="atsi-day_chg_pct"></span></th>
-              <th onclick="actionsSort('dist_to_be_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Cushion<span id="atsi-dist_to_be_pct"></span></th>
+              <th onclick="actionsSort('premium_received')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Fill<span id="atsi-premium_received"></span></th>
+              <th onclick="actionsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="atsi-mark"></span></th>
+              <th onclick="actionsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="atsi-pnl_dollar"></span></th>
+              <th onclick="actionsSort('remaining_prem')" title="Cost to buy the option back right now" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #e5e7eb">Cost to<br>close<span id="atsi-remaining_prem"></span></th>
+              <th onclick="actionsSort('ann_roi_remaining')" title="Annualized return on capital if held to expiry and the option decays to zero. Only shown for profitable positions &mdash; meaningless for a position that&#39;s currently a loss." style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ann. ROI<br>if held<span id="atsi-ann_roi_remaining"></span></th>
+              <th onclick="actionsSort('day_chg_pct')" title="Underlying move: 1-day and 3-day % change" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Move<span id="atsi-day_chg_pct"></span></th>
+              <th onclick="actionsSort('dist_to_be_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Cushion<span id="atsi-dist_to_be_pct"></span></th>
               <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Earnings</th>
-              <th onclick="actionsSort('action')" style="text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action / Reason<span id="atsi-action"></span></th>
+              <th onclick="actionsSort('action')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Action / Reason<span id="atsi-action"></span></th>
             </tr>
           </thead>
           <tbody id="actions-tbody"><tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="padding-bottom:40px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:600">&#128200; Long LEAPS Calls</span>
+        <span style="font-size:12px;color:#9ca3af" id="leaps-table-count"></span>
+        <span style="font-size:11px;color:#9ca3af">&mdash; held long, no assignment risk</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="wide-tbl" id="leaps-table">
+          <colgroup>
+            <col style="width:70px"><col style="width:46px"><col style="width:54px">
+            <col style="width:80px"><col style="width:34px"><col style="width:76px">
+            <col style="width:70px"><col style="width:96px"><col style="width:78px">
+            <col style="width:84px"><col style="width:80px"><col style="width:300px">
+          </colgroup>
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb">
+              <th class="stick" onclick="leapsSort('ticker')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="ltsi-ticker"></span></th>
+              <th onclick="leapsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="ltsi-account"></span></th>
+              <th onclick="leapsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="ltsi-strike"></span></th>
+              <th onclick="leapsSort('dte')" title="Days to expiry and expiry date" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Expiry<span id="ltsi-dte"></span></th>
+              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Ctr</th>
+              <th onclick="leapsSort('avg_cost')" title="Average price paid per contract" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Avg cost<span id="ltsi-avg_cost"></span></th>
+              <th onclick="leapsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="ltsi-mark"></span></th>
+              <th onclick="leapsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="ltsi-pnl_dollar"></span></th>
+              <th onclick="leapsSort('underlying')" title="Current underlying price" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Stock<span id="ltsi-underlying"></span></th>
+              <th onclick="leapsSort('dist_to_be_pct')" title="How far the stock is above the option breakeven" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">vs BE<span id="ltsi-dist_to_be_pct"></span></th>
+              <th onclick="leapsSort('week52_high')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">52w high<span id="ltsi-week52_high"></span></th>
+              <th onclick="leapsSort('action')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Note<span id="ltsi-action"></span></th>
+            </tr>
+          </thead>
+          <tbody id="leaps-tbody"><tr><td colspan="12" style="text-align:center;padding:30px;color:#9ca3af">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1677,14 +1719,17 @@ function renderActions() {
       return;
     }
     var accountFilter = window._actionsAccountFilter || 'ALL';
-    var all = (data.position_actions || []).filter(function(r){
+    var everything = (data.position_actions || []).filter(function(r){
       if (accountFilter === 'ALL') return true;
       return (r.account||'').toUpperCase().indexOf(accountFilter) >= 0;
     });
+    // Cards cover the short options; the long LEAPS calls get their own table below.
+    var all = everything.filter(isShortOptRow);
     // Must match the action names position_management_engine actually emits:
     // BIG MOVE, P&L SWING, TAKE PROFIT, EARNINGS WARNING, HOLD.
     var isUrgent  = function(r){ return r.action==='BIG MOVE'||r.action==='P&L SWING'||r.action==='EARNINGS WARNING'; };
     var isProfit  = function(r){ return r.action==='TAKE PROFIT'; };
+    var isOther   = function(r){ return !isUrgent(r) && !isProfit(r) && r.action!=='HOLD'; };
     var actNow    = all.filter(isUrgent).length;
     var takePft   = all.filter(isProfit).length;
     var safeCount = all.filter(function(r){ return r.action==='HOLD'; }).length;
@@ -1705,11 +1750,19 @@ function renderActions() {
       .sort(function(a,b){ return (b.profit_pct||0)-(a.profit_pct||0); });
     var safeRows = all.filter(function(r){ return r.action==='HOLD'; })
       .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
+    // Anything the three named buckets don't claim. Without this an action the
+    // engine adds later renders nowhere at all, which is how the LEAPS
+    // "NEAR 52W HIGH" rows stayed invisible on this page.
+    var otherRows = all.filter(isOther)
+      .sort(function(a,b){ return (a.dte||99)-(b.dte||99); });
 
     var html = '';
 
     html += section('&#128308; ACT NOW', urgent.length, urgent.map(function(r){ return card(r,'#fee2e2','#991b1b'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#9ca3af;font-size:13px">No urgent positions</div>');
     html += section('&#128993; TAKE PROFIT', profit.length, profit.map(function(r){ return card(r,'#fef3c7','#92400e'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#9ca3af;font-size:13px">No profit-taking opportunities</div>');
+    if (otherRows.length) {
+      html += section('&#128280; OTHER', otherRows.length, otherRows.map(function(r){ return card(r,'#e0f2fe','#075985'); }).join(''));
+    }
 
     html += '<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleSafe()">'
       + '<span style="font-size:14px;font-weight:600;color:#6b7280">&#9898; SAFE &mdash; NO ACTION</span>'
@@ -1722,6 +1775,7 @@ function renderActions() {
 
     document.getElementById('actions-content').innerHTML = html;
     renderActionsTable();
+    renderLeapsTable();
   } catch(e) {
     console.error('renderActions:', e);
     document.getElementById('actions-content').innerHTML = '<div style="padding:20px;color:#991b1b">Error: '+e.message+'</div>';
@@ -1756,7 +1810,7 @@ function card(r, bg, accent) {
     + '<div style="padding:12px 16px;border-right:0.5px solid var(--color-border-tertiary)">'
     +   '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
     +     '<span style="font-size:16px;font-weight:800;color:var(--color-text-primary)">'+r.ticker+'</span>'
-    +     '<span style="font-size:11px;color:#6b7280;background:var(--color-background-secondary);padding:1px 7px;border-radius:4px">'+r.type+'</span>'
+    +     '<span style="font-size:11px;color:#6b7280;background:var(--color-background-secondary);padding:1px 7px;border-radius:4px">'+fmtPosType(r.type)+'</span>'
     +     '<span style="font-size:11px;color:#9ca3af">'+r.account+'</span>'
     +     earnBadge
     +   '</div>'
@@ -1789,6 +1843,16 @@ function toggleSafe() {
   else { sec.style.display = 'none'; chev.innerHTML = '&#9660; expand'; }
 }
 
+// `position_actions` is NOT short options only — PR #2 added LEAPS_CALL rows and
+// they now outnumber the CSP/CC rows ~14:1. Every consumer must filter by type
+// explicitly (CLAUDE.md gotcha): a long call has no assignment risk, no cash
+// obligation and no "cost to close", so it does not belong in the CSP/CC table.
+function isLeapsRow(r)     { return r.type === 'LEAPS_CALL' || r.is_leaps === true; }
+function isShortOptRow(r)  { return !isLeapsRow(r); }
+// LEAPS_CALL is 10 characters of monospace sitting next to the ticker, which was
+// what pushed the Action / Reason column off screen. Short label, same meaning.
+function fmtPosType(t)     { return t === 'LEAPS_CALL' ? 'LEAP' : (t || ''); }
+
 // Derived, decision-support numbers not present verbatim in position_actions:
 //  - remaining $ value = cost to buy the option back right now (what's still "at risk" by holding)
 //  - annualized ROI left = return you'd earn (annualized) by holding that remaining value to expiry
@@ -1806,17 +1870,58 @@ var actionsSortCol = 'dte';
 var actionsSortAsc = true;
 var ACTIONS_SORT_COLS = ['ticker','account','strike','dte','premium_received','mark','pnl_dollar','remaining_prem','ann_roi_remaining','day_chg_pct','dist_to_be_pct','action'];
 
+// LEAPS sort defaults to biggest P&L first — DTE is meaningless on a 2028 call.
+var leapsSortCol = 'pnl_dollar';
+var leapsSortAsc = false;
+var LEAPS_SORT_COLS = ['ticker','account','strike','dte','avg_cost','mark','pnl_dollar','underlying','dist_to_be_pct','week52_high','action'];
+
+// One comparator for both tables. `ann_roi_remaining` is derived rather than
+// stored, so it is computed here instead of read off the row.
+function sortPosRows(rows, col, asc) {
+  return rows.slice().sort(function(a, b) {
+    var av, bv;
+    if (col === 'ann_roi_remaining') {
+      av = actionsDerive(a).annRoi; bv = actionsDerive(b).annRoi;
+      av = av == null ? -Infinity : av; bv = bv == null ? -Infinity : bv;
+    } else {
+      av = a[col]; bv = b[col];
+      if (av === undefined || av === null) av = typeof bv === 'string' ? '' : -Infinity;
+      if (bv === undefined || bv === null) bv = typeof av === 'string' ? '' : -Infinity;
+    }
+    if (typeof av === 'string') return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return asc ? av - bv : bv - av;
+  });
+}
+
+function _paintSortArrow(prefix, cols, col, asc) {
+  cols.forEach(function(c) {
+    var el = document.getElementById(prefix + '-' + c);
+    if (el) el.textContent = '';
+  });
+  var el = document.getElementById(prefix + '-' + col);
+  if (el) el.textContent = ' ' + (asc ? '▲' : '▼');
+}
+
 function actionsSort(col) {
   if (actionsSortCol === col) actionsSortAsc = !actionsSortAsc;
   else { actionsSortCol = col; actionsSortAsc = true; }
-  ACTIONS_SORT_COLS.forEach(function(c) {
-    var el = document.getElementById('atsi-' + c);
-    if (el) el.textContent = '';
-  });
-  var el = document.getElementById('atsi-' + col);
-  if (el) el.textContent = ' ' + (actionsSortAsc ? '▲' : '▼');
+  _paintSortArrow('atsi', ACTIONS_SORT_COLS, col, actionsSortAsc);
   if (data) renderActionsTable();
 }
+
+function leapsSort(col) {
+  if (leapsSortCol === col) leapsSortAsc = !leapsSortAsc;
+  else { leapsSortCol = col; leapsSortAsc = true; }
+  _paintSortArrow('ltsi', LEAPS_SORT_COLS, col, leapsSortAsc);
+  if (data) renderLeapsTable();
+}
+
+// Shared cell formatters for both position tables.
+var _fmtPctCell = function(v) { return v == null ? '&#8212;' : (v >= 0 ? '+' : '') + v + '%'; };
+var _tickerCell = function(r) {
+  return '<td class="stick" style="padding:6px 6px;font-weight:700;font-family:monospace;font-size:12px">' + escHtml(r.ticker)
+    + '<span style="font-size:9px;font-weight:500;color:#9ca3af;margin-left:5px">' + escHtml(fmtPosType(r.type)) + '</span></td>';
+};
 
 function renderActionsTable() {
   var tbody = document.getElementById('actions-tbody');
@@ -1827,7 +1932,9 @@ function renderActionsTable() {
   }
 
   var accountFilter = window._actionsAccountFilter || 'ALL';
+  // Short options only. LEAPS_CALL rows render in renderLeapsTable().
   var rows = (data.position_actions || []).filter(function(r) {
+    if (!isShortOptRow(r)) return false;
     if (accountFilter === 'ALL') return true;
     return (r.account || '').toUpperCase().indexOf(accountFilter) >= 0;
   });
@@ -1835,19 +1942,7 @@ function renderActionsTable() {
   var countEl = document.getElementById('actions-table-count');
   if (countEl) countEl.textContent = rows.length + ' position' + (rows.length !== 1 ? 's' : '');
 
-  rows = rows.slice().sort(function(a, b) {
-    var av, bv;
-    if (actionsSortCol === 'ann_roi_remaining') {
-      av = actionsDerive(a).annRoi; bv = actionsDerive(b).annRoi;
-      av = av == null ? -Infinity : av; bv = bv == null ? -Infinity : bv;
-    } else {
-      av = a[actionsSortCol]; bv = b[actionsSortCol];
-      if (av === undefined || av === null) av = typeof bv === 'string' ? '' : -Infinity;
-      if (bv === undefined || bv === null) bv = typeof av === 'string' ? '' : -Infinity;
-    }
-    if (typeof av === 'string') return actionsSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-    return actionsSortAsc ? av - bv : bv - av;
-  });
+  rows = sortPosRows(rows, actionsSortCol, actionsSortAsc);
 
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No open CSP/CC positions'
@@ -1867,7 +1962,7 @@ function renderActionsTable() {
     var good = r.type === 'CSP' ? val >= 5  : val <= -5;
     return bad ? '#991b1b' : good ? '#166534' : '#6b7280';
   };
-  var fmtPct = function(v) { return v == null ? '&#8212;' : (v >= 0 ? '+' : '') + v + '%'; };
+  var fmtPct = _fmtPctCell;
 
   var html = rows.map(function(r) {
     var d = actionsDerive(r);
@@ -1877,10 +1972,9 @@ function renderActionsTable() {
       ? '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:' + (r.earn_zone === 'CRITICAL' ? '#fee2e2' : '#fef9c3') + ';color:' + (r.earn_zone === 'CRITICAL' ? '#991b1b' : '#92400e') + '">' + r.earn_zone + ' &middot; ' + r.earn_days + 'd</span>'
       : '<span style="color:#d1d5db">&#8212;</span>';
 
-    return '<tr style="border-bottom:0.5px solid #f3f4f6" onmouseover="this.style.background=&apos;#f9fafb&apos;" onmouseout="this.style.background=&apos;&apos;">'
-      + '<td style="padding:6px 6px;font-weight:700;font-family:monospace;font-size:12px">' + r.ticker
-        + '<span style="font-size:9px;font-weight:500;color:#9ca3af;margin-left:5px">' + r.type + '</span></td>'
-      + '<td style="padding:6px 5px;font-size:11px;color:#6b7280">' + (r.account || '') + '</td>'
+    return '<tr style="border-bottom:0.5px solid #f3f4f6">'
+      + _tickerCell(r)
+      + '<td style="padding:6px 5px;font-size:11px;color:#6b7280">' + escHtml(r.account || '') + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.strike || 0) + '</td>'
       + '<td style="padding:6px 5px;text-align:center">'
         + '<span style="font-weight:700;color:' + dteColor(r.dte) + '">' + r.dte + 'd</span>'
@@ -1903,14 +1997,88 @@ function renderActionsTable() {
         + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">BE $' + r.breakeven + '</div></td>'
       + '<td style="padding:6px 5px;text-align:center">' + earnHtml + '</td>'
       + '<td style="padding:6px 8px">'
-        + '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:' + actionBg(r.action) + ';color:' + actionColor(r.action) + '">' + r.action + '</span>'
-        + '<div style="font-size:11px;color:#374151;margin-top:3px" title="' + (r.reason || '').replace(/"/g, '&quot;') + '">' + (r.reason || '') + '</div></td>'
+        + '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:' + actionBg(r.action) + ';color:' + actionColor(r.action) + '">' + escHtml(r.action) + '</span>'
+        + '<div style="font-size:11px;color:#374151;margin-top:3px">' + escHtml(r.reason || '') + '</div></td>'
       + '</tr>';
   }).join('');
 
   tbody.innerHTML = html;
 }
 
+// Long LEAPS calls. Deliberately a different column set from the CSP/CC table:
+// there is no cost-to-close, no cash obligation and no DTE urgency on a
+// stock-replacement call, and P16 says they are held, not trimmed — so what
+// matters is entry price vs mark, the stock vs breakeven, and the 52w high.
+function renderLeapsTable() {
+  var tbody = document.getElementById('leaps-tbody');
+  if (!tbody) return;
+  if (!data || !data.position_actions) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#9ca3af">No position data — run a scan first</td></tr>';
+    return;
+  }
+
+  var accountFilter = window._actionsAccountFilter || 'ALL';
+  var rows = (data.position_actions || []).filter(function(r) {
+    if (!isLeapsRow(r)) return false;
+    if (accountFilter === 'ALL') return true;
+    return (r.account || '').toUpperCase().indexOf(accountFilter) >= 0;
+  });
+
+  var countEl = document.getElementById('leaps-table-count');
+  if (countEl) countEl.textContent = rows.length + ' position' + (rows.length !== 1 ? 's' : '');
+
+  rows = sortPosRows(rows, leapsSortCol, leapsSortAsc);
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#9ca3af">No long LEAPS calls'
+      + (accountFilter !== 'ALL' ? ' in ' + accountFilter : '') + '.</td></tr>';
+    return;
+  }
+
+  var noteColor = function(a) { return a === 'SELL TARGET HIT' ? '#166534' : a === 'NEAR 52W HIGH' ? '#92400e' : '#6b7280'; };
+  var noteBg    = function(a) { return a === 'SELL TARGET HIT' ? '#dcfce7' : a === 'NEAR 52W HIGH' ? '#fef3c7' : '#f3f4f6'; };
+
+  var html = rows.map(function(r) {
+    var pnlColor  = (r.pnl_dollar || 0) >= 0 ? '#166534' : '#991b1b';
+    var totalCost = (r.avg_cost || 0) * (r.contracts || 0) * 100;
+    var mktVal    = (r.mark || 0) * (r.contracts || 0) * 100;
+    // Above breakeven is the healthy state for a long call, so the polarity here
+    // is the opposite of the short-option cushion column.
+    var beVal     = r.dist_to_be_pct;
+    var beColor   = beVal == null ? '#9ca3af' : beVal >= 10 ? '#166534' : beVal >= 0 ? '#92400e' : '#991b1b';
+    var hi        = r.week52_high;
+    var fromHi    = (hi && r.underlying) ? ((r.underlying - hi) / hi * 100) : null;
+
+    return '<tr style="border-bottom:0.5px solid #f3f4f6">'
+      + _tickerCell(r)
+      + '<td style="padding:6px 5px;font-size:11px;color:#6b7280">' + escHtml(r.account || '') + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.strike || 0) + '</td>'
+      + '<td style="padding:6px 5px;text-align:center">'
+        + '<span style="font-weight:700;color:#374151">' + (r.dte || 0) + 'd</span>'
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + fmtExpiry(r.expiry) + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:center">' + (r.contracts || 0) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.avg_cost || 0).toFixed(2)
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(totalCost).toLocaleString() + ' paid</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.mark || 0).toFixed(2)
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(mktVal).toLocaleString() + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
+        + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString()
+        + '<div style="font-size:10px">' + _fmtPctCell(r.profit_pct) + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.underlying || 0).toFixed(2)
+        + (r.sell_above ? '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">sell $' + r.sell_above + '</div>' : '') + '</td>'
+      + '<td style="padding:6px 5px;text-align:center;font-weight:600;color:' + beColor + '">'
+        + (beVal == null ? '&#8212;' : (beVal >= 0 ? '+' : '') + beVal + '%')
+        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">BE $' + (r.breakeven != null ? r.breakeven : '&#8212;') + '</div></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + (hi ? '$' + hi.toFixed(2) : '&#8212;')
+        + (fromHi != null ? '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + (fromHi >= 0 ? '+' : '') + fromHi.toFixed(1) + '%</div>' : '') + '</td>'
+      + '<td style="padding:6px 8px">'
+        + '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:' + noteBg(r.action) + ';color:' + noteColor(r.action) + '">' + escHtml(r.action) + '</span>'
+        + '<div style="font-size:11px;color:#374151;margin-top:3px">' + escHtml(r.reason || '') + '</div></td>'
+      + '</tr>';
+  }).join('');
+
+  tbody.innerHTML = html;
+}
 
 
 function filterActions(f, btn) {
