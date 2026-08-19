@@ -1775,7 +1775,7 @@ function renderActions() {
 
     document.getElementById('actions-content').innerHTML = html;
     renderActionsTable();
-    renderLeapsTable();
+    renderLeapsPositionsTable();
   } catch(e) {
     console.error('renderActions:', e);
     document.getElementById('actions-content').innerHTML = '<div style="padding:20px;color:#991b1b">Error: '+e.message+'</div>';
@@ -1913,7 +1913,7 @@ function leapsSort(col) {
   if (leapsSortCol === col) leapsSortAsc = !leapsSortAsc;
   else { leapsSortCol = col; leapsSortAsc = true; }
   _paintSortArrow('ltsi', LEAPS_SORT_COLS, col, leapsSortAsc);
-  if (data) renderLeapsTable();
+  if (data) renderLeapsPositionsTable();
 }
 
 // Shared cell formatters for both position tables.
@@ -1932,7 +1932,7 @@ function renderActionsTable() {
   }
 
   var accountFilter = window._actionsAccountFilter || 'ALL';
-  // Short options only. LEAPS_CALL rows render in renderLeapsTable().
+  // Short options only. LEAPS_CALL rows render in renderLeapsPositionsTable().
   var rows = (data.position_actions || []).filter(function(r) {
     if (!isShortOptRow(r)) return false;
     if (accountFilter === 'ALL') return true;
@@ -2009,7 +2009,12 @@ function renderActionsTable() {
 // there is no cost-to-close, no cash obligation and no DTE urgency on a
 // stock-replacement call, and P16 says they are held, not trimmed — so what
 // matters is entry price vs mark, the stock vs breakeven, and the 52w high.
-function renderLeapsTable() {
+// Actions tab: the LEAPS POSITIONS table (#leaps-tbody). Named distinctly from
+// renderLeapsTable(leaps) above, which renders the Opportunities-tab LEAPS
+// candidate table into #leaps-table-view. A44 shipped both under the same name;
+// JS hoisting made this one silently overwrite the other, so clicking "Table"
+// on the LEAPS filter hid the cards and rendered nothing. Keep the names apart.
+function renderLeapsPositionsTable() {
   var tbody = document.getElementById('leaps-tbody');
   if (!tbody) return;
   if (!data || !data.position_actions) {
