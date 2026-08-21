@@ -2040,8 +2040,20 @@ function renderLeapsPositionsTable() {
     return;
   }
 
-  var noteColor = function(a) { return a === 'SELL TARGET HIT' ? '#166534' : a === 'NEAR 52W HIGH' ? '#92400e' : '#6b7280'; };
-  var noteBg    = function(a) { return a === 'SELL TARGET HIT' ? '#dcfce7' : a === 'NEAR 52W HIGH' ? '#fef3c7' : '#f3f4f6'; };
+  // A53 sell-formula tiers (STRONG SELL / TRIM / SELL REVIEW). The two
+  // legacy names keep their colors so a pre-A53 results.json still renders.
+  var noteColor = function(a) {
+    return a === 'STRONG SELL' ? '#991b1b' : a === 'TRIM' ? '#92400e'
+         : a === 'SELL REVIEW' || a === 'SELL TARGET HIT' ? '#166534'
+         : a === 'DECIDE: EXPIRING SOON' ? '#075985'
+         : a === 'NEAR 52W HIGH' ? '#92400e' : '#6b7280';
+  };
+  var noteBg = function(a) {
+    return a === 'STRONG SELL' ? '#fee2e2' : a === 'TRIM' ? '#fef3c7'
+         : a === 'SELL REVIEW' || a === 'SELL TARGET HIT' ? '#dcfce7'
+         : a === 'DECIDE: EXPIRING SOON' ? '#e0f2fe'
+         : a === 'NEAR 52W HIGH' ? '#fef3c7' : '#f3f4f6';
+  };
 
   var html = rows.map(function(r) {
     var pnlColor  = (r.pnl_dollar || 0) >= 0 ? '#166534' : '#991b1b';
