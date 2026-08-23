@@ -114,6 +114,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
+
+<!-- Password gate (A54). results.enc.json is AES-256-GCM encrypted by the
+     scanner; this overlay collects the password once, the DERIVED KEY (never
+     the password) is cached in localStorage. Shown only when an encrypted
+     feed exists and no cached key decrypts it. -->
+<div id="pw-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.78);z-index:1000;align-items:center;justify-content:center">
+  <form id="pw-form" style="background:#fff;border-radius:12px;padding:28px 32px;max-width:340px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.35)">
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px">&#x1F40B; Whale Intelligence</div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Enter the dashboard password to decrypt scan results.</div>
+    <input id="pw-input" type="password" autocomplete="current-password" placeholder="Password"
+           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px">
+    <div id="pw-error" style="display:none;color:#991b1b;font-size:12px;margin-top:8px">Wrong password &#8212; try again.</div>
+    <button id="pw-submit" type="submit" style="margin-top:14px;width:100%;background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:600;cursor:pointer">Unlock</button>
+  </form>
+</div>
+
 <div class="app">
 
   <div class="hdr">
@@ -123,6 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <span id="schwab-status" style="font-size:11px;color:#6b7280;margin-left:8px"></span>
       <button class="scan-btn" id="scan-btn" onclick="runScan()">&#9654; Run Scan</button>
       <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
+      <button class="refresh-btn" id="lock-btn" onclick="lockDashboard()" style="display:none" title="Forget the saved password on this browser">&#128274; Lock</button>
     </div>
   </div>
 
@@ -404,7 +421,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 </div>
 <script>
-const RESULTS_URL = 'https://raw.githubusercontent.com/eastbiz/whale-intelligence/main/results.json';
+// A54: eastbiz/whale-intelligence is PRIVATE — plaintext results.json is no
+// longer publicly fetchable. The scanner publishes results.enc.json (AES-256-
+// GCM) into THIS public repo; we decrypt it in the browser after a password
+// prompt. Envelope {v:1, kdf, iter, salt, iv, ct} is a contract with
+// encrypt_results.py in the scanner repo — change one, change both.
+const ENC_RESULTS_URL = 'https://raw.githubusercontent.com/eastbiz/whale-dashboard/main/results.enc.json';
+// Transition fallback only: works while the scanner repo is still public,
+// 404s once it goes private — which is the intended end state. Do not "fix"
+// a dead fallback by re-publicising the repo.
+const LEGACY_RESULTS_URL = 'https://raw.githubusercontent.com/eastbiz/whale-intelligence/main/results.json';
+const KEY_STORE = 'whale_dash_key_v1'; // localStorage: hex of the DERIVED key
 let data = null;
 let currentFilter = 'all';
 var leapsView = 'cards';
@@ -460,6 +487,112 @@ function gotoActions() {
       return;
     }
   }
+}
+
+// ── Password gate (A54) ─────────────────────────────────────────────────
+function b64ToBytes(s) {
+  var bin = atob(s);
+  var a = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return a;
+}
+function bytesToHex(a) {
+  var h = '';
+  for (var i = 0; i < a.length; i++) h += a[i].toString(16).padStart(2, '0');
+  return h;
+}
+function hexToBytes(h) {
+  var a = new Uint8Array(h.length / 2);
+  for (var i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16);
+  return a;
+}
+
+// Wrong password surfaces as a GCM auth failure → null. Never throws.
+async function tryDecrypt(env, key) {
+  try {
+    var pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: b64ToBytes(env.iv)}, key, b64ToBytes(env.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch (e) {
+    return null;
+  }
+}
+
+// Resolves with the decrypted results object. Tries the cached key first;
+// otherwise shows the overlay and waits for a correct password. A cached key
+// that stops working (password rotated) is dropped, then we fall through to
+// the prompt.
+async function decryptResults(env) {
+  if (!window.crypto || !crypto.subtle) {
+    throw new Error('WebCrypto unavailable — open the dashboard over https');
+  }
+  var storedHex = null;
+  try { storedHex = localStorage.getItem(KEY_STORE); } catch (e) {}
+  if (storedHex) {
+    try {
+      var cached = await crypto.subtle.importKey('raw', hexToBytes(storedHex), {name: 'AES-GCM'}, false, ['decrypt']);
+      var out = await tryDecrypt(env, cached);
+      if (out !== null) return out;
+    } catch (e) {}
+    try { localStorage.removeItem(KEY_STORE); } catch (e) {}
+  }
+  return new Promise(function (resolve) {
+    var overlay = document.getElementById('pw-overlay');
+    var form  = document.getElementById('pw-form');
+    var input = document.getElementById('pw-input');
+    var errEl = document.getElementById('pw-error');
+    var btn   = document.getElementById('pw-submit');
+    overlay.style.display = 'flex';
+    input.focus();
+    form.onsubmit = async function (ev) {
+      ev.preventDefault();
+      var pw = input.value;
+      if (!pw) return;
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Unlocking…';
+      try {
+        var keyMat = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+        var bits = await crypto.subtle.deriveBits(
+          {name: 'PBKDF2', salt: b64ToBytes(env.salt), iterations: env.iter, hash: 'SHA-256'},
+          keyMat, 256);
+        var key = await crypto.subtle.importKey('raw', bits, {name: 'AES-GCM'}, false, ['decrypt']);
+        var out = await tryDecrypt(env, key);
+        if (out === null) {
+          errEl.style.display = 'block';
+          input.select();
+        } else {
+          try { localStorage.setItem(KEY_STORE, bytesToHex(new Uint8Array(bits))); } catch (e) {}
+          overlay.style.display = 'none';
+          form.onsubmit = null;
+          resolve(out);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Unlock';
+      }
+    };
+  });
+}
+
+function lockDashboard() {
+  try { localStorage.removeItem(KEY_STORE); } catch (e) {}
+  location.reload();
+}
+
+// Encrypted feed first; legacy plaintext only as a transition fallback.
+async function fetchResults() {
+  var r = await fetch(ENC_RESULTS_URL + '?t=' + Date.now());
+  if (r.ok) {
+    var env = await r.json().catch(function () { return null; });
+    if (env && env.v === 1 && env.ct) {
+      var lockBtn = document.getElementById('lock-btn');
+      if (lockBtn) lockBtn.style.display = '';
+      return await decryptResults(env);
+    }
+  }
+  var r2 = await fetch(LEGACY_RESULTS_URL + '?t=' + Date.now());
+  if (!r2.ok) throw new Error('encrypted feed missing (HTTP ' + r.status + ') and legacy feed unreachable (HTTP ' + r2.status + ')');
+  return await r2.json();
 }
 
 function getGithubToken() {
@@ -535,9 +668,7 @@ function parseScanDate(d) {
 async function loadData() {
   document.getElementById('last-scan').textContent = 'Refreshing...';
   try {
-    const r = await fetch(RESULTS_URL + '?t=' + Date.now());
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    data = await r.json();
+    data = await fetchResults();
     renderAll();
     document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '&#8212;');
     // Schwab token status — also check scan age, not just schwab_live flag
@@ -567,7 +698,7 @@ async function loadData() {
     document.getElementById('market-loading').style.display = 'none';
     const err = document.getElementById('market-error');
     err.style.display = 'block';
-    err.textContent = 'Could not load scan results: ' + e.message + '. The scanner may not have run yet today, or results.json is missing from the repo.';
+    err.textContent = 'Could not load scan results: ' + e.message + '. Either no scan has run yet, or the scanner has not published results.enc.json (check the DASHBOARD_PASSWORD / DASHBOARD_PUSH_TOKEN secrets in whale-intelligence).';
   }
 }
 
