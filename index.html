@@ -157,7 +157,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="g4">
         <div class="metric"><div class="metric-lbl">VIX</div><div class="metric-val" id="vix-val">&#8212;</div><div class="metric-sub" id="vix-sub">&#8212;</div></div>
         <div class="metric"><div class="metric-lbl">S&amp;P 500</div><div class="metric-val" id="spy-val" style="color:#1e40af">&#8212;</div><div class="metric-sub" id="spy-sub">&#8212;</div></div>
-        <div class="metric"><div class="metric-lbl">Opportunities</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
+        <!-- A55: counts only rows at/near John's own targets (in_zone), per mode.
+             Same predicate as the 🎯 At / Near Target filter — keep them identical. -->
+        <div class="metric" id="opp-tile" onclick="gotoActionable()" style="cursor:pointer"
+             title="Only trades at or near your own buy/sell targets count here — the same rule as the &#x1F3AF; At / Near Target filter. Click to see the cards.">
+          <div class="metric-lbl">Actionable Today</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
         <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">&#8212;</div><div class="metric-sub">holdings tracked</div></div>
       </div>
 
@@ -1042,10 +1046,38 @@ function renderMarket() {
     ? 'Above 200MA — normal environment'
     : 'Below 200MA ($' + (m.spy_ma200||0).toFixed(0) + ') — reduce risk';
 
+  // A55: the tile counts only rows AT/NEAR John's own targets — in_zone === true,
+  // the exact predicate the 🎯 At / Near Target filter uses in renderOpps(). Keep
+  // the two identical, or the tile promises cards the filter then hides (EX-27).
+  // The old headline ("73 · 18 execution ready") was noise: 61 rows were
+  // out-of-zone LEAPS, and 11 of the 18 "execution ready" were out of zone too.
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
-  const execCount = allOpps.filter(function(o){ return o.candidate_type === 'execution'; }).length;
-  document.getElementById('opp-count').textContent = allOpps.length;
-  document.getElementById('opp-sub').textContent = execCount + ' execution ready';
+  const inZone = allOpps.filter(function(o){ return o.in_zone === true; });
+  const oppByMode = {};
+  inZone.forEach(function(o){
+    var m = o.mode === 'PIO' ? 'CC' : o.mode;  // PIO rows render under the CC filter
+    oppByMode[m] = (oppByMode[m] || 0) + 1;
+  });
+  const oppEl = document.getElementById('opp-count');
+  oppEl.textContent = inZone.length;
+  oppEl.style.color = inZone.length > 0 ? '#166534' : '#6b7280';
+  // The four everyday modes always show — a zero line ("0 Cash-Secured Puts") is
+  // information, not clutter. Rare modes appear only when they actually hit.
+  var oppLines = [
+    [oppByMode.CC || 0, 'Covered Calls'],
+    [oppByMode.CSP || 0, 'Cash-Secured Puts'],
+    [oppByMode.LEAPS || 0, 'LEAPS'],
+    [oppByMode.SPIKE_CC || 0, 'Spike CC'],
+  ];
+  var rareNames = {CONVEXITY: 'Convexity', BCS: 'Bull Call Spread', DROP_CSP: 'Post-Drop CSP'};
+  Object.keys(rareNames).forEach(function(m){
+    if (oppByMode[m]) oppLines.push([oppByMode[m], rareNames[m]]);
+  });
+  document.getElementById('opp-sub').innerHTML =
+    oppLines.map(function(l){
+      return '<div style="' + (l[0] ? 'color:#374151;font-weight:600' : 'color:#c7ccd4') + '">' + l[0] + ' ' + l[1] + '</div>';
+    }).join('') +
+    '<div style="color:#9ca3af;margin-top:4px">of ' + allOpps.length + ' scanned &middot; click to view</div>';
 
   const pos = data.positions || [];
   const owned = pos.filter(function(p){ return p.status === 'Owned'; }).length;
@@ -1612,6 +1644,22 @@ function toggleInZone(btn) {
   }
   if (data) renderOpps();
 }
+// A55: click-through from the Market tab's "Actionable Today" tile — open the
+// Opportunities tab showing exactly the rows the tile counted (all modes,
+// 🎯 At / Near Target forced on). Reuses filterOpps/toggleInZone so the
+// buttons, table views and localStorage state stay consistent.
+function gotoActionable() {
+  var oppTab = null;
+  document.querySelectorAll('.tabs .tab').forEach(function(t){
+    if (t.textContent.trim() === 'Opportunities') oppTab = t;
+  });
+  if (oppTab) showTab('opportunities', oppTab);
+  var allBtn = document.querySelector('#page-opportunities .filter-row .outline-btn');
+  if (allBtn) filterOpps('all', allBtn);
+  var iz = document.getElementById('in-zone-toggle');
+  if (iz && !window.inZoneOnly) toggleInZone(iz);
+}
+
 // Apply persisted state on load
 document.addEventListener('DOMContentLoaded', function(){
   if (window.inZoneOnly) {
