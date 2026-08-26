@@ -1106,19 +1106,25 @@ function renderMarket() {
   oppEl.style.color = inZone.length > 0 ? '#166534' : '#6b7280';
   // The four everyday modes always show — a zero line ("0 Cash-Secured Puts") is
   // information, not clutter. Rare modes appear only when they actually hit.
+  // Each nonzero line links to ITS mode filter with At/Near on, so "2 Spike CC"
+  // opens exactly those 2 cards (A59 — the mixed all-modes view made it hard to
+  // tell which cards a line had counted).
   var oppLines = [
-    [oppByMode.CC || 0, 'Covered Calls'],
-    [oppByMode.CSP || 0, 'Cash-Secured Puts'],
-    [oppByMode.LEAPS || 0, 'LEAPS'],
-    [oppByMode.SPIKE_CC || 0, 'Spike CC'],
+    ['CC',       oppByMode.CC || 0,       'Covered Calls'],
+    ['CSP',      oppByMode.CSP || 0,      'Cash-Secured Puts'],
+    ['LEAPS',    oppByMode.LEAPS || 0,    'LEAPS'],
+    ['SPIKE_CC', oppByMode.SPIKE_CC || 0, 'Spike CC'],
   ];
   var rareNames = {CONVEXITY: 'Convexity', BCS: 'Bull Call Spread', DROP_CSP: 'Post-Drop CSP'};
   Object.keys(rareNames).forEach(function(m){
-    if (oppByMode[m]) oppLines.push([oppByMode[m], rareNames[m]]);
+    if (oppByMode[m]) oppLines.push([m, oppByMode[m], rareNames[m]]);
   });
   document.getElementById('opp-sub').innerHTML =
     oppLines.map(function(l){
-      return '<div style="' + (l[0] ? 'color:#374151;font-weight:600' : 'color:#c7ccd4') + '">' + l[0] + ' ' + l[1] + '</div>';
+      if (!l[1]) return '<div style="color:#c7ccd4">' + l[1] + ' ' + l[2] + '</div>';
+      return '<div onclick="event.stopPropagation();gotoActionable(\'' + l[0] + '\')"'
+        + ' title="Show only these cards"'
+        + ' style="color:#374151;font-weight:600;cursor:pointer">' + l[1] + ' ' + l[2] + '</div>';
     }).join('') +
     '<div style="color:#9ca3af;margin-top:4px">of ' + allOpps.length + ' scanned &middot; click to view</div>';
 
@@ -1742,18 +1748,26 @@ function toggleInZone(btn) {
   }
   if (data) renderOpps();
 }
-// A55: click-through from the Market tab's "Actionable Today" tile — open the
-// Opportunities tab showing exactly the rows the tile counted (all modes,
-// 🎯 At / Near Target forced on). Reuses filterOpps/toggleInZone so the
+// A55/A59: click-through from the Market tab's "Actionable Today" tile — open
+// the Opportunities tab showing exactly the rows the tile counted, with the
+// 🎯 At / Near Target filter forced on. The tile itself opens the All view;
+// each breakdown line passes its own mode ('CC', 'SPIKE_CC', …) so the count
+// maps 1:1 onto the cards shown. Reuses filterOpps/toggleInZone so the
 // buttons, table views and localStorage state stay consistent.
-function gotoActionable() {
+function gotoActionable(mode) {
   var oppTab = null;
   document.querySelectorAll('.tabs .tab').forEach(function(t){
     if (t.textContent.trim() === 'Opportunities') oppTab = t;
   });
   if (oppTab) showTab('opportunities', oppTab);
-  var allBtn = document.querySelector('#page-opportunities .filter-row .outline-btn');
-  if (allBtn) filterOpps('all', allBtn);
+  // Find the filter button whose onclick carries this mode ('CC' can't false-
+  // match 'SPIKE_CC' — the quoted token differs). Fall back to All.
+  var want = "'" + (mode || 'all') + "'", btn = null;
+  document.querySelectorAll('#page-opportunities .filter-row .outline-btn').forEach(function(b){
+    if ((b.getAttribute('onclick') || '').indexOf(want) >= 0) btn = b;
+  });
+  if (!btn) { mode = 'all'; btn = document.querySelector('#page-opportunities .filter-row .outline-btn'); }
+  if (btn) filterOpps(mode || 'all', btn);
   var iz = document.getElementById('in-zone-toggle');
   if (iz && !window.inZoneOnly) toggleInZone(iz);
 }
