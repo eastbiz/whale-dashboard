@@ -1259,7 +1259,7 @@ function renderMarket() {
   }
 }
 
-// A56: actionable-first ordering for the opportunity cards. Rows the scanner
+// A57: actionable-first ordering for the opportunity cards. Rows the scanner
 // marked in-zone always render before out-of-zone rows: AT target first, then
 // NEAR, then EXEMPT (cc_only spike CCs; convexity has no target — EX-15).
 // Within a zone group: score desc, then annualized (spike CCs carry no score).
@@ -1311,7 +1311,7 @@ function renderOpps() {
       if (tableView) tableView.style.display = 'none';
       if (gridView)  gridView.style.display = '';
     }
-    // Card view: in-zone LEAPS first (A56), then by breakeven_pct ascending
+    // Card view: in-zone LEAPS first (A57), then by breakeven_pct ascending
     filtered = filtered.slice().sort(function(a, b) {
       var zr = zoneRank(a) - zoneRank(b);
       if (zr !== 0) return zr;
@@ -1346,7 +1346,7 @@ function renderOpps() {
     filtered = cvxPass;
   }
 
-  // A56: actionable rows on top for the All / CSP / CC / Spike CC / Post-Drop
+  // A57: actionable rows on top for the All / CSP / CC / Spike CC / Post-Drop
   // card views. LEAPS and Convexity sorted in their branches above (Convexity
   // rows are all EXEMPT, its Req-CAGR order already ranks them).
   if (currentFilter !== 'LEAPS' && currentFilter !== 'CONVEXITY') {
