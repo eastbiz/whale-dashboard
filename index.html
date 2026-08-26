@@ -1308,19 +1308,29 @@ function renderMarket() {
   }
 }
 
-// A57: actionable-first ordering for the opportunity cards. Rows the scanner
-// marked in-zone always render before out-of-zone rows: AT target first, then
-// NEAR, then EXEMPT (cc_only spike CCs; convexity has no target — EX-15).
-// Within a zone group: score desc, then annualized (spike CCs carry no score).
-// Out-of-zone rows keep the scanner's own per-mode order (Array sort is stable).
+// A57/A60: actionable-first ordering for the opportunity cards. Rows the
+// scanner marked in-zone always render before out-of-zone rows. Within the
+// in-zone group, EXECUTION-READY rows (candidate_type "execution" — passes
+// quality, above the annualized floor, no warnings; the green Exec badge)
+// outrank review-only rows: an Exec spike CC near target belongs above a
+// no-Exec CC at a better score (John, 2026-08-26 — the Exec cards are "the
+// ones which meet all the criteria"). Then zone tier (AT, NEAR, EXEMPT —
+// cc_only spike CCs; convexity has no target, EX-15), then score desc, then
+// annualized (spike CCs carry no score). Out-of-zone rows keep the scanner's
+// own per-mode order (Array sort is stable).
 function zoneRank(o) {
   if (o.in_zone !== true) return 9;
   return o.zone_tier === 'AT' ? 0 : o.zone_tier === 'NEAR' ? 1 : 2;
 }
 function actionableFirst(a, b) {
+  var ia = a.in_zone === true, ib = b.in_zone === true;
+  if (ia !== ib) return ia ? -1 : 1;
+  if (!ia) return 0;  // both out of zone — preserve scanner order
+  var ea = a.candidate_type === 'execution' ? 0 : 1;
+  var eb = b.candidate_type === 'execution' ? 0 : 1;
+  if (ea !== eb) return ea - eb;
   var za = zoneRank(a), zb = zoneRank(b);
   if (za !== zb) return za - zb;
-  if (za === 9) return 0;  // both out of zone — preserve scanner order
   var sa = a.score != null ? a.score : -1, sb = b.score != null ? b.score : -1;
   if (sa !== sb) return sb - sa;
   return (b.annualized_return || 0) - (a.annualized_return || 0);
