@@ -1259,6 +1259,24 @@ function renderMarket() {
   }
 }
 
+// A56: actionable-first ordering for the opportunity cards. Rows the scanner
+// marked in-zone always render before out-of-zone rows: AT target first, then
+// NEAR, then EXEMPT (cc_only spike CCs; convexity has no target — EX-15).
+// Within a zone group: score desc, then annualized (spike CCs carry no score).
+// Out-of-zone rows keep the scanner's own per-mode order (Array sort is stable).
+function zoneRank(o) {
+  if (o.in_zone !== true) return 9;
+  return o.zone_tier === 'AT' ? 0 : o.zone_tier === 'NEAR' ? 1 : 2;
+}
+function actionableFirst(a, b) {
+  var za = zoneRank(a), zb = zoneRank(b);
+  if (za !== zb) return za - zb;
+  if (za === 9) return 0;  // both out of zone — preserve scanner order
+  var sa = a.score != null ? a.score : -1, sb = b.score != null ? b.score : -1;
+  if (sa !== sb) return sb - sa;
+  return (b.annualized_return || 0) - (a.annualized_return || 0);
+}
+
 function renderOpps() {
   const grid = document.getElementById('opps-grid');
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
@@ -1293,8 +1311,10 @@ function renderOpps() {
       if (tableView) tableView.style.display = 'none';
       if (gridView)  gridView.style.display = '';
     }
-    // Card view: sort by breakeven_pct ascending
+    // Card view: in-zone LEAPS first (A56), then by breakeven_pct ascending
     filtered = filtered.slice().sort(function(a, b) {
+      var zr = zoneRank(a) - zoneRank(b);
+      if (zr !== 0) return zr;
       var ae = a.breakeven_pct != null ? a.breakeven_pct : 999;
       var be = b.breakeven_pct != null ? b.breakeven_pct : 999;
       return ae - be;
@@ -1324,6 +1344,13 @@ function renderOpps() {
       return;
     }
     filtered = cvxPass;
+  }
+
+  // A56: actionable rows on top for the All / CSP / CC / Spike CC / Post-Drop
+  // card views. LEAPS and Convexity sorted in their branches above (Convexity
+  // rows are all EXEMPT, its Req-CAGR order already ranks them).
+  if (currentFilter !== 'LEAPS' && currentFilter !== 'CONVEXITY') {
+    filtered = filtered.slice().sort(actionableFirst);
   }
 
   if (!filtered.length) {
