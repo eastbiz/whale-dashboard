@@ -964,16 +964,38 @@ function renderPriceWatch() {
   var grid  = document.getElementById('pw-grid');
   if (!panel || !grid || !pw || !pw.length) return;
 
-  // Only show tickers at or within 5% of buy target. Everything else hidden.
-  var items = pw.filter(function(p) {
-    return p.csp_status === 'IN_ZONE' || p.csp_status === 'APPROACHING';
+  // A58: watch BOTH sides of the band, and name the target in the wording.
+  // GREEN = actionable now: price at/below the buy target (CSP zone) or
+  // at/above the sell target (CC zone). YELLOW = approaching: within 5% above
+  // buy or 8% below sell — the scanner's csp_status/cc_status, computed with
+  // the same CSP_NEAR_PCT/CC_NEAR_PCT bands as compute_in_zone (keep in sync
+  // or this panel disagrees with the zone badges — EX-27). The old panel
+  // rendered only the buy side, so a name sitting above its sell target never
+  // appeared here at all, and "above target" didn't say which target.
+  var items = [];
+  pw.forEach(function(p) {
+    var buySide  = p.csp_status === 'IN_ZONE' || p.csp_status === 'APPROACHING';
+    var sellSide = p.cc_status  === 'IN_ZONE' || p.cc_status  === 'APPROACHING';
+    if (!buySide && !sellSide) return;
+    var side;
+    if (buySide && sellSide) {  // only possible on a narrow band — prefer the in-zone side
+      side = p.csp_status === 'IN_ZONE' ? 'buy' : p.cc_status === 'IN_ZONE' ? 'sell'
+           : (Math.abs(p.pct_from_buy) <= Math.abs(p.pct_from_sell) ? 'buy' : 'sell');
+    } else side = buySide ? 'buy' : 'sell';
+    var inZone = side === 'buy' ? p.csp_status === 'IN_ZONE' : p.cc_status === 'IN_ZONE';
+    items.push({ p: p, side: side, inZone: inZone,
+                 dist: side === 'buy' ? p.pct_from_buy : p.pct_from_sell });
   });
   if (!items.length) { panel.style.display = 'none'; return; }
 
-  var statusMeta = {
-    'IN_ZONE':    { bg: '#dcfce7', border: '#16a34a', dot: '#16a34a', tip: 'At or below buy target — check options now' },
-    'APPROACHING':{ bg: '#fef9c3', border: '#ca8a04', dot: '#ca8a04', tip: 'Within 5% of buy target' },
-  };
+  // Actionable (green) first, then nearest to its target.
+  items.sort(function(a, b) {
+    if (a.inZone !== b.inZone) return a.inZone ? -1 : 1;
+    return Math.abs(a.dist || 0) - Math.abs(b.dist || 0);
+  });
+
+  var GREEN  = { bg: '#dcfce7', border: '#16a34a' };
+  var YELLOW = { bg: '#fef9c3', border: '#ca8a04' };
 
   function mCol(v){ return v<=-5?'#dc2626':v<=-2?'#ea580c':v>=5?'#16a34a':v>=2?'#65a30d':'#9ca3af'; }
   function mChip(v,lbl){
@@ -981,20 +1003,36 @@ function renderPriceWatch() {
     return '<span style="font-size:9px;color:'+mCol(v)+';margin-right:5px">'+(v>0?'+':'')+v.toFixed(1)+'%<span style="color:#9ca3af;font-size:8px"> '+lbl+'</span></span>';
   }
 
-  grid.innerHTML = items.map(function(p) {
-    var sm = statusMeta[p.csp_status] || statusMeta['APPROACHING'];
-    var distTxt = p.pct_from_buy === null ? '' :
-      p.pct_from_buy <= 0
-        ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▼ ' + Math.abs(p.pct_from_buy).toFixed(1) + '% under target</span>'
-        : '<span style="color:#ca8a04;font-size:11px">▲ ' + p.pct_from_buy.toFixed(1) + '% above target</span>';
+  grid.innerHTML = items.map(function(it) {
+    var p = it.p, d = Math.abs(it.dist || 0).toFixed(1);
+    var sm = it.inZone ? GREEN : YELLOW;
+    var distTxt, tip;
+    if (it.side === 'buy') {
+      distTxt = it.inZone
+        ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▼ ' + d + '% under buy target</span>'
+        : '<span style="color:#ca8a04;font-size:11px">▲ ' + d + '% above buy target</span>';
+      tip = it.inZone ? 'At or below your buy target — CSP / entry zone, check options now'
+                      : 'Within 5% above your buy target';
+    } else {
+      // pct_from_sell is positive BELOW sell_above, negative above it
+      distTxt = it.inZone
+        ? '<span style="color:#16a34a;font-weight:700;font-size:11px">▲ ' + d + '% above sell target</span>'
+        : '<span style="color:#ca8a04;font-size:11px">▼ ' + d + '% below sell target</span>';
+      tip = it.inZone ? 'At or above your sell target — CC / trim zone, check calls now'
+                      : 'Within 8% below your sell target';
+    }
+    var tgtRow = [
+      p.buy_under  ? 'Buy ≤$'  + p.buy_under  : '',
+      p.sell_above ? 'Sell ≥$' + p.sell_above : ''
+    ].filter(Boolean).join(' · ');
     var movRow = mChip(p.chg_1d_pct||0,'1d')+mChip(p.chg_5d_pct||0,'5d')+mChip(p.chg_30d_pct||0,'30d');
-    return '<div style="padding:10px 13px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:'+sm.bg+';border-left:4px solid '+sm.border+'">'
+    return '<div title="'+tip+'" style="padding:10px 13px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:'+sm.bg+';border-left:4px solid '+sm.border+'">'
       + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
       + '  <span style="font-weight:700;font-size:14px;color:#111">'+p.ticker+'</span>'
       + '  <span style="font-size:12px;color:#374151;margin-left:auto;font-family:monospace">$'+p.price.toFixed(2)+'</span>'
       + '</div>'
       + '<div style="margin-bottom:4px">'+distTxt+'</div>'
-      + '<div style="font-size:10px;color:#6b7280">Buy ≤$'+p.buy_under+'</div>'
+      + '<div style="font-size:10px;color:#6b7280">'+tgtRow+'</div>'
       + (movRow ? '<div style="margin-top:5px;line-height:1.8">'+movRow+'</div>' : '')
       + (p.days_to_earnings && p.days_to_earnings <= 35 ? '<div style="margin-top:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:' + (p.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (p.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + ';display:inline-block">&#9888; Earnings in ' + p.days_to_earnings + 'd</div>' : '')
       + '</div>';
