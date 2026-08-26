@@ -117,11 +117,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
    high-resolution laptops. zoom shrinks the available CSS width by the same
    factor (e.g. 1920px screen -> ~1829px), which the 1750px .app cap then
    nearly fills. Phones/tablets (<1200px) are unaffected. */
-@media(min-width:1200px){body{zoom:1.05;}
+@media(min-width:1200px){body{zoom:1.05;}}
 /* Opportunity cards go 3-up on the wide layout: each card only needs ~550px,
    so two-up on a 1750px column left half of every card as dead space and
-   stretched short cards to their tall neighbour's height. */
-#opps-grid.g2{grid-template-columns:repeat(3,1fr);}}
+   stretched short cards to their tall neighbour's height. Threshold is 1100
+   (not 1200): Chrome's own page zoom shrinks the CSS viewport that media
+   queries measure, and at 1200 a modestly zoomed browser fell back to 2-up. */
+@media(min-width:1100px){#opps-grid.g2{grid-template-columns:repeat(3,1fr);}}
 </style>
 </head>
 <body>
@@ -2012,11 +2014,13 @@ function fmtExpiry(s) {
   return s;
 }
 
+// % leads, $ in parens — the percentage drives John's close decisions
+// (80-90% of max premium is the take-profit rule), the dollar amount is context.
 function fmtPnl(r) {
   var pnl = r.pnl_dollar || 0;
   var pct = r.profit_pct || 0;
   var sign = pnl >= 0 ? '+' : '-';
-  return sign + '$' + Math.abs(Math.round(pnl)).toLocaleString() + ' (' + (pct>=0?'+':'') + pct + '%)';
+  return (pct >= 0 ? '+' : '') + pct + '% (' + sign + '$' + Math.abs(Math.round(pnl)).toLocaleString() + ')';
 }
 
 function renderActions() {
@@ -2292,8 +2296,8 @@ function renderActionsTable() {
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace' + (stale ? ';color:#92400e' : '') + '">$' + (r.mark || 0).toFixed(2)
         + (stale ? '<div style="font-size:9px;color:#92400e;white-space:nowrap">stale</div>' : '') + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
-        + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString()
-        + '<div style="font-size:10px">' + fmtPct(r.profit_pct) + '</div></td>'
+        + fmtPct(r.profit_pct)
+        + '<div style="font-size:10px">' + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #e5e7eb">$' + Math.round(d.remainingVal).toLocaleString()
         + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + (r.remaining_prem || 0) + '% left</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + (d.annRoi != null ? d.annRoi.toFixed(0) + '%' : '&#8212;') + '</td>'
@@ -2386,8 +2390,8 @@ function renderLeapsPositionsTable() {
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.mark || 0).toFixed(2)
         + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(mktVal).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
-        + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString()
-        + '<div style="font-size:10px">' + _fmtPctCell(r.profit_pct) + '</div></td>'
+        + _fmtPctCell(r.profit_pct)
+        + '<div style="font-size:10px">' + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.underlying || 0).toFixed(2)
         + (r.sell_above ? '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">sell $' + r.sell_above + '</div>' : '') + '</td>'
       + '<td style="padding:6px 5px;text-align:center;font-weight:600;color:' + beColor + '">'
