@@ -30,6 +30,15 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
 - No browser storage APIs beyond what already exists; keep changes minimal.
 - LEAPS "vs Owned" compares raw breakeven with a DTE-mismatch flag (⚠ ±Nmo DTE)
   when expiries differ >90 days — intentional, keep it.
+- **LEAPS expiration filter (2026-09-01, John's request):** buttons in
+  `#leaps-expiry-filter` (All dates / one per distinct opportunity expiry, with
+  "own Nx" showing his contracts at that date). A selected date filters rows
+  (table AND cards) and scopes vs Owned to owned LEAPS with the SAME
+  expiration — no same-date position means NO comparison ("—"), by design;
+  do not fall back to another date. "All dates" keeps the cross-expiry
+  compare + DTE flag above. Expiry formats differ by source (opportunities
+  `2028-01-21`, owned positions `20280121`) — always compare via `expKey()`,
+  never raw strings.
 
 ## Full context
 The complete system guide, trading philosophy, gotchas, and conventions live in

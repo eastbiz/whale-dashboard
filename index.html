@@ -286,6 +286,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <select id="leaps-ticker-filter" onchange="renderOpps()" style="font-size:12px;border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;color:#374151;background:#fff;cursor:pointer">
         <option value="all">All tickers</option>
       </select>
+      <!-- Expiration filter buttons — built from the LEAPS opportunity rows.
+           A specific date filters rows AND scopes vs-Owned to that same date. -->
+      <div id="leaps-expiry-filter" style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"></div>
       <div style="margin-left:auto;display:flex;gap:4px">
         <button id="leaps-view-cards" onclick="setLeapsView('cards')" style="font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:5px;cursor:pointer;background:#f3f4f6;color:#374151;font-weight:400">&#x1F4C7; Cards</button>
         <button id="leaps-view-table" onclick="setLeapsView('table')" style="font-size:11px;padding:4px 10px;border:1px solid #6366f1;border-radius:5px;cursor:pointer;background:#eef2ff;color:#4338ca;font-weight:700">&#x1F4CB; Table</button>
@@ -737,6 +740,43 @@ var leapsSortCol = 'breakeven_pct';
 var leapsSortAsc = true;
 function leapsSortBy(col){ if(leapsSortCol===col){ leapsSortAsc=!leapsSortAsc; } else { leapsSortCol=col; leapsSortAsc=true; } renderOpps(); }
 
+// Expiration filter for LEAPS opportunities: 'all' or an 8-digit YYYYMMDD key.
+// Opportunity rows carry expiry as "2028-01-21" while owned positions
+// (exposure.leaps_positions, from IBKR Flex) carry "20280121" — expKey()
+// normalizes both to the 8-digit form before ANY comparison. Never compare
+// the raw strings.
+var leapsExpiryFilter = 'all';
+function expKey(s){ return String(s||'').replace(/-/g,'').slice(0,8); }
+function setLeapsExpiry(k){ leapsExpiryFilter = k; renderOpps(); }
+
+function renderLeapsExpiryButtons(leaps) {
+  var box = document.getElementById('leaps-expiry-filter');
+  if (!box) return;
+  var keys = [...new Set(leaps.map(function(o){ return expKey(o.expiry); }))]
+    .filter(function(k){ return k.length === 8; }).sort();
+  // A new scan can drop the selected expiry — fall back to All, never an empty page
+  if (leapsExpiryFilter !== 'all' && keys.indexOf(leapsExpiryFilter) === -1) leapsExpiryFilter = 'all';
+  // Owned contracts per expiration (all tickers) — shown on the button so it is
+  // visible BEFORE clicking which dates can produce a same-expiration comparison
+  var ownedByExp = {};
+  (((data||{}).exposure||{}).leaps_positions||[]).forEach(function(l){
+    var k = expKey(l.expiry);
+    if (k.length === 8) ownedByExp[k] = (ownedByExp[k]||0) + (parseInt(l.contracts)||0);
+  });
+  function btn(k, lbl, own) {
+    var active = leapsExpiryFilter === k;
+    return '<button onclick="setLeapsExpiry(\''+k+'\')" title="'+(k==='all'
+        ? 'Show every expiration. vs Owned compares against your best owned breakeven on any date.'
+        : 'Show only '+lbl+' opportunities. vs Owned compares only against LEAPS you own expiring '+lbl+(own?'':' — you own none, so no comparison will show')+'.')
+      +'" style="font-size:11px;padding:4px 10px;border:1px solid '+(active?'#6366f1':'#d1d5db')+';border-radius:5px;cursor:pointer;background:'+(active?'#eef2ff':'#f3f4f6')+';color:'+(active?'#4338ca':'#374151')+';font-weight:'+(active?'700':'400')+';white-space:nowrap">'
+      + lbl + (own ? ' <span style="font-size:9px;color:#7c3aed">&middot; own '+own+'x</span>' : '')
+      + '</button>';
+  }
+  var html = btn('all', 'All dates', 0);
+  keys.forEach(function(k){ html += btn(k, fmtExpiry(k), ownedByExp[k]||0); });
+  box.innerHTML = html;
+}
+
 function renderLeapsTable(leaps) {
   var sel = document.getElementById('leaps-ticker-filter');
   var tickerFilter = sel ? sel.value : 'all';
@@ -764,7 +804,11 @@ function renderLeapsTable(leaps) {
     + th('extrinsic_pct','Extrinsic%','background:#f5f3ff')
     + th('breakeven','Breakeven')
     + th('breakeven_pct','BE% above','background:#f5f3ff')
-    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Breakeven vs your owned position. Note the DTE column \u2014 a longer-dated option naturally has a higher breakeven.">vs Owned</th>'
+    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="'
+    + (leapsExpiryFilter !== 'all'
+        ? 'Breakeven vs LEAPS you own with the SAME expiration ('+fmtExpiry(leapsExpiryFilter)+'). Same date, so the comparison is apples-to-apples \u2014 tickers where you own no '+fmtExpiry(leapsExpiryFilter)+' LEAPS show no comparison.'
+        : 'Breakeven vs your owned position (best breakeven on ANY date). Note the DTE column \u2014 a longer-dated option naturally has a higher breakeven. Pick an expiration button above for a same-date comparison.')
+    + '">vs Owned</th>'
     + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
     + '</tr></thead><tbody>';
   var bandOrder = {conservative:0,sweet_spot:1,aggressive:2};
@@ -796,6 +840,12 @@ function renderLeapsTable(leaps) {
       + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
     // Build owned LEAPS for this ticker (used for DTE-fair annualized comparison)
     var ownedLeaps = ((data.exposure||{}).leaps_positions||[]).filter(function(l){ return l.ticker===ticker; });
+    // Expiration filter active → benchmark ONLY against owned LEAPS with that
+    // same expiration. No same-date position = no comparison (— in the cell),
+    // by design: a benchmark from another date is the noise the filter removes.
+    if (leapsExpiryFilter !== 'all') {
+      ownedLeaps = ownedLeaps.filter(function(l){ return expKey(l.expiry) === leapsExpiryFilter; });
+    }
     tRows.forEach(function(o) {
       var ec = o.extrinsic_pct<20?'#166534':o.extrinsic_pct<30?'#92400e':o.extrinsic_pct<40?'#b45309':'#991b1b';
       var bc = o.breakeven_pct<8?'#166534':o.breakeven_pct<15?'#92400e':'#6b7280';
@@ -1368,6 +1418,13 @@ function renderOpps() {
   }
   // LEAPS: show table or cards based on leapsView toggle
   if (currentFilter === 'LEAPS') {
+    // Expiration filter — buttons built from the UNfiltered list (so every
+    // date stays clickable), then the filter is applied to rows. Applies to
+    // table AND cards; renderLeapsExpiryButtons resets a stale selection.
+    renderLeapsExpiryButtons(filtered);
+    if (leapsExpiryFilter !== 'all') {
+      filtered = filtered.filter(function(o){ return expKey(o.expiry) === leapsExpiryFilter; });
+    }
     var tableView = document.getElementById('leaps-table-view');
     var gridView  = document.getElementById('opps-grid');
     if (leapsView === 'table') {
@@ -1684,6 +1741,12 @@ function renderOpps() {
           // For LEAPS cards — show existing positions under breakeven (same style as NVO)
           if (o.mode === 'LEAPS') {
             var leapsList = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === o.ticker; });
+            // Expiration filter (LEAPS view only — the buttons are hidden on
+            // the All-modes grid, so a leftover selection must not scope it):
+            // list and compare only owned LEAPS with the selected expiration.
+            if (currentFilter === 'LEAPS' && leapsExpiryFilter !== 'all') {
+              leapsList = leapsList.filter(function(l){ return expKey(l.expiry) === leapsExpiryFilter; });
+            }
             var leapsBe = leapsList.map(function(l){
               var ct  = l.contracts ? l.contracts + ' x ' : '';
               var stk = l.strike ? '$' + l.strike : '';
