@@ -839,7 +839,8 @@ function renderLeapsTable(leaps) {
       + ticker+' <span style="font-size:11px;font-weight:400;color:#374151;font-family:monospace">$'+first.price.toFixed(2)+'</span>'
       + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
     // Build owned LEAPS for this ticker (used for DTE-fair annualized comparison)
-    var ownedLeaps = ((data.exposure||{}).leaps_positions||[]).filter(function(l){ return l.ticker===ticker; });
+    var allOwnedLeaps = ((data.exposure||{}).leaps_positions||[]).filter(function(l){ return l.ticker===ticker; });
+    var ownedLeaps = allOwnedLeaps;
     // Expiration filter active → benchmark ONLY against owned LEAPS with that
     // same expiration. No same-date position = no comparison (— in the cell),
     // by design: a benchmark from another date is the noise the filter removes.
@@ -860,6 +861,25 @@ function renderLeapsTable(leaps) {
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+bc+';background:#faf5ff">+'+o.breakeven_pct+'%</td>'
         + (function(){
+          // Exact match first: you already OWN this strike + expiry. Say so
+          // instead of comparing it against itself (or, worse, against a
+          // different strike when the overnight IBKR snapshot lags a fill —
+          // CLS 2026-09-02: the $125 Jan-2028 bought that day read "8.1%
+          // better" vs the $145). Uses the full owned list for the ticker,
+          // not the expiry-filtered one: a same-contract match has the same
+          // expiry by definition.
+          var ownedSame = allOwnedLeaps.filter(function(l){
+            return expKey(l.expiry) === expKey(o.expiry) && Math.abs((parseFloat(l.strike)||0) - (parseFloat(o.strike)||0)) < 0.005;
+          });
+          if (ownedSame.length) {
+            var n = ownedSame.reduce(function(a,l){ return a + (parseInt(l.contracts)||0); }, 0);
+            var cost = ownedSame.reduce(function(a,l){ return a + (parseFloat(l.avg_cost)||0)*(parseInt(l.contracts)||0); }, 0) / (n||1);
+            var accts = [...new Set(ownedSame.map(function(l){ return l.account||l.source||''; }).filter(Boolean))].join(', ');
+            var curBe = parseFloat(o.breakeven)||0, ownBe = parseFloat(ownedSame[0].breakeven)||0;
+            var beNote = (curBe && ownBe) ? ' Today\'s mid $'+o.premium.toFixed(2)+' (BE $'+curBe+') vs your cost $'+cost.toFixed(2)+' (BE $'+ownBe+').' : '';
+            return '<td style="padding:7px 6px;text-align:right;font-size:11px;white-space:nowrap" title="You already hold this exact contract'+(accts?' in '+accts:'')+'.'+beNote+'">'
+              + '<span style="font-weight:700;color:#1e40af">OWNED &middot; '+n+' @ $'+cost.toFixed(2)+'</span></td>';
+          }
           if (!ownedLeaps.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
           // Raw breakeven comparison vs your best (lowest-BE) owned position.
           // A DTE-mismatch flag warns when the expiries differ enough that the
