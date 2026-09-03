@@ -2091,7 +2091,11 @@ function fmtExpiry(s) {
   var raw = String(s).replace(/-/g,'');
   if (raw.length >= 8) {
     var yr = raw.slice(0,4), mo = raw.slice(4,6), dy = raw.slice(6,8);
-    var d = new Date(yr+'-'+mo+'-'+dy);
+    // Build from LOCAL components. new Date('2028-12-15') is parsed as UTC
+    // midnight, and toLocaleDateString then renders it in Pacific time as
+    // the evening BEFORE — the Dec-2028 LEAPS expiry printed as "Dec 14"
+    // when the contract expires Dec 15 (EX-46).
+    var d = new Date(+yr, +mo - 1, +dy);
     if (!isNaN(d)) return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   }
   return s;
