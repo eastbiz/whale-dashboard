@@ -274,7 +274,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- Price Watch panel -->
     <div id="price-watch-panel" style="display:none;margin-bottom:12px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb">
       <div id="pw-header" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#f3f4f6;border-bottom:1px solid #e5e7eb;cursor:pointer;user-select:none" onclick="togglePriceWatch()">
-        <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH</span>
+        <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH<span id="pw-side-label" style="font-weight:400;color:#6b7280;margin-left:8px"></span></span>
         <span id="pw-toggle" style="font-size:11px;color:#9ca3af">&#9660; hide</span>
       </div>
       <div id="pw-body">
@@ -1041,6 +1041,15 @@ function togglePriceWatch() {
   lbl.innerHTML = hidden ? '&#9660; hide' : '&#9658; show';
 }
 
+// Which side of the buy/sell band the active strategy filter cares about.
+var PW_BUY_SIDE  = { CSP: 1, LEAPS: 1, CONVEXITY: 1, DROP_CSP: 1, BCS: 1 };
+var PW_SELL_SIDE = { CC: 1, SPIKE_CC: 1, PIO: 1 };
+function priceWatchSide() {
+  if (PW_BUY_SIDE[currentFilter])  return 'buy';
+  if (PW_SELL_SIDE[currentFilter]) return 'sell';
+  return 'all';
+}
+
 function renderPriceWatch() {
   var pw = data.price_watch;
   var panel = document.getElementById('price-watch-panel');
@@ -1055,10 +1064,22 @@ function renderPriceWatch() {
   // or this panel disagrees with the zone badges — EX-27). The old panel
   // rendered only the buy side, so a name sitting above its sell target never
   // appeared here at all, and "above target" didn't say which target.
+  //
+  // A66 (John, 2026-09-04): the panel follows the strategy filter. "All"
+  // keeps both sides. A buy-side strategy (CSP, LEAPS, Convexity, Post-Drop,
+  // Bull Call Spread) shows only names at/near a BUY UNDER target; a sell-side
+  // strategy (CC, Spike CC, Position Income) shows only names at/near a SELL
+  // ABOVE target. Convexity carries no target of its own (zone-EXEMPT), so
+  // its buy-side view is entry context, not a match for its cards.
+  var want = priceWatchSide();
+  var lbl = document.getElementById('pw-side-label');
+  if (lbl) lbl.textContent = want === 'buy' ? '· buy targets only' : want === 'sell' ? '· sell targets only' : '';
   var items = [];
   pw.forEach(function(p) {
     var buySide  = p.csp_status === 'IN_ZONE' || p.csp_status === 'APPROACHING';
     var sellSide = p.cc_status  === 'IN_ZONE' || p.cc_status  === 'APPROACHING';
+    if (want === 'buy')  sellSide = false;
+    if (want === 'sell') buySide  = false;
     if (!buySide && !sellSide) return;
     var side;
     if (buySide && sellSide) {  // only possible on a narrow band — prefer the in-zone side
@@ -1069,7 +1090,15 @@ function renderPriceWatch() {
     items.push({ p: p, side: side, inZone: inZone,
                  dist: side === 'buy' ? p.pct_from_buy : p.pct_from_sell });
   });
-  if (!items.length) { panel.style.display = 'none'; return; }
+  if (!items.length) {
+    // Nothing on this side. Under a strategy filter say so rather than making
+    // the whole panel vanish (which reads as "Price Watch is gone").
+    if (want === 'all') { panel.style.display = 'none'; return; }
+    grid.innerHTML = '<div style="padding:10px 13px;font-size:12px;color:#9ca3af;grid-column:1/-1">No names at or near a '
+      + (want === 'buy' ? 'buy' : 'sell') + ' target right now.</div>';
+    panel.style.display = 'block';
+    return;
+  }
 
   // Actionable (green) first, then nearest to its target.
   items.sort(function(a, b) {
@@ -1828,6 +1857,7 @@ function filterOpps(f, btn) {
   if (f !== 'CONVEXITY') { var cvv = document.getElementById('convex-table-view'); if (cvv) cvv.style.display = 'none'; }
   if (f !== 'LEAPS' && f !== 'CONVEXITY') { var gv = document.getElementById('opps-grid'); if (gv) gv.style.display = ''; }
   if (data) renderOpps();
+  if (data) { try { renderPriceWatch(); } catch(e) { console.error('renderPriceWatch:', e); } }
 }
 
 // Phase 1.6: In-Zone Only toggle — hides opportunities whose stock price
