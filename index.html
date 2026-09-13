@@ -312,17 +312,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- POSITIONS -->
   <div class="page" id="page-positions">
     <div class="filter-row" style="justify-content:space-between;align-items:center">
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px" id="pos-acct-btns">
         <button class="outline-btn active" onclick="filterPositions('ALL',this)">All</button>
         <button class="outline-btn" onclick="filterPositions('IRA',this)">IRA</button>
         <button class="outline-btn" onclick="filterPositions('CRT',this)">CRT</button>
         <button class="outline-btn" onclick="filterPositions('IBKR',this)">IBKR</button>
       </div>
+      <!-- A69: Positions | Holdings view switch (John, 2026-09-13). Holdings =
+           every held name ranked by shares + LEAPS market value, coloured by
+           price vs buy_under / sell_above, with analyst consensus. -->
+      <div style="display:flex;gap:6px" id="pos-view-btns">
+        <button class="outline-btn active" onclick="showPosView('positions',this)">Positions</button>
+        <button class="outline-btn" onclick="showPosView('holdings',this)">Holdings</button>
+      </div>
     </div>
     <!-- Position-feed warning (EX-32) — a scan that lost the Schwab position
          feed publishes a table where Schwab-held names read as not owned. -->
     <div id="pos-feed-warning" style="display:none;margin:0 0 10px;padding:9px 13px;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px;line-height:1.5"></div>
-    <div style="overflow-x:auto;">
+    <div style="overflow-x:auto;" id="pos-table-wrap">
       <table style="width:100%;border-collapse:collapse;font-size:12px" id="pos-table">
         <thead>
           <colgroup>
@@ -348,6 +355,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </thead>
         <tbody id="pos-tbody"><tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
       </table>
+    </div>
+    <!-- HOLDINGS view (A69) -->
+    <div id="holdings-wrap" style="display:none">
+      <div id="holdings-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="holdings-table">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb">
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th>
+              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Tier</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Price</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Price vs your buy_under / sell_above. Green = at or within 5% above buy target; orange = at or within 8% below sell target &mdash; the same bands as the Price Watch panel.">vs your targets</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Shares $</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS $</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e" title="Cash needed if every short put is assigned. Shown for context; NOT part of Total exposure.">CSP oblig.</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Shares + LEAPS market value">Total exposure</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
+              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Accts</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af" title="Yahoo sell-side consensus. Mean on a 1-5 scale where 1 = Strong Buy and 5 = Sell (the OPPOSITE of Seeking Alpha's scale), then analyst count.">Wall St (Yahoo)</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0f9ff;color:#1e40af" title="Nasdaq analyst consensus (Zacks-based): label and analyst count.">Zacks (Nasdaq)</th>
+            </tr>
+          </thead>
+          <tbody id="holdings-tbody"><tr><td colspan="13" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1922,9 +1955,185 @@ var posSortAsc = false;
 
 function filterPositions(acct, btn) {
   currentPosFilter = acct;
-  btn.closest('.filter-row').querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); });
+  // Only this group — the Positions|Holdings switch sits in the same
+  // filter-row and must keep its own active state (A69).
+  btn.parentElement.querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   if (data) renderPositions();
+}
+
+// A69: Positions | Holdings view switch on the Positions page.
+var posView = 'positions';
+function showPosView(view, btn) {
+  posView = view;
+  if (btn) {
+    btn.parentElement.querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+  var pw = document.getElementById('pos-table-wrap');
+  var hw = document.getElementById('holdings-wrap');
+  if (pw) pw.style.display = view === 'holdings' ? 'none' : '';
+  if (hw) hw.style.display = view === 'holdings' ? '' : 'none';
+  if (data && view === 'holdings') renderHoldings();
+}
+
+// ── HOLDINGS view (A69, John 2026-09-13) ────────────────────────────────
+// Every held name, all accounts, ranked by Total exposure = shares + LEAPS
+// market value (CSP obligation is context only — John's call). One
+// percentage: % of NAV. Row colour = price vs John's own buy_under /
+// sell_above, read from the scanner's price_watch csp_status / cc_status so
+// this page can never disagree with the Price Watch panel (EX-27 rule).
+// Names John holds but has set no target for (he intends to sell them) stay
+// grey. Ratings are copied from results.json `ratings` (Yahoo sell-side
+// mean + Nasdaq/Zacks label) — printed as n/a when a feed is missing.
+function holdingsAcctKey(a) { return ((a || 'IBKR') + '').toUpperCase(); }
+
+function ratingColor(label) {
+  var l = (label || '').toLowerCase();
+  if (!l) return '#9ca3af';
+  if (l.indexOf('strong buy') === 0) return '#166534';
+  if (l.indexOf('buy') === 0)        return '#15803d';
+  if (l.indexOf('hold') === 0)       return '#6b7280';
+  return '#991b1b';   // underperform / sell / strong sell
+}
+
+function renderHoldings() {
+  var tbody = document.getElementById('holdings-tbody');
+  var note  = document.getElementById('holdings-note');
+  if (!tbody || !data) return;
+  var exp  = data.exposure || {};
+  var nav  = exp.portfolio_size || 0;
+  var pwBy = {};
+  (data.price_watch || []).forEach(function(p){ pwBy[p.ticker] = p; });
+  var ratings = ((data.ratings || {}).ratings) || {};
+  var ratingsBuilt = (data.ratings || {}).built || '';
+  var cashSet = {};
+  (data.cash_equivalent_tickers || ['SGOV']).forEach(function(t){ cashSet[t] = 1; });
+  var acct = currentPosFilter;   // ALL / IRA / CRT / IBKR — same buttons as the Positions table
+
+  var rows = [], cashRows = [];
+  (data.positions || []).forEach(function(p) {
+    if (p.status !== 'Owned') return;
+    var shares, leaps, cso;
+    if (acct === 'ALL') {
+      shares = p.market_value || 0;
+      leaps  = p.leaps_mv || 0;
+      cso    = p.csp_obligation || 0;
+    } else {
+      shares = ((p.mv_by_account || {})[acct]) || 0;
+      leaps  = (p.leaps || []).reduce(function(s,l){ return s + (holdingsAcctKey(l.account) === acct ? (l.market_value || 0) : 0); }, 0);
+      cso    = (exp.csp_positions || []).reduce(function(s,c){ return s + ((c.ticker === p.ticker && holdingsAcctKey(c.account) === acct) ? (c.cso || 0) : 0); }, 0);
+    }
+    var total = shares + leaps;
+    if (total <= 0 && cso <= 0) return;
+    var pw = pwBy[p.ticker];
+    var price = pw && pw.price ? pw.price : null, derived = false;
+    if (price === null && p.shares_owned > 0 && p.market_value > 0) { price = p.market_value / p.shares_owned; derived = true; }
+    var row = { t: p.ticker, tier: p.tier || '', price: price, derived: derived, shares: shares, leaps: leaps, cso: cso,
+                total: total, verdict: p.size_verdict || p.pos_status || '', sev: p.size_severity || 0,
+                accts: (p.accounts_all || [p.account || 'IBKR']).join('/'), pw: pw, r: ratings[p.ticker] || {} };
+    if (cashSet[p.ticker]) cashRows.push(row); else rows.push(row);
+  });
+  rows.sort(function(a,b){ return b.total - a.total; });
+
+  if (note) {
+    note.innerHTML = 'Every held name' + (acct === 'ALL' ? ', all accounts' : ' in ' + escHtml(acct)) + ', largest first. '
+      + '<b>Total exposure = shares + LEAPS market value</b>; CSP obligation is context only. '
+      + 'Row colour: <span style="color:#166534;font-weight:600">green</span> = at/near your buy target, '
+      + '<span style="color:#9a3412;font-weight:600">orange</span> = at/near your sell target (5% / 8% bands, same as Price Watch). '
+      + 'Ratings scale note: Yahoo mean 1 = Strong Buy &hellip; 5 = Sell (opposite of Seeking Alpha).'
+      + (ratingsBuilt ? ' Ratings as of ' + escHtml(ratingsBuilt) + '.' : ' <span style="color:#991b1b">No ratings in this scan.</span>');
+  }
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:#9ca3af">No holdings' + (acct === 'ALL' ? '' : ' in ' + escHtml(acct)) + '.</td></tr>';
+    return;
+  }
+
+  var money = function(v) { return v ? '$' + Math.round(v).toLocaleString() : '<span style="color:#d1d5db">&mdash;</span>'; };
+  var pct = function(v) { return nav > 0 ? (v / nav * 100).toFixed(1) + '%' : '&mdash;'; };
+  var html = '';
+  rows.forEach(function(r) {
+    // Zone from the scanner's own price-watch status (sell side wins if both).
+    var bg = '', fg = '#6b7280', bold = false, zoneTxt = '<span style="color:#9ca3af">no target</span>';
+    var pw = r.pw;
+    if (pw) {
+      var bu = pw.buy_under || 0, sa = pw.sell_above || 0;
+      // Scanner conventions differ per side: pct_from_buy = (price-buy)/buy
+      // (negative = below buy), but pct_from_sell = (sell-price)/sell
+      // (POSITIVE = below sell). Both are shown here as "price vs target",
+      // negative = below, so the sell side is negated.
+      var pb = pw.pct_from_buy, ps = (pw.pct_from_sell === null || pw.pct_from_sell === undefined) ? null : -pw.pct_from_sell;
+      var fmtPct = function(v, d) { return (v > 0 ? '+' : '') + Number(v).toFixed(d) + '%'; };
+      if (sa && pw.cc_status === 'IN_ZONE')          { bg = '#fee2e2'; fg = '#991b1b'; bold = true; zoneTxt = 'AT SELL &middot; ' + fmtPct(ps, 1) + ' vs ' + sa; }
+      else if (sa && pw.cc_status === 'APPROACHING') { bg = '#ffedd5'; fg = '#9a3412';              zoneTxt = 'near sell &middot; ' + fmtPct(ps, 1) + ' vs ' + sa; }
+      else if (bu && pw.csp_status === 'IN_ZONE')    { bg = '#d1fae5'; fg = '#065f46'; bold = true; zoneTxt = 'AT BUY &middot; ' + fmtPct(pb, 1) + ' vs ' + bu; }
+      else if (bu && pw.csp_status === 'APPROACHING'){ bg = '#ecfdf5'; fg = '#166534';              zoneTxt = 'near buy &middot; ' + fmtPct(pb, 1) + ' vs ' + bu; }
+      else {
+        var parts = [];
+        parts.push(bu && pb !== null && pb !== undefined ? fmtPct(pb, 0) + ' vs buy ' + bu : 'NO BUY');
+        if (sa && ps !== null) parts.push(fmtPct(ps, 0) + ' vs sell ' + sa);
+        zoneTxt = parts.join(' &middot; ');
+      }
+    }
+    var priceTxt = r.price === null ? '<span style="color:#d1d5db">&mdash;</span>'
+      : Number(r.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+        + (r.derived ? '<span style="color:#9ca3af" title="Derived: market value &divide; shares (name is not on the watchlist, so the scan carries no quote)">*</span>' : '');
+    var sevColor = r.sev >= 2 ? '#991b1b' : r.sev === 1 ? '#9a3412' : '#6b7280';
+    // Ratings
+    var y = r.r.yahoo || null, n = r.r.nasdaq || null;
+    var yTxt = '<span style="color:#9ca3af">n/a</span>';
+    if (y && (y.label || y.mean !== null)) {
+      var tgt = (y.target && r.price) ? ' &middot; target ' + Math.round(y.target) + ' (' + ((y.target / r.price - 1) * 100 >= 0 ? '+' : '') + ((y.target / r.price - 1) * 100).toFixed(0) + '%)' : '';
+      yTxt = '<span style="color:' + ratingColor(y.label) + ';font-weight:600">' + escHtml(y.label || '') + '</span>'
+        + (y.mean !== null && y.mean !== undefined ? ' <span style="color:#374151">' + Number(y.mean).toFixed(1) + '</span>' : '')
+        + (y.analysts ? ' <span style="color:#9ca3af">&middot; ' + y.analysts + '</span>' : '')
+        + '<span style="color:#9ca3af;font-size:10px">' + tgt + '</span>';
+    }
+    var nTxt = '<span style="color:#9ca3af">n/a</span>';
+    if (n && n.label) {
+      var c = n.counts || {};
+      var cTitle = Object.keys(c).length ? Object.keys(c).map(function(k){ return k + ' ' + c[k]; }).join(', ') : '';
+      nTxt = '<span style="color:' + ratingColor(n.label) + ';font-weight:600" title="' + escHtml(cTitle) + '">' + escHtml(n.label) + '</span>'
+        + (n.analysts ? ' <span style="color:#9ca3af">&middot; ' + n.analysts + '</span>' : '');
+    }
+    html += '<tr style="border-bottom:1px solid #f3f4f6;background:' + (bg || 'transparent') + '">'
+      + '<td style="padding:6px 6px;font-weight:700">' + escHtml(r.t) + '</td>'
+      + '<td style="padding:6px 4px;font-size:10px;color:#6b7280">' + escHtml(r.tier) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + priceTxt + '</td>'
+      + '<td style="padding:6px 6px;color:' + fg + ';font-weight:' + (bold ? 600 : 400) + ';white-space:nowrap">' + zoneTxt + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.shares) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #ede9fe;color:#4c1d95">' + money(r.leaps) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #fed7aa;color:#92400e">' + money(r.cso) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700">' + money(r.total) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
+      + '<td style="padding:6px 6px;font-size:11px;color:' + sevColor + (r.sev >= 2 ? ';font-weight:600' : '') + '">' + escHtml(r.verdict) + '</td>'
+      + '<td style="padding:6px 5px;font-size:10px;color:#9ca3af">' + escHtml(r.accts) + '</td>'
+      + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #dbeafe;white-space:nowrap">' + yTxt + '</td>'
+      + '<td style="padding:6px 6px;font-size:11px;white-space:nowrap">' + nTxt + '</td>'
+      + '</tr>';
+  });
+  var sum = function(k) { return rows.reduce(function(s,r){ return s + r[k]; }, 0); };
+  html += '<tr style="border-top:2px solid #e5e7eb;background:#f9fafb;font-weight:600">'
+    + '<td style="padding:6px 6px" colspan="4">TOTAL (' + rows.length + ' names)</td>'
+    + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(sum('shares')) + '</td>'
+    + '<td style="padding:6px 5px;text-align:right;font-family:monospace;color:#4c1d95">' + money(sum('leaps')) + '</td>'
+    + '<td style="padding:6px 5px;text-align:right;font-family:monospace;color:#92400e">' + money(sum('cso')) + '</td>'
+    + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(sum('total')) + '</td>'
+    + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(sum('total')) + '</td>'
+    + '<td colspan="4"></td></tr>';
+  cashRows.forEach(function(r) {
+    html += '<tr style="background:#f9fafb;color:#9ca3af">'
+      + '<td style="padding:6px 6px" colspan="4">' + escHtml(r.t) + ' &middot; cash equivalent, dry powder &mdash; not ranked</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.shares) + '</td>'
+      + '<td colspan="2"></td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.total) + '</td>'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
+      + '<td colspan="4"></td></tr>';
+  });
+  if (nav > 0) {
+    html += '<tr><td colspan="13" style="padding:6px 6px;font-size:10px;color:#9ca3af">NAV ' + money(nav) + ' &middot; * price derived from market value &divide; shares</td></tr>';
+  }
+  tbody.innerHTML = html;
 }
 
 function posSort(col) {
@@ -1942,6 +2151,7 @@ function posSort(col) {
 
 function renderPositions() {
   var allPositions = data.positions || [];
+  if (posView === 'holdings') { try { renderHoldings(); } catch(e) { console.error('renderHoldings:', e); } }
 
   // EX-32: when a scan loses the Schwab position feed it still publishes a
   // positions table — one in which every IRA/CRT/Personal holding drops into
