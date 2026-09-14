@@ -814,6 +814,45 @@ function renderLeapsExpiryButtons(leaps) {
   box.innerHTML = html;
 }
 
+// A72: the CSP expiry ladder on the card — one row per expiry (21-60 days),
+// the contract nearest the delta band's midpoint at each date, so dates
+// compare like for like. ★ = the scanner's pick under John's rule: longest
+// expiry in the 40-55 day window unless a shorter one pays 25% more than
+// its sqrt-time share of the pick's premium. Dollars per contract is the
+// column that decides (P43); † marks
+// a row under the bucket's annualized floor, kept because another expiry
+// clears it. Never parse o.expiry with new Date (A64) — print it as is.
+function renderCspLadder(o) {
+  var rows = o.csp_ladder || [];
+  if (!rows.length) return '';
+  var th = function(t, align){ return '<th style="text-align:' + (align||'right') + ';padding:3px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">' + t + '</th>'; };
+  var td = function(v, align, extra){ return '<td style="text-align:' + (align||'right') + ';padding:3px 6px;font-family:monospace;font-size:11px;white-space:nowrap;' + (extra||'') + '">' + v + '</td>'; };
+  var body = rows.map(function(r){
+    var rec = !!r.is_rec;
+    var bg = rec ? 'background:#ecfdf5;' : '';
+    var fw = rec ? 'font-weight:700;' : '';
+    var floor = r.below_floor ? '<span title="under the bucket annualized floor" style="color:#b45309">&dagger;</span>' : '';
+    return '<tr style="' + bg + '">'
+      + td((rec ? '&#9733; ' : '') + r.dte + 'd', 'left', fw)
+      + td(escHtml(String(r.expiry || '')), 'left', fw + 'color:#6b7280')
+      + td('$' + r.strike, 'right', fw)
+      + td('$' + Number(r.premium).toFixed(2), 'right', fw)
+      + td('$' + Number(r.premium_per_contract || r.premium * 100).toLocaleString(undefined, {maximumFractionDigits: 0}), 'right', fw + 'color:#065f46')
+      + td((r.yield_pct != null ? Number(r.yield_pct).toFixed(1) + '%' : ''), 'right', fw)
+      + td(Number(r.annualized_return).toFixed(0) + '%' + floor, 'right', fw + (r.below_floor ? 'color:#b45309' : ''))
+      + td(r.delta, 'right', fw)
+      + td('$' + r.effective_entry, 'right', fw)
+      + '</tr>';
+  }).join('');
+  return '<div style="margin:4px 0 6px;overflow-x:auto">'
+    + '<table style="border-collapse:collapse;width:100%"><thead><tr>'
+    + th('DTE','left') + th('Expiry','left') + th('Strike') + th('Prem') + th('$/ctr') + th('Yield') + th('Ann') + th('&delta;') + th('Entry')
+    + '</tr></thead><tbody>' + body + '</tbody></table>'
+    + (o.rec_reason ? '<div style="font-size:11px;color:#065f46;margin-top:3px">&#9733; ' + escHtml(o.rec_reason) + '</div>' : '')
+    + (o.bucket_floor && rows.some(function(r){ return r.below_floor; }) ? '<div style="font-size:10px;color:#b45309">&dagger; under the ' + o.bucket_floor + '% bucket floor &middot; total premium decides, not annualized (P43)</div>' : '')
+    + '</div>';
+}
+
 // A70: why a name has no deep-ITM LEAPS row. The scanner publishes
 // leaps_status = { TICKER: { rows, reason, longest_expiry, longest_dte, dte_min } }.
 // Names at or near their buy target come first — that is where a missing
@@ -1844,7 +1883,8 @@ function renderOpps() {
           return '<div style="margin:8px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
             +'<span style="font-size:13px;font-weight:700;padding:4px 14px;border-radius:6px;background:'+bigB+';color:'+bigC+'">'+bigLabel+'</span>'
             +(reason?'<span style="font-size:12px;color:#374151">'+reason+'</span>':'')
-            +'</div>';
+            +'</div>'
+            + renderCspLadder(o);
         })() : '')
       + (o.mode !== 'LEAPS' && o.mode !== 'CSP'
         ? '<div class="ivp-row">'
