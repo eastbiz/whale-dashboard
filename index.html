@@ -294,6 +294,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button id="leaps-view-table" onclick="setLeapsView('table')" style="font-size:11px;padding:4px 10px;border:1px solid #6366f1;border-radius:5px;cursor:pointer;background:#eef2ff;color:#4338ca;font-weight:700">&#x1F4CB; Table</button>
       </div>
     </div>
+    <!-- A70: names with NO deep-ITM LEAPS row and the scanner's reason
+         (results.json leaps_status). A name below its buy target with no card
+         used to be silent — CRDO 2026-09-14, hidden by the old 500-day floor. -->
+    <div id="leaps-missing" style="display:none;margin-bottom:10px"></div>
     <div id="leaps-table-view" style="display:none;overflow-x:auto;margin-bottom:16px"></div>
     <!-- CONVEXITY table controls — shown only when Convexity filter active -->
     <div id="convex-table-controls" style="display:none;margin-bottom:8px;align-items:center;gap:8px;flex-wrap:wrap">
@@ -808,6 +812,55 @@ function renderLeapsExpiryButtons(leaps) {
   var html = btn('all', 'All dates', 0);
   keys.forEach(function(k){ html += btn(k, fmtExpiry(k), ownedByExp[k]||0); });
   box.innerHTML = html;
+}
+
+// A70: why a name has no deep-ITM LEAPS row. The scanner publishes
+// leaps_status = { TICKER: { rows, reason, longest_expiry, longest_dte, dte_min } }.
+// Names at or near their buy target come first — that is where a missing
+// card costs money. Old results.json without leaps_status renders nothing.
+function renderLeapsMissing(leapsRows) {
+  var box = document.getElementById('leaps-missing');
+  if (!box) return;
+  var st = data.leaps_status || {};
+  var fmtPct = function(v, d) { return (v > 0 ? '+' : '') + Number(v).toFixed(d) + '%'; };
+  var pwBy = {};
+  (data.price_watch || []).forEach(function(p){ pwBy[p.ticker] = p; });
+  var have = {};
+  (leapsRows || []).forEach(function(o){ have[o.ticker] = 1; });
+  var sel = document.getElementById('leaps-ticker-filter');
+  var tf = sel ? sel.value : 'all';
+  var rank = { IN_ZONE: 0, APPROACHING: 1 };
+  var items = Object.keys(st).filter(function(t){
+    return !have[t] && (tf === 'all' || t === tf);
+  }).map(function(t){
+    var pw = pwBy[t] || {};
+    var r = rank[pw.csp_status]; if (r == null) r = 2;
+    if (/NO BUY/.test(st[t].reason || '')) r = 3;
+    return { t: t, s: st[t], pw: pw, r: r };
+  }).sort(function(a,b){ return a.r - b.r || a.t.localeCompare(b.t); });
+  if (!items.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  var near = items.filter(function(i){ return i.r <= 1; }).length;
+  var open = near > 0 || tf !== 'all';
+  var lines = items.map(function(i){
+    var pw = i.pw, zone = '';
+    if (pw.csp_status === 'IN_ZONE' && pw.buy_under)
+      zone = '<span style="color:#065f46;font-weight:700">AT BUY</span> &middot; ' + fmtPct(pw.pct_from_buy, 1) + ' vs $' + pw.buy_under;
+    else if (pw.csp_status === 'APPROACHING' && pw.buy_under)
+      zone = '<span style="color:#166534;font-weight:600">near buy</span> &middot; ' + fmtPct(pw.pct_from_buy, 1) + ' vs $' + pw.buy_under;
+    else if (pw.buy_under && pw.pct_from_buy != null)
+      zone = fmtPct(pw.pct_from_buy, 1) + ' vs $' + pw.buy_under;
+    var px = pw.price != null ? '$' + Number(pw.price).toFixed(2) : '';
+    var dim = i.r === 3 ? 'color:#9ca3af' : 'color:#374151';
+    return '<div style="padding:3px 0;font-size:12px;' + dim + '"><b>' + i.t + '</b> ' + px
+      + (zone ? ' &middot; ' + zone : '') + ' &mdash; ' + escHtml(i.s.reason || '') + '</div>';
+  }).join('');
+  box.innerHTML = '<details' + (open ? ' open' : '') + ' style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:8px 12px">'
+    + '<summary style="cursor:pointer;font-size:12px;font-weight:600;color:#92400e">'
+    + '&#x1F6AB; No LEAPS card for ' + items.length + ' name' + (items.length > 1 ? 's' : '')
+    + (near ? ' &mdash; <span style="color:#b45309">' + near + ' at/near buy target</span>' : '')
+    + ' <span style="font-weight:400;color:#78350f">(why, from the scanner &middot; floor ' + (data.leaps_dte_min || '?') + 'd to expiry)</span></summary>'
+    + '<div style="margin-top:6px">' + lines + '</div></details>';
+  box.style.display = 'block';
 }
 
 function renderLeapsTable(leaps) {
@@ -1504,6 +1557,7 @@ function renderOpps() {
     // date stays clickable), then the filter is applied to rows. Applies to
     // table AND cards; renderLeapsExpiryButtons resets a stale selection.
     renderLeapsExpiryButtons(filtered);
+    try { renderLeapsMissing(filtered); } catch(e) { console.error('renderLeapsMissing:', e); }
     if (leapsExpiryFilter !== 'all') {
       filtered = filtered.filter(function(o){ return expKey(o.expiry) === leapsExpiryFilter; });
     }
@@ -1886,7 +1940,8 @@ function filterOpps(f, btn) {
   var cctrl = document.getElementById('convex-table-controls');
   if (cctrl) cctrl.style.display = f === 'CONVEXITY' ? 'flex' : 'none';
   // Hide any table view that isn't the active filter (avoid stale tables lingering)
-  if (f !== 'LEAPS') { var lv = document.getElementById('leaps-table-view'); if (lv) lv.style.display = 'none'; }
+  if (f !== 'LEAPS') { var lv = document.getElementById('leaps-table-view'); if (lv) lv.style.display = 'none';
+                       var lm = document.getElementById('leaps-missing');    if (lm) lm.style.display = 'none'; }
   if (f !== 'CONVEXITY') { var cvv = document.getElementById('convex-table-view'); if (cvv) cvv.style.display = 'none'; }
   if (f !== 'LEAPS' && f !== 'CONVEXITY') { var gv = document.getElementById('opps-grid'); if (gv) gv.style.display = ''; }
   if (data) renderOpps();
