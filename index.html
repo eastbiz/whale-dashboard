@@ -840,7 +840,7 @@ function renderCspLadder(o) {
       + td('$' + Number(r.premium_per_contract || r.premium * 100).toLocaleString(undefined, {maximumFractionDigits: 0}), 'right', fw + 'color:#065f46')
       + td((r.yield_pct != null ? Number(r.yield_pct).toFixed(1) + '%' : ''), 'right', fw)
       + td(Number(r.annualized_return).toFixed(0) + '%' + floor, 'right', fw + (r.below_floor ? 'color:#b45309' : ''))
-      + td(r.delta, 'right', fw)
+      + td(r.delta + (r.band_note ? ' <span title="' + escHtml(r.band_note) + '" style="color:#b45309">&#9888;</span>' : ''), 'right', fw + (r.band_note ? 'color:#b45309' : ''))
       + td('$' + r.effective_entry, 'right', fw)
       + '</tr>';
   }).join('');
@@ -850,6 +850,7 @@ function renderCspLadder(o) {
     + '</tr></thead><tbody>' + body + '</tbody></table>'
     + (o.rec_reason ? '<div style="font-size:11px;color:#065f46;margin-top:3px">&#9733; ' + escHtml(o.rec_reason) + '</div>' : '')
     + (o.bucket_floor && rows.some(function(r){ return r.below_floor; }) ? '<div style="font-size:10px;color:#b45309">&dagger; under the ' + o.bucket_floor + '% bucket floor &middot; total premium decides, not annualized (P43)</div>' : '')
+    + (rows.some(function(r){ return r.band_note; }) ? '<div style="font-size:10px;color:#b45309">&#9888; nearest strike, outside your delta band &middot; for comparison only</div>' : '')
     + '</div>';
 }
 
