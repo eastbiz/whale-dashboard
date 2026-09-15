@@ -19,7 +19,18 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
 ## Key tabs / sections
 - **Opportunities** — CSP, CC, LEAPS, Convexity, Bull Call Spread, Spike CC,
   Post-Drop filters. LEAPS and Convexity have sortable table views.
-- **Positions** — current holdings.
+- **Positions** — current holdings. `Positions | Holdings | Trade History`
+  switch on the right; the account buttons on the left apply to all three.
+  **Trade History (A73, 2026-09-15):** renders `results.trade_history` —
+  closed option cycles from broker fills (stock price at the opening and
+  closing fill, credit, buy-back, how closed, days held, kept % of credit,
+  planned vs realized %/yr) plus open lots with their per-fill entry price.
+  Every figure is the scanner's (credit/strike basis, calendar days);
+  `renderTradeHistory()` only formats. The note line shows each feed's
+  status — "0 Trade rows" on IBKR means the Flex query lacks the Trades
+  section, not that IBKR had no trades. CSP/CC opportunity cards carry one
+  line from the same data (`lastCycleLine()`): the last closed cycle of the
+  same kind on that name.
 - **CSP / CC Actions** — position exit alerts. BIG MOVE sorts to the top
   ("🔴 ACT NOW" section). Shows "⚠ price stale — check live" when the scanner
   flags an unreliable option mark (`mark_src` not `chain`/`chain_near`).

@@ -328,6 +328,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div style="display:flex;gap:6px" id="pos-view-btns">
         <button class="outline-btn active" onclick="showPosView('positions',this)">Positions</button>
         <button class="outline-btn" onclick="showPosView('holdings',this)">Holdings</button>
+        <button class="outline-btn" onclick="showPosView('history',this)" title="Every option fill from the brokers (A73): stock price when you wrote and when you closed, what the trade actually returned for the days held">Trade History</button>
       </div>
     </div>
     <!-- Position-feed warning (EX-32) — a scan that lost the Schwab position
@@ -361,6 +362,57 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </table>
     </div>
     <!-- HOLDINGS view (A69) -->
+    <!-- A73: Trade History view (John, 2026-09-15) — the spreadsheet he kept by
+         hand, now from broker fills: results.trade_history. Read-only render;
+         every number is the scanner's (credit/strike basis, calendar days). -->
+    <div id="history-wrap" style="display:none">
+      <div id="history-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-table">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb">
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th>
+              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th>
+              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th>
+              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="credit / strike &times; 365 / days to expiry at open">Planned %/yr</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill">Stock @ close</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from open fill to close fill">Days</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"><tr><td colspan="16" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div id="history-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Open lots (entry price per fill)</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-open-table">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb">
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th>
+              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th>
+              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th>
+              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th>
+            </tr>
+          </thead>
+          <tbody id="history-open-tbody"></tbody>
+        </table>
+      </div>
+    </div>
     <div id="holdings-wrap" style="display:none">
       <div id="holdings-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
       <div style="overflow-x:auto;">
@@ -1964,6 +2016,7 @@ function renderOpps() {
       + signalHtml
       + (o.reasoning ? '<div class="opp-reasoning">' + o.reasoning + '</div>' : '')
       + ccRoomHtml
+      + lastCycleLine(o)
       + sizingHtml
       + '</div>';
   }).join('');
@@ -2068,9 +2121,140 @@ function showPosView(view, btn) {
   }
   var pw = document.getElementById('pos-table-wrap');
   var hw = document.getElementById('holdings-wrap');
-  if (pw) pw.style.display = view === 'holdings' ? 'none' : '';
+  var tw = document.getElementById('history-wrap');
+  if (pw) pw.style.display = view === 'positions' ? '' : 'none';
   if (hw) hw.style.display = view === 'holdings' ? '' : 'none';
+  if (tw) tw.style.display = view === 'history' ? '' : 'none';
   if (data && view === 'holdings') renderHoldings();
+  if (data && view === 'history') { try { renderTradeHistory(); } catch(e) { console.error('renderTradeHistory:', e); } }
+}
+
+// ── TRADE HISTORY view (A73, John 2026-09-15) ───────────────────────────
+// results.trade_history: closed cycles (newest first) and open lots built by
+// the scanner from broker fills — Schwab transactions and, once the Flex
+// Trades section is added, IBKR. Nothing is computed here: "Kept" is
+// (credit − buy-back)/credit, "Realized %/yr" is kept/strike × 365/days
+// held, both on the scanner's strike basis and calendar days. Spot prices
+// come from Schwab candles at the fill minute ("daily close" when minute
+// data was gone). The account buttons on the left apply here too.
+function histAcctMatch(acct) {
+  var f = (currentPosFilter || 'ALL').toUpperCase();
+  return f === 'ALL' || holdingsAcctKey(acct) === f;
+}
+function histDate(s) {
+  if (!s) return '&mdash;';
+  var raw = String(s).replace(/-/g, '');
+  var d = new Date(+raw.slice(0,4), +raw.slice(4,6) - 1, +raw.slice(6,8));   // components, never new Date('YYYY-MM-DD') (EX-46)
+  return isNaN(d) ? escHtml(s) : d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+function histSpot(v, src) {
+  if (v === null || v === undefined || v === '') return '<span style="color:#9ca3af">&mdash;</span>';
+  var t = src === 'daily_close' ? 'daily close (minute data not available)' : 'at the fill minute';
+  return '<span title="' + t + '"' + (src === 'daily_close' ? ' style="color:#6b7280"' : '') + '>$' + Number(v).toFixed(2) + '</span>';
+}
+function histPct(v, good) {
+  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  var col = good === undefined ? (v > 0 ? '#15803d' : v < 0 ? '#b91c1c' : '#374151') : (good ? '#15803d' : '#b91c1c');
+  return '<span style="font-weight:600;color:' + col + '">' + Number(v).toFixed(1) + '%</span>';
+}
+function renderTradeHistory() {
+  var tbody = document.getElementById('history-tbody');
+  var obody = document.getElementById('history-open-tbody');
+  var note  = document.getElementById('history-note');
+  if (!tbody || !data) return;
+  var th = data.trade_history || {};
+  var cycles = (th.cycles || []).filter(function(c){ return histAcctMatch(c.account); });
+  var lots   = (th.open_lots || []).filter(function(o){ return histAcctMatch(o.account); });
+  var src = th.sources || {};
+  var td = 'padding:6px 5px;border-bottom:1px solid #f3f4f6;white-space:nowrap;';
+  if (note) {
+    var parts = [];
+    if (!th.cycles) {
+      parts.push('<strong>No trade history in this scan yet</strong> &mdash; it appears after the first scan that runs the fill capture.');
+    } else {
+      var sw = src.schwab || {}, ib = src.ibkr || {};
+      parts.push('Schwab fills: ' + (sw.ok ? '&#10003; ' : '&#10007; ') + escHtml(sw.note || ''));
+      parts.push('IBKR fills: ' + (ib.ok ? '&#10003; ' : '&#10007; ') + escHtml(ib.note || ''));
+      if (th.unmatched_closes) parts.push(th.unmatched_closes + ' close' + (th.unmatched_closes > 1 ? 's' : '') + ' whose open lies before the history window (not shown)');
+      if (th.spot_missing) parts.push(th.spot_missing + ' fill' + (th.spot_missing > 1 ? 's' : '') + ' without a stock price yet');
+      parts.push((th.cycles || []).length + ' closed cycles &middot; ' + (th.open_lots || []).length + ' open lots on file');
+    }
+    parts.push('Returns on the strike basis (credit / strike), calendar days. Newest first.');
+    note.innerHTML = parts.join(' &middot; ');
+  }
+  if (!cycles.length) {
+    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:30px;color:#9ca3af">No closed cycles' + (th.cycles ? ' for this account filter' : '') + '</td></tr>';
+  } else {
+    tbody.innerHTML = cycles.map(function(c) {
+      var howCol = c.how_closed === 'assigned' ? '#b45309' : c.how_closed === 'expired' ? '#6b7280' : '#374151';
+      var planned = c.ann_planned_pct, realized = c.ann_realized_pct;
+      var beatPlan = (planned !== null && planned !== undefined && realized !== null && realized !== undefined) ? realized >= planned : undefined;
+      return '<tr>'
+        + '<td style="' + td + 'font-weight:700">' + escHtml(c.ticker) + '</td>'
+        + '<td style="' + td + '">' + escHtml(c.account || '') + '</td>'
+        + '<td style="' + td + '">' + escHtml(c.strategy || '') + '</td>'
+        + '<td style="' + td + '">$' + c.strike + ' &middot; ' + fmtExpiry(c.expiry) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (c.qty || 0) + '</td>'
+        + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + histDate(c.open_date) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histSpot(c.open_spot, c.open_spot_src) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (c.open_price !== null && c.open_price !== undefined ? Number(c.open_price).toFixed(2) : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (planned !== null && planned !== undefined ? Number(planned).toFixed(1) + '%' : '&mdash;') + '</td>'
+        + '<td style="' + td + 'border-left:2px solid #fecaca">' + histDate(c.close_date) + ' <span style="font-size:10px;color:' + howCol + '">' + escHtml(c.how_closed || '') + '</span></td>'
+        + '<td style="' + td + 'text-align:right">' + histSpot(c.close_spot, c.close_spot_src) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (c.close_price !== null && c.close_price !== undefined ? Number(c.close_price).toFixed(2) : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right;border-left:2px solid #e5e7eb">' + histPct(c.realized_pct_of_credit) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (c.days_held !== null && c.days_held !== undefined ? c.days_held : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right" title="' + (beatPlan === undefined ? '' : (beatPlan ? 'better than planned' : 'worse than planned')) + '">' + histPct(realized, beatPlan) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:' + ((c.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + (c.pnl_dollar !== null && c.pnl_dollar !== undefined ? '$' + Math.round(c.pnl_dollar).toLocaleString() : '&mdash;') + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+  if (obody) {
+    obody.innerHTML = lots.length ? lots.map(function(o) {
+      return '<tr>'
+        + '<td style="' + td + 'font-weight:700">' + escHtml(o.ticker) + '</td>'
+        + '<td style="' + td + '">' + escHtml(o.account || '') + '</td>'
+        + '<td style="' + td + '">' + escHtml(o.strategy || '') + '</td>'
+        + '<td style="' + td + '">$' + o.strike + ' &middot; ' + fmtExpiry(o.expiry) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (o.qty || 0) + '</td>'
+        + '<td style="' + td + '">' + histDate(o.open_date) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histSpot(o.open_spot, o.open_spot_src) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (o.open_price !== null && o.open_price !== undefined ? Number(o.open_price).toFixed(2) : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (o.dte_at_open !== null && o.dte_at_open !== undefined ? o.dte_at_open : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (o.ann_planned_pct !== null && o.ann_planned_pct !== undefined ? Number(o.ann_planned_pct).toFixed(1) + '%' : '&mdash;') + '</td>'
+        + '</tr>';
+    }).join('') : '<tr><td colspan="10" style="text-align:center;padding:16px;color:#9ca3af">No open lots on file</td></tr>';
+  }
+}
+
+// A73/C7: one context line on CSP/CC cards — what the LAST closed cycle of
+// the same kind on this name did (stock price at write and at close, credit,
+// buy-back, what it kept and returned for the days held). Read straight from
+// results.trade_history.cycles (newest first); nothing computed here.
+function lastCycleLine(o) {
+  var th = (data && data.trade_history) || {};
+  var cycles = th.cycles || [];
+  if (!cycles.length || !o || !o.ticker) return '';
+  var want = (o.mode === 'CSP' || o.mode === 'DROP_CSP') ? 'CSP'
+           : (o.mode === 'CC' || o.mode === 'SPIKE_CC' || o.mode === 'PIO') ? 'CC' : '';
+  if (!want) return '';
+  var c = null, n = 0;
+  for (var i = 0; i < cycles.length; i++) {
+    if (cycles[i].ticker === o.ticker && cycles[i].strategy === want) { n++; if (!c) c = cycles[i]; }
+  }
+  if (!c) return '';
+  var spot = function(v){ return (v === null || v === undefined) ? 'n/a' : '$' + Number(v).toFixed(2); };
+  var kept = c.realized_pct_of_credit, ann = c.ann_realized_pct, plan = c.ann_planned_pct;
+  var txt = 'Your last ' + escHtml(o.ticker) + ' ' + want + ': $' + c.strike + ' ' + fmtExpiry(c.expiry)
+    + ' &middot; wrote ' + histDate(c.open_date) + ' at ' + spot(c.open_spot) + ' for ' + Number(c.open_price).toFixed(2)
+    + ' &rarr; ' + escHtml(c.how_closed || 'closed') + ' ' + histDate(c.close_date) + ' at ' + spot(c.close_spot)
+    + (c.how_closed === 'bought back' ? ' for ' + Number(c.close_price).toFixed(2) : '')
+    + ' &middot; kept ' + (kept === null || kept === undefined ? 'n/a' : Number(kept).toFixed(0) + '%')
+    + ' in ' + (c.days_held === null || c.days_held === undefined ? '?' : c.days_held) + ' d'
+    + (ann === null || ann === undefined ? '' : ' = <strong>' + Number(ann).toFixed(0) + '%/yr</strong>'
+       + (plan === null || plan === undefined ? '' : ' (planned ' + Number(plan).toFixed(0) + '%)'))
+    + (n > 1 ? ' &middot; ' + n + ' closed ' + want + ' cycles on file' : '');
+  return '<div style="margin-top:6px;font-size:11px;color:#6b7280" title="From your broker fills (Trade History view on the Positions page)">&#128213; ' + txt + '</div>';
 }
 
 // ── HOLDINGS view (A69, John 2026-09-13) ────────────────────────────────
@@ -2248,6 +2432,7 @@ function posSort(col) {
 function renderPositions() {
   var allPositions = data.positions || [];
   if (posView === 'holdings') { try { renderHoldings(); } catch(e) { console.error('renderHoldings:', e); } }
+  if (posView === 'history')  { try { renderTradeHistory(); } catch(e) { console.error('renderTradeHistory:', e); } }
 
   // EX-32: when a scan loses the Schwab position feed it still publishes a
   // positions table — one in which every IRA/CRT/Personal holding drops into
