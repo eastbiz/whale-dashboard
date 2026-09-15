@@ -364,51 +364,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- HOLDINGS view (A69) -->
     <!-- A73: Trade History view (John, 2026-09-15) — the spreadsheet he kept by
          hand, now from broker fills: results.trade_history. Read-only render;
-         every number is the scanner's (credit/strike basis, calendar days). -->
+         every number is the scanner's (credit/strike basis, calendar days).
+         Filters: account (shared buttons on the left), type (CC / CSP) and
+         symbol — John reads it per name before writing the next call. -->
     <div id="history-wrap" style="display:none">
       <div id="history-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px" id="history-type-btns">
+        <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Type</span>
+        <button class="outline-btn active" onclick="histFilterType('ALL',this)">All</button>
+        <button class="outline-btn" onclick="histFilterType('CC',this)">CC</button>
+        <button class="outline-btn" onclick="histFilterType('CSP',this)">CSP</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px" id="history-sym-btns">
+        <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>
+      </div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-table">
-          <thead>
-            <tr style="border-bottom:2px solid #e5e7eb">
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th>
-              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th>
-              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th>
-              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="credit / strike &times; 365 / days to expiry at open">Planned %/yr</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill">Stock @ close</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from open fill to close fill">Days</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th>
-            </tr>
-          </thead>
-          <tbody id="history-tbody"><tr><td colspan="16" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+          <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Calendar days from the opening fill to expiry">DTE at open</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill, and its move since the open">Stock @ close</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Calendar days from the opening fill to the closing fill">Days held</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Days to expiry still on the option when you closed it">DTE left</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="credit / strike &times; 365 / DTE at open">Planned %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th></tr></thead>
+          <tbody id="history-tbody"><tr><td colspan="18" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
         </table>
       </div>
       <div id="history-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Open lots (entry price per fill)</div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-open-table">
-          <thead>
-            <tr style="border-bottom:2px solid #e5e7eb">
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th>
-              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th>
-              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th>
-              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th>
-            </tr>
-          </thead>
+          <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from the opening fill to this scan">Days so far</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th></tr></thead>
           <tbody id="history-open-tbody"></tbody>
         </table>
       </div>
@@ -2137,25 +2116,69 @@ function showPosView(view, btn) {
 // held, both on the scanner's strike basis and calendar days. Spot prices
 // come from Schwab candles at the fill minute ("daily close" when minute
 // data was gone). The account buttons on the left apply here too.
+var histType = 'ALL', histTicker = 'ALL';
+function histFilterType(t, btn) {
+  histType = t;
+  if (btn) { btn.parentElement.querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); }); btn.classList.add('active'); }
+  if (data) renderTradeHistory();
+}
+function histFilterTicker(t, btn) {
+  histTicker = t;
+  if (btn) { btn.parentElement.querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); }); btn.classList.add('active'); }
+  if (data) renderTradeHistory();
+}
 function histAcctMatch(acct) {
   var f = (currentPosFilter || 'ALL').toUpperCase();
   return f === 'ALL' || holdingsAcctKey(acct) === f;
 }
-function histDate(s) {
-  if (!s) return '&mdash;';
+function histRowMatch(r) {
+  if (!histAcctMatch(r.account)) return false;
+  if (histType !== 'ALL' && r.strategy !== histType) return false;
+  if (histTicker !== 'ALL' && r.ticker !== histTicker) return false;
+  return true;
+}
+function histDateObj(s) {
+  if (!s) return null;
   var raw = String(s).replace(/-/g, '');
   var d = new Date(+raw.slice(0,4), +raw.slice(4,6) - 1, +raw.slice(6,8));   // components, never new Date('YYYY-MM-DD') (EX-46)
-  return isNaN(d) ? escHtml(s) : d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  return isNaN(d) ? null : d;
 }
-function histSpot(v, src) {
+function histDate(s) {
+  var d = histDateObj(s);
+  return d ? d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : (s ? escHtml(s) : '&mdash;');
+}
+function histSpot(v, src, from) {
   if (v === null || v === undefined || v === '') return '<span style="color:#9ca3af">&mdash;</span>';
   var t = src === 'daily_close' ? 'daily close (minute data not available)' : 'at the fill minute';
-  return '<span title="' + t + '"' + (src === 'daily_close' ? ' style="color:#6b7280"' : '') + '>$' + Number(v).toFixed(2) + '</span>';
+  var move = '';
+  if (from !== undefined && from !== null && from > 0) {
+    var pct = (Number(v) - Number(from)) / Number(from) * 100;
+    move = ' <span style="font-size:10px;color:' + (pct >= 0 ? '#15803d' : '#b91c1c') + '">' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%</span>';
+  }
+  return '<span title="' + t + '"' + (src === 'daily_close' ? ' style="color:#6b7280"' : '') + '>$' + Number(v).toFixed(2) + '</span>' + move;
 }
 function histPct(v, good) {
   if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
   var col = good === undefined ? (v > 0 ? '#15803d' : v < 0 ? '#b91c1c' : '#374151') : (good ? '#15803d' : '#b91c1c');
   return '<span style="font-weight:600;color:' + col + '">' + Number(v).toFixed(1) + '%</span>';
+}
+function histNum(v, digits) {
+  return (v === null || v === undefined) ? '&mdash;' : (digits === undefined ? v : Number(v).toFixed(digits));
+}
+function renderHistSymbolButtons(allRows) {
+  var wrap = document.getElementById('history-sym-btns');
+  if (!wrap) return;
+  var counts = {};
+  allRows.forEach(function(r){ if (r.ticker) counts[r.ticker] = (counts[r.ticker] || 0) + 1; });
+  var tickers = Object.keys(counts).sort();
+  if (histTicker !== 'ALL' && tickers.indexOf(histTicker) < 0) histTicker = 'ALL';
+  var html = '<span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>'
+    + '<button class="outline-btn' + (histTicker === 'ALL' ? ' active' : '') + '" onclick="histFilterTicker(\'ALL\',this)">All</button>';
+  tickers.forEach(function(t) {
+    html += '<button class="outline-btn' + (histTicker === t ? ' active' : '') + '" onclick="histFilterTicker(\'' + escHtml(t) + '\',this)">'
+      + escHtml(t) + ' <span style="color:#9ca3af;font-weight:400">' + counts[t] + '</span></button>';
+  });
+  wrap.innerHTML = html;
 }
 function renderTradeHistory() {
   var tbody = document.getElementById('history-tbody');
@@ -2163,8 +2186,14 @@ function renderTradeHistory() {
   var note  = document.getElementById('history-note');
   if (!tbody || !data) return;
   var th = data.trade_history || {};
-  var cycles = (th.cycles || []).filter(function(c){ return histAcctMatch(c.account); });
-  var lots   = (th.open_lots || []).filter(function(o){ return histAcctMatch(o.account); });
+  var allCycles = th.cycles || [], allLots = th.open_lots || [];
+  renderHistSymbolButtons(allCycles.concat(allLots));
+  var cycles = allCycles.filter(histRowMatch);
+  var lots   = allLots.filter(histRowMatch);
+  // Newest first by close date (the scanner already orders this way; keep it
+  // explicit so a filter can never reorder — recent history is what matters).
+  cycles.sort(function(a, b){ return (b.close_time || b.close_date || '') < (a.close_time || a.close_date || '') ? -1 : 1; });
+  lots.sort(function(a, b){ return (b.open_time || b.open_date || '') < (a.open_time || a.open_date || '') ? -1 : 1; });
   var src = th.sources || {};
   var td = 'padding:6px 5px;border-bottom:1px solid #f3f4f6;white-space:nowrap;';
   if (note) {
@@ -2177,53 +2206,61 @@ function renderTradeHistory() {
       parts.push('IBKR fills: ' + (ib.ok ? '&#10003; ' : '&#10007; ') + escHtml(ib.note || ''));
       if (th.unmatched_closes) parts.push(th.unmatched_closes + ' close' + (th.unmatched_closes > 1 ? 's' : '') + ' whose open lies before the history window (not shown)');
       if (th.spot_missing) parts.push(th.spot_missing + ' fill' + (th.spot_missing > 1 ? 's' : '') + ' without a stock price yet');
-      parts.push((th.cycles || []).length + ' closed cycles &middot; ' + (th.open_lots || []).length + ' open lots on file');
+      parts.push(allCycles.length + ' closed cycles &middot; ' + allLots.length + ' open lots on file');
     }
     parts.push('Returns on the strike basis (credit / strike), calendar days. Newest first.');
     note.innerHTML = parts.join(' &middot; ');
   }
   if (!cycles.length) {
-    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:30px;color:#9ca3af">No closed cycles' + (th.cycles ? ' for this account filter' : '') + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="18" style="text-align:center;padding:30px;color:#9ca3af">No closed cycles' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
   } else {
     tbody.innerHTML = cycles.map(function(c) {
       var howCol = c.how_closed === 'assigned' ? '#b45309' : c.how_closed === 'expired' ? '#6b7280' : '#374151';
       var planned = c.ann_planned_pct, realized = c.ann_realized_pct;
       var beatPlan = (planned !== null && planned !== undefined && realized !== null && realized !== undefined) ? realized >= planned : undefined;
+      var typeCol = c.strategy === 'CC' ? '#1e40af' : c.strategy === 'CSP' ? '#92400e' : '#374151';
       return '<tr>'
         + '<td style="' + td + 'font-weight:700">' + escHtml(c.ticker) + '</td>'
         + '<td style="' + td + '">' + escHtml(c.account || '') + '</td>'
-        + '<td style="' + td + '">' + escHtml(c.strategy || '') + '</td>'
+        + '<td style="' + td + 'font-weight:600;color:' + typeCol + '">' + escHtml(c.strategy || '') + '</td>'
         + '<td style="' + td + '">$' + c.strike + ' &middot; ' + fmtExpiry(c.expiry) + '</td>'
         + '<td style="' + td + 'text-align:right">' + (c.qty || 0) + '</td>'
         + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + histDate(c.open_date) + '</td>'
         + '<td style="' + td + 'text-align:right">' + histSpot(c.open_spot, c.open_spot_src) + '</td>'
-        + '<td style="' + td + 'text-align:right">' + (c.open_price !== null && c.open_price !== undefined ? Number(c.open_price).toFixed(2) : '&mdash;') + '</td>'
-        + '<td style="' + td + 'text-align:right">' + (planned !== null && planned !== undefined ? Number(planned).toFixed(1) + '%' : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(c.open_price, 2) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(c.dte_at_open) + '</td>'
         + '<td style="' + td + 'border-left:2px solid #fecaca">' + histDate(c.close_date) + ' <span style="font-size:10px;color:' + howCol + '">' + escHtml(c.how_closed || '') + '</span></td>'
-        + '<td style="' + td + 'text-align:right">' + histSpot(c.close_spot, c.close_spot_src) + '</td>'
-        + '<td style="' + td + 'text-align:right">' + (c.close_price !== null && c.close_price !== undefined ? Number(c.close_price).toFixed(2) : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histSpot(c.close_spot, c.close_spot_src, c.open_spot) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(c.close_price, 2) + '</td>'
+        + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(c.days_held) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(c.dte_at_close) + '</td>'
         + '<td style="' + td + 'text-align:right;border-left:2px solid #e5e7eb">' + histPct(c.realized_pct_of_credit) + '</td>'
-        + '<td style="' + td + 'text-align:right">' + (c.days_held !== null && c.days_held !== undefined ? c.days_held : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#6b7280">' + (planned !== null && planned !== undefined ? Number(planned).toFixed(1) + '%' : '&mdash;') + '</td>'
         + '<td style="' + td + 'text-align:right" title="' + (beatPlan === undefined ? '' : (beatPlan ? 'better than planned' : 'worse than planned')) + '">' + histPct(realized, beatPlan) + '</td>'
         + '<td style="' + td + 'text-align:right;color:' + ((c.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + (c.pnl_dollar !== null && c.pnl_dollar !== undefined ? '$' + Math.round(c.pnl_dollar).toLocaleString() : '&mdash;') + '</td>'
         + '</tr>';
     }).join('');
   }
   if (obody) {
+    var scanD = histDateObj(data.scan_date || '');
     obody.innerHTML = lots.length ? lots.map(function(o) {
+      var od = histDateObj(o.open_date);
+      var soFar = (od && scanD) ? Math.round((scanD - od) / 86400000) : null;
+      var typeCol = o.strategy === 'CC' ? '#1e40af' : o.strategy === 'CSP' ? '#92400e' : '#374151';
       return '<tr>'
         + '<td style="' + td + 'font-weight:700">' + escHtml(o.ticker) + '</td>'
         + '<td style="' + td + '">' + escHtml(o.account || '') + '</td>'
-        + '<td style="' + td + '">' + escHtml(o.strategy || '') + '</td>'
+        + '<td style="' + td + 'font-weight:600;color:' + typeCol + '">' + escHtml(o.strategy || '') + '</td>'
         + '<td style="' + td + '">$' + o.strike + ' &middot; ' + fmtExpiry(o.expiry) + '</td>'
         + '<td style="' + td + 'text-align:right">' + (o.qty || 0) + '</td>'
         + '<td style="' + td + '">' + histDate(o.open_date) + '</td>'
         + '<td style="' + td + 'text-align:right">' + histSpot(o.open_spot, o.open_spot_src) + '</td>'
-        + '<td style="' + td + 'text-align:right">' + (o.open_price !== null && o.open_price !== undefined ? Number(o.open_price).toFixed(2) : '&mdash;') + '</td>'
-        + '<td style="' + td + 'text-align:right">' + (o.dte_at_open !== null && o.dte_at_open !== undefined ? o.dte_at_open : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(o.open_price, 2) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(o.dte_at_open) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(soFar) + '</td>'
         + '<td style="' + td + 'text-align:right">' + (o.ann_planned_pct !== null && o.ann_planned_pct !== undefined ? Number(o.ann_planned_pct).toFixed(1) + '%' : '&mdash;') + '</td>'
         + '</tr>';
-    }).join('') : '<tr><td colspan="10" style="text-align:center;padding:16px;color:#9ca3af">No open lots on file</td></tr>';
+    }).join('') : '<tr><td colspan="11" style="text-align:center;padding:16px;color:#9ca3af">No open lots' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
   }
 }
 
@@ -2251,6 +2288,7 @@ function lastCycleLine(o) {
     + (c.how_closed === 'bought back' ? ' for ' + Number(c.close_price).toFixed(2) : '')
     + ' &middot; kept ' + (kept === null || kept === undefined ? 'n/a' : Number(kept).toFixed(0) + '%')
     + ' in ' + (c.days_held === null || c.days_held === undefined ? '?' : c.days_held) + ' d'
+    + (c.dte_at_open === null || c.dte_at_open === undefined ? '' : ' of ' + c.dte_at_open)
     + (ann === null || ann === undefined ? '' : ' = <strong>' + Number(ann).toFixed(0) + '%/yr</strong>'
        + (plan === null || plan === undefined ? '' : ' (planned ' + Number(plan).toFixed(0) + '%)'))
     + (n > 1 ? ' &middot; ' + n + ' closed ' + want + ' cycles on file' : '');

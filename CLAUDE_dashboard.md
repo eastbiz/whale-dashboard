@@ -24,7 +24,10 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
   **Trade History (A73, 2026-09-15):** renders `results.trade_history` —
   closed option cycles from broker fills (stock price at the opening and
   closing fill, credit, buy-back, how closed, days held, kept % of credit,
-  planned vs realized %/yr) plus open lots with their per-fill entry price.
+  planned vs realized %/yr, DTE at open next to days actually held) plus open
+  lots with their per-fill entry price. Newest first; filters for account
+  (shared buttons), type (CC / CSP) and symbol (buttons built from the data,
+  with counts) — John reads it per name before writing the next call.
   Every figure is the scanner's (credit/strike basis, calendar days);
   `renderTradeHistory()` only formats. The note line shows each feed's
   status — "0 Trade rows" on IBKR means the Flex query lacks the Trades
