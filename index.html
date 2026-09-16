@@ -289,6 +289,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <!-- Default ON (John, 2026-09-16): only LEAPS at/near the buy target show.
            Toggle off to see the full list, out-of-zone rows included. -->
       <button id="leaps-near-toggle" onclick="toggleLeapsNearOnly()" style="font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:5px;cursor:pointer;background:#f3f4f6;color:#374151;white-space:nowrap">&#x1F3AF; At/Near buy target</button>
+      <!-- ★ Best only, default ON (John, 2026-09-16): one row per name — the
+           scanner's ★REC pick across ALL expiries. The date filter is ignored
+           while this is on (the ★ already chose the date on extrinsic value);
+           toggle off for the full band × expiry explore view. -->
+      <button id="leaps-best-toggle" onclick="toggleLeapsBestOnly()" style="font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:5px;cursor:pointer;background:#f3f4f6;color:#374151;white-space:nowrap">&#9733; Best only</button>
       <!-- Expiration filter buttons — built from the LEAPS opportunity rows.
            Multi-select: each date toggles; selected dates also scope vs-Owned
            to same-date comparisons. Dec 2028 + Jan 2028 start selected. -->
@@ -825,6 +830,10 @@ var LEAPS_EXPIRY_DEFAULT_MONTHS = ['202812', '202801'];
 var leapsExpirySel = null;   // null = not initialized yet (defaults not applied)
 function expKey(s){ return String(s||'').replace(/-/g,'').slice(0,8); }
 function leapsExpiryActive(){ return leapsExpirySel != null && leapsExpirySel.length > 0; }
+// Same-date vs-Owned scoping applies only while the date buttons are in
+// force; ★ Best only hides them, and its quick view compares against your
+// best owned position on ANY date (the DTE-mismatch flag covers the gap).
+function leapsSameDateScope(){ return leapsExpiryActive() && !leapsBestOnly; }
 function leapsExpiryHas(k){ return leapsExpiryActive() && leapsExpirySel.indexOf(k) !== -1; }
 function setLeapsExpiry(k){
   if (leapsExpirySel == null) leapsExpirySel = [];
@@ -845,6 +854,19 @@ try { if (localStorage.getItem('leapsNearOnly') === 'false') leapsNearOnly = fal
 function toggleLeapsNearOnly(){
   leapsNearOnly = !leapsNearOnly;
   try { localStorage.setItem('leapsNearOnly', leapsNearOnly ? 'true' : 'false'); } catch(e) {}
+  renderOpps();
+}
+
+// ★ Best only — the daily quick view (John, 2026-09-16): one row per name,
+// the scanner's ★REC contract (recommended band, longest expiry within 3
+// extrinsic points of that band's cheapest). Ignores the date filter while
+// on: the ★ already compared dates on value, and a pinned month could hide
+// the best contract and show a worse one. Default ON.
+var leapsBestOnly = true;
+try { if (localStorage.getItem('leapsBestOnly') === 'false') leapsBestOnly = false; } catch(e) {}
+function toggleLeapsBestOnly(){
+  leapsBestOnly = !leapsBestOnly;
+  try { localStorage.setItem('leapsBestOnly', leapsBestOnly ? 'true' : 'false'); } catch(e) {}
   renderOpps();
 }
 
@@ -1012,7 +1034,7 @@ function renderLeapsTable(leaps) {
     + th('breakeven','Breakeven')
     + th('breakeven_pct','BE% above','background:#f5f3ff')
     + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="'
-    + (leapsExpiryActive()
+    + (leapsSameDateScope()
         ? 'Breakeven vs LEAPS you own with the SAME expiration as each row. Same date, so the comparison is apples-to-apples \u2014 rows where you own no LEAPS on that row\u2019s date show no comparison.'
         : 'Breakeven vs your owned position (best breakeven on ANY date). Note the DTE column \u2014 a longer-dated option naturally has a higher breakeven. Pick expiration buttons above for a same-date comparison.')
     + '">vs Owned</th>'
@@ -1053,7 +1075,7 @@ function renderLeapsTable(leaps) {
       // once, so the same-date scope is per row, not per selection). No
       // same-date position = no comparison (— in the cell), by design: a
       // benchmark from another date is the noise the filter removes.
-      var ownedLeaps = leapsExpiryActive()
+      var ownedLeaps = leapsSameDateScope()
         ? allOwnedLeaps.filter(function(l){ return expKey(l.expiry) === expKey(o.expiry); })
         : allOwnedLeaps;
       var ec = o.extrinsic_pct<20?'#166534':o.extrinsic_pct<30?'#92400e':o.extrinsic_pct<40?'#b45309':'#991b1b';
@@ -1715,19 +1737,47 @@ function renderOpps() {
         ? 'Showing only LEAPS at/near your buy target. Click to show every LEAPS row.'
         : 'Showing every LEAPS row. Click to show only those at/near your buy target (the default).';
     }
+    var bestBtn = document.getElementById('leaps-best-toggle');
+    if (bestBtn) {
+      bestBtn.style.background  = leapsBestOnly ? '#fef9c3' : '#f3f4f6';
+      bestBtn.style.borderColor = leapsBestOnly ? '#eab308' : '#d1d5db';
+      bestBtn.style.color       = leapsBestOnly ? '#713f12' : '#374151';
+      bestBtn.style.fontWeight  = leapsBestOnly ? '700' : '400';
+      bestBtn.title = leapsBestOnly
+        ? 'Showing one row per name: the scanner’s ★ pick across every expiration (best value on extrinsic). Date buttons are ignored while this is on. Click to explore every band and date.'
+        : 'Click to show only the ★ pick per name — the quick daily view.';
+    }
     // Expiration buttons + the no-card panel are built from the FULL list,
     // before the near-only and date filters: every date stays clickable (so a
     // selection is never silently dropped), and "No LEAPS card" keeps meaning
     // the SCANNER produced nothing — a row hidden by the 🎯 toggle is not a
     // missing card. Then the date selection is applied to table AND cards;
     // renderLeapsExpiryButtons drops stale dates and seeds the
-    // Dec-2028/Jan-2028 default.
+    // Dec-2028/Jan-2028 default. While ★ Best only is on the date buttons do
+    // nothing, so the row is hidden instead of left looking clickable.
+    var expBox = document.getElementById('leaps-expiry-filter');
+    if (expBox) expBox.style.display = leapsBestOnly ? 'none' : 'flex';
     renderLeapsExpiryButtons(filtered);
     try { renderLeapsMissing(filtered); } catch(e) { console.error('renderLeapsMissing:', e); }
     if (leapsNearOnly) {
       filtered = filtered.filter(function(o){ return o.in_zone === true; });
     }
-    if (leapsExpiryActive()) {
+    if (leapsBestOnly) {
+      // One row per ticker: the ★REC row. Three names publish no ★REC
+      // (band-selection edge) — fall back to their cheapest-extrinsic row,
+      // longer DTE on a tie, so a name never disappears from the quick view.
+      var _byT = {};
+      filtered.forEach(function(o){ (_byT[o.ticker] = _byT[o.ticker] || []).push(o); });
+      filtered = Object.keys(_byT).map(function(t){
+        var rows = _byT[t];
+        for (var i = 0; i < rows.length; i++) if (rows[i].is_recommended) return rows[i];
+        return rows.slice().sort(function(a,b){
+          var ea = a.extrinsic_pct != null ? a.extrinsic_pct : 999;
+          var eb = b.extrinsic_pct != null ? b.extrinsic_pct : 999;
+          return ea !== eb ? ea - eb : (b.dte || 0) - (a.dte || 0);
+        })[0];
+      });
+    } else if (leapsExpiryActive()) {
       filtered = filtered.filter(function(o){ return leapsExpiryHas(expKey(o.expiry)); });
     }
     var tableView = document.getElementById('leaps-table-view');
@@ -2051,7 +2101,7 @@ function renderOpps() {
             // the All-modes grid, so a leftover selection must not scope it):
             // list and compare only owned LEAPS with this card's own
             // expiration, so a multi-date selection stays apples-to-apples.
-            if (currentFilter === 'LEAPS' && leapsExpiryActive()) {
+            if (currentFilter === 'LEAPS' && leapsSameDateScope()) {
               leapsList = leapsList.filter(function(l){ return expKey(l.expiry) === expKey(o.expiry); });
             }
             var leapsBe = leapsList.map(function(l){

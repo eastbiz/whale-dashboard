@@ -59,6 +59,17 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
   for the session so its count maps 1:1 onto cards (A59). Expiry formats
   differ by source (opportunities `2028-01-21`, owned positions `20280121`) —
   always compare via `expKey()`, never raw strings.
+- **★ Best only — the daily quick view (John, 2026-09-16, default ON):**
+  `leapsBestOnly` (persisted) collapses the LEAPS view to ONE row per name —
+  the scanner's ★REC contract, chosen across ALL expiries on extrinsic value.
+  While on, the expiration buttons are hidden and the date selection is
+  ignored (a pinned month could hide the best contract and show a worse one —
+  the whole point of the toggle), and vs-Owned compares against the best
+  owned position on ANY date via `leapsSameDateScope()`. Names with no
+  published `is_recommended` row (MELI/MU/FIX on 2026-09-16) fall back to
+  their cheapest-extrinsic row, longer DTE on a tie — a name must never
+  disappear from the quick view. Toggle off = the full band × expiry explore
+  view with the multi-select date filter.
 - **LEAPS view defaults to At/Near buy target only (John, 2026-09-16):**
   `leapsNearOnly` (default true, persisted) filters the LEAPS table/cards to
   `in_zone === true` — the same predicate as the global 🎯 filter, keep them
