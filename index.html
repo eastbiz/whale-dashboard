@@ -1084,9 +1084,24 @@ function renderLeapsTable(leaps) {
             var cost = ownedSame.reduce(function(a,l){ return a + (parseFloat(l.avg_cost)||0)*(parseInt(l.contracts)||0); }, 0) / (n||1);
             var accts = [...new Set(ownedSame.map(function(l){ return l.account||l.source||''; }).filter(Boolean))].join(', ');
             var curBe = parseFloat(o.breakeven)||0, ownBe = parseFloat(ownedSame[0].breakeven)||0;
+            // Lead with the same better/worse read as every other cell (John,
+            // 2026-09-16): today's price for THIS contract vs what YOU paid,
+            // on breakeven basis. "worse" = buying again today costs more
+            // than your fill did; the position itself being up is P&L, shown
+            // on the Positions tab, not here.
             var beNote = (curBe && ownBe) ? ' Today\'s mid $'+o.premium.toFixed(2)+' (BE $'+curBe+') vs your cost $'+cost.toFixed(2)+' (BE $'+ownBe+').' : '';
+            var cmp = '';
+            if (curBe && ownBe) {
+              var dOwn = (curBe - ownBe) / ownBe * 100;
+              var adOwn = Math.abs(dOwn).toFixed(1);
+              cmp = dOwn > 1  ? '<span style="font-weight:700;color:#92400e">&#8593; '+adOwn+'% worse than yours</span>'
+                  : dOwn < -1 ? '<span style="font-weight:700;color:#166534">&#8595; '+adOwn+'% better than yours</span>'
+                  :             '<span style="color:#6b7280">&#8776; same as yours</span>';
+              cmp += '<div style="font-size:9px;font-weight:400;color:#6b7280;white-space:nowrap">today BE $'+curBe+' vs your BE $'+ownBe+'</div>';
+            }
             return '<td style="padding:7px 6px;text-align:right;font-size:11px;white-space:nowrap" title="You already hold this exact contract'+(accts?' in '+accts:'')+'.'+beNote+'">'
-              + '<span style="font-weight:700;color:#1e40af">OWNED &middot; '+n+' @ $'+cost.toFixed(2)+'</span></td>';
+              + cmp
+              + '<div style="font-weight:700;color:#1e40af'+(cmp?';font-size:10px;margin-top:1px':'')+'">OWNED &middot; '+n+' @ $'+cost.toFixed(2)+'</div></td>';
           }
           if (!ownedLeaps.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
           // Raw breakeven comparison vs your best (lowest-BE) owned position.
