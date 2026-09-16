@@ -44,15 +44,32 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
 - No browser storage APIs beyond what already exists; keep changes minimal.
 - LEAPS "vs Owned" compares raw breakeven with a DTE-mismatch flag (⚠ ±Nmo DTE)
   when expiries differ >90 days — intentional, keep it.
-- **LEAPS expiration filter (2026-09-01, John's request):** buttons in
-  `#leaps-expiry-filter` (All dates / one per distinct opportunity expiry, with
-  "own Nx" showing his contracts at that date). A selected date filters rows
-  (table AND cards) and scopes vs Owned to owned LEAPS with the SAME
-  expiration — no same-date position means NO comparison ("—"), by design;
-  do not fall back to another date. "All dates" keeps the cross-expiry
-  compare + DTE flag above. Expiry formats differ by source (opportunities
-  `2028-01-21`, owned positions `20280121`) — always compare via `expKey()`,
-  never raw strings.
+- **LEAPS expiration filter (2026-09-01, John's request; MULTI-select since
+  2026-09-16):** buttons in `#leaps-expiry-filter` (All dates / one per
+  distinct opportunity expiry, with "own Nx" showing his contracts at that
+  date). Each date button TOGGLES membership in `leapsExpirySel` (array of
+  8-digit keys, empty = all; persisted in localStorage). **Dec 2028 + Jan 2028
+  start selected by default** (`LEAPS_EXPIRY_DEFAULT_MONTHS`) — John's
+  preferred dates; Jan 2029 is one click. His own clicks override the default
+  and persist. Selected dates filter rows (table AND cards) and scope vs Owned
+  to owned LEAPS with the SAME expiration AS EACH ROW — no same-date position
+  means NO comparison ("—"), by design; do not fall back to another date.
+  "All dates" (selection empty) keeps the cross-expiry compare + DTE flag
+  above. The Actionable-Today tile's LEAPS click-through clears the selection
+  for the session so its count maps 1:1 onto cards (A59). Expiry formats
+  differ by source (opportunities `2028-01-21`, owned positions `20280121`) —
+  always compare via `expKey()`, never raw strings.
+- **LEAPS view defaults to At/Near buy target only (John, 2026-09-16):**
+  `leapsNearOnly` (default true, persisted) filters the LEAPS table/cards to
+  `in_zone === true` — the same predicate as the global 🎯 filter, keep them
+  identical. The `#leaps-near-toggle` button shows the full list. The expiry
+  buttons and the "No LEAPS card" panel are built from the FULL list, before
+  this filter — a row hidden by the toggle is not a missing card.
+- **The "No LEAPS card for N names" panel starts COLLAPSED and stays the way
+  John left it** (`window.leapsMissingOpen`, via `ontoggle`). It used to
+  re-expand on every date-filter click; John reads it only when
+  troubleshooting. Do not re-add auto-open — the summary line already names
+  the at/near count.
 
 ## Full context
 The complete system guide, trading philosophy, gotchas, and conventions live in
