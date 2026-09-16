@@ -378,22 +378,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="outline-btn active" onclick="histFilterType('ALL',this)">All</button>
         <button class="outline-btn" onclick="histFilterType('CC',this)">CC</button>
         <button class="outline-btn" onclick="histFilterType('CSP',this)">CSP</button>
+        <button class="outline-btn" onclick="histFilterType('LEAPS',this)" title="Every long call you bought (A76): cost, breakeven = strike + cost, the time value you paid, today's mark and where the stock sits vs breakeven — grouped by symbol, one line per expiration">LEAPS</button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px" id="history-sym-btns">
         <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>
       </div>
-      <div style="overflow-x:auto;">
+      <div style="overflow-x:auto;" id="history-short-closed">
         <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-table">
           <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open &middot; r%</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Calendar days from the opening fill to expiry">DTE at open</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill, and its move since the open">Stock @ close</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Calendar days from the opening fill to the closing fill">Days held</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Days to expiry still on the option when you closed it">DTE left</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="credit / strike &times; 365 / DTE at open">Planned %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th></tr></thead>
           <tbody id="history-tbody"><tr><td colspan="18" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
         </table>
       </div>
       <div id="history-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Open lots (entry price per fill)</div>
-      <div style="overflow-x:auto;">
+      <div style="overflow-x:auto;" id="history-short-open">
         <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-open-table">
           <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from the opening fill to this scan">Days so far</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th></tr></thead>
           <tbody id="history-open-tbody"></tbody>
         </table>
+      </div>
+      <!-- A76: LEAPS history (John, 2026-09-16: "see all LEAPS for a stock,
+           different DTE, and breakeven values"). Long-call lots from the same
+           broker fills, grouped by symbol with one summary line per
+           expiration. Every number is the scanner's: breakeven = strike +
+           cost, intrinsic / time value at the fill, return on COST, and
+           today's mark joined from this scan's LEAPS position rows by
+           contract. The group totals are sums of those published lot
+           numbers (scanner's leaps_by_ticker when every account is shown). -->
+      <div id="history-leaps-wrap" style="display:none">
+        <div id="history-leaps-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:4px 0 6px">Open LEAPS (one row per fill)</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-leaps-open-table">
+            <thead id="history-leaps-open-thead"></thead>
+            <tbody id="history-leaps-open-tbody"></tbody>
+          </table>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Closed LEAPS</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-leaps-closed-table">
+            <thead id="history-leaps-closed-thead"></thead>
+            <tbody id="history-leaps-closed-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
     <div id="holdings-wrap" style="display:none">
@@ -2235,9 +2260,18 @@ function histAcctMatch(acct) {
   var f = (currentPosFilter || 'ALL').toUpperCase();
   return f === 'ALL' || holdingsAcctKey(acct) === f;
 }
+// Long options (LONG_CALL / LONG_PUT) are the LEAPS view (A76); "All" is
+// the premium book only (CC + CSP) — a long call's cost is not a credit and
+// used to print in the Credit column of the open-lots table.
+function histIsLong(r)   { return ((r && r.strategy) || '').indexOf('LONG_') === 0; }
+function histTypeMatch(r) {
+  if (histType === 'LEAPS') return histIsLong(r);
+  if (histType === 'ALL')   return !histIsLong(r);
+  return r.strategy === histType;
+}
 function histRowMatch(r) {
   if (!histAcctMatch(r.account)) return false;
-  if (histType !== 'ALL' && r.strategy !== histType) return false;
+  if (!histTypeMatch(r)) return false;
   if (histTicker !== 'ALL' && r.ticker !== histTicker) return false;
   return true;
 }
@@ -2300,9 +2334,15 @@ function renderTradeHistory() {
   if (!tbody || !data) return;
   var th = data.trade_history || {};
   var allCycles = th.cycles || [], allLots = th.open_lots || [];
-  renderHistSymbolButtons(allCycles.concat(allLots));
+  renderHistSymbolButtons(allCycles.concat(allLots).filter(histTypeMatch));
   var cycles = allCycles.filter(histRowMatch);
   var lots   = allLots.filter(histRowMatch);
+  var isLeaps = histType === 'LEAPS';
+  ['history-short-closed', 'history-open-title', 'history-short-open'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.style.display = isLeaps ? 'none' : '';
+  });
+  var lw = document.getElementById('history-leaps-wrap');
+  if (lw) lw.style.display = isLeaps ? '' : 'none';
   // Newest first by close date (the scanner already orders this way; keep it
   // explicit so a filter can never reorder — recent history is what matters).
   cycles.sort(function(a, b){ return (b.close_time || b.close_date || '') < (a.close_time || a.close_date || '') ? -1 : 1; });
@@ -2321,9 +2361,14 @@ function renderTradeHistory() {
       if (th.spot_missing) parts.push(th.spot_missing + ' fill' + (th.spot_missing > 1 ? 's' : '') + ' without a stock price yet');
       parts.push(allCycles.length + ' closed cycles &middot; ' + allLots.length + ' open lots on file');
     }
-    parts.push('Returns on the strike basis (credit / strike), calendar days. Newest first.');
+    if (isLeaps) {
+      parts.push('LEAPS: breakeven = strike + cost &middot; time value = cost &minus; intrinsic at the fill &middot; returns on the COST basis, calendar days &middot; today\'s mark and stock price are this scan\'s position rows, joined by contract. Grouped by symbol, oldest expiration first.');
+    } else {
+      parts.push('Returns on the strike basis (credit / strike), calendar days. Newest first.');
+    }
     note.innerHTML = parts.join(' &middot; ');
   }
+  if (isLeaps) { renderLeapsHistory(cycles, lots, th); return; }
   if (!cycles.length) {
     tbody.innerHTML = '<tr><td colspan="18" style="text-align:center;padding:30px;color:#9ca3af">No closed cycles' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
   } else {
@@ -2374,6 +2419,209 @@ function renderTradeHistory() {
         + '<td style="' + td + 'text-align:right">' + (o.ann_planned_pct !== null && o.ann_planned_pct !== undefined ? Number(o.ann_planned_pct).toFixed(1) + '%' : '&mdash;') + '</td>'
         + '</tr>';
     }).join('') : '<tr><td colspan="11" style="text-align:center;padding:16px;color:#9ca3af">No open lots' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
+  }
+}
+
+// ── LEAPS history (A76, John 2026-09-16) ───────────────────────────────
+// Long-call lots from results.trade_history, grouped by symbol. Per lot the
+// scanner publishes: cost, cost_dollar, breakeven (strike + cost),
+// be_vs_open_spot_pct, intrinsic_at_open / extrinsic_at_open /
+// extrinsic_pct_at_open (from the stock price at the fill minute), and —
+// joined from this scan's LEAPS position rows by contract — mark, underlying,
+// dte, pnl_dollar, pnl_pct_of_cost, spot_vs_be_pct. A lot with mark == null
+// was not in today's position feed: it prints "not priced", never $0.
+// Group lines: the scanner's leaps_by_ticker when every account is shown;
+// with an account filter, plain sums of the same published lot numbers.
+function histTh(label, extra, title) {
+  return '<th' + (title ? ' title="' + escHtml(title) + '"' : '') + ' style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;' + (extra || '') + '">' + label + '</th>';
+}
+function histThL(label, extra, title) { return histTh(label, 'text-align:left;' + (extra || ''), title); }
+function histMoney(v) {
+  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  var n = Math.round(Number(v));
+  return (n < 0 ? '&minus;$' : '$') + Math.abs(n).toLocaleString();
+}
+function histMoneySigned(v) {
+  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  var n = Math.round(Number(v)), col = n > 0 ? '#15803d' : n < 0 ? '#b91c1c' : '#374151';
+  return '<span style="font-weight:600;color:' + col + '">' + (n > 0 ? '+$' : n < 0 ? '&minus;$' : '$') + Math.abs(n).toLocaleString() + '</span>';
+}
+function histSpotNow(v, from) {
+  if (v === null || v === undefined || !(Number(v) > 0)) return '<span style="color:#9ca3af">&mdash;</span>';
+  var move = '';
+  if (from !== undefined && from !== null && Number(from) > 0) {
+    var pct = (Number(v) - Number(from)) / Number(from) * 100;
+    move = ' <span style="font-size:10px;color:' + (pct >= 0 ? '#15803d' : '#b91c1c') + '">' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%</span>';
+  }
+  return '<span title="this scan\'s price">$' + Number(v).toFixed(2) + '</span>' + move;
+}
+function histSigned(v, digits, suffix) {
+  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  var n = Number(v), col = n > 0 ? '#15803d' : n < 0 ? '#b91c1c' : '#374151';
+  return '<span style="font-weight:600;color:' + col + '">' + (n > 0 ? '+' : '') + n.toFixed(digits === undefined ? 1 : digits) + (suffix || '%') + '</span>';
+}
+function leapsLotSort(a, b) {
+  if (a.ticker !== b.ticker) return a.ticker < b.ticker ? -1 : 1;
+  if ((a.expiry || '') !== (b.expiry || '')) return (a.expiry || '') < (b.expiry || '') ? -1 : 1;
+  if ((a.strike || 0) !== (b.strike || 0)) return (a.strike || 0) - (b.strike || 0);
+  return (a.open_time || a.open_date || '') < (b.open_time || b.open_date || '') ? -1 : 1;
+}
+// Sums over the DISPLAYED lots — used when an account filter narrows the
+// list below what the scanner's leaps_by_ticker (all accounts) describes.
+function leapsSumLots(lots) {
+  var t = {lots: lots.length, contracts: 0, cost_dollar: 0, market_value: 0, pnl_dollar: 0, marked_contracts: 0, beW: 0, beQ: 0, breakeven_min: null, breakeven_max: null, expiries: {}};
+  lots.forEach(function(o) {
+    var q = Number(o.qty) || 0, be = Number(o.breakeven) || 0;
+    t.contracts += q; t.cost_dollar += (Number(o.open_price) || 0) * 100 * q;
+    if (be > 0) { t.beW += be * q; t.beQ += q; t.breakeven_min = t.breakeven_min === null ? be : Math.min(t.breakeven_min, be); t.breakeven_max = t.breakeven_max === null ? be : Math.max(t.breakeven_max, be); }
+    if (o.mark !== null && o.mark !== undefined) { t.market_value += Number(o.mark) * 100 * q; t.pnl_dollar += Number(o.pnl_dollar) || 0; t.marked_contracts += q; }
+    var e = t.expiries[o.expiry] || (t.expiries[o.expiry] = {expiry: o.expiry, dte: null, lots: 0, contracts: 0, cost_dollar: 0, beW: 0, beQ: 0, breakeven_min: null, breakeven_max: null, strikes: {}});
+    e.lots++; e.contracts += q; e.cost_dollar += (Number(o.open_price) || 0) * 100 * q; e.strikes[o.strike] = true;
+    if (e.dte === null && o.dte !== null && o.dte !== undefined) e.dte = o.dte;
+    if (be > 0) { e.beW += be * q; e.beQ += q; e.breakeven_min = e.breakeven_min === null ? be : Math.min(e.breakeven_min, be); e.breakeven_max = e.breakeven_max === null ? be : Math.max(e.breakeven_max, be); }
+  });
+  var out = {lots: t.lots, contracts: t.contracts, cost_dollar: t.cost_dollar, avg_cost: t.contracts ? t.cost_dollar / 100 / t.contracts : null,
+             breakeven_wavg: t.beQ ? t.beW / t.beQ : null, breakeven_min: t.breakeven_min, breakeven_max: t.breakeven_max,
+             market_value: t.marked_contracts ? t.market_value : null, pnl_dollar: t.marked_contracts ? t.pnl_dollar : null,
+             marked_contracts: t.marked_contracts, expiries: []};
+  Object.keys(t.expiries).sort().forEach(function(k) {
+    var e = t.expiries[k];
+    out.expiries.push({expiry: e.expiry, dte: e.dte, lots: e.lots, contracts: e.contracts, cost_dollar: e.cost_dollar,
+                       avg_cost: e.contracts ? e.cost_dollar / 100 / e.contracts : null, breakeven_wavg: e.beQ ? e.beW / e.beQ : null,
+                       breakeven_min: e.breakeven_min, breakeven_max: e.breakeven_max,
+                       strikes: Object.keys(e.strikes).map(Number).sort(function(a, b){ return a - b; })});
+  });
+  return out;
+}
+function leapsGroupHeader(tkr, g, spotNow, colspan) {
+  var beRange = g.breakeven_min === null || g.breakeven_min === undefined ? '&mdash;'
+    : (g.breakeven_min === g.breakeven_max ? '$' + Number(g.breakeven_min).toFixed(2)
+       : '$' + Number(g.breakeven_min).toFixed(2) + '&ndash;$' + Number(g.breakeven_max).toFixed(2));
+  var line = '<strong style="font-size:13px">' + escHtml(tkr) + '</strong>'
+    + ' <span style="color:#6b7280">&middot; ' + g.contracts + ' contract' + (g.contracts === 1 ? '' : 's') + ' in ' + g.lots + ' lot' + (g.lots === 1 ? '' : 's')
+    + ' &middot; cost ' + histMoney(g.cost_dollar) + (g.avg_cost !== null && g.avg_cost !== undefined ? ' (avg ' + Number(g.avg_cost).toFixed(2) + ')' : '')
+    + ' &middot; breakeven ' + beRange + (g.breakeven_wavg !== null && g.breakeven_wavg !== undefined && g.breakeven_min !== g.breakeven_max ? ' (weighted $' + Number(g.breakeven_wavg).toFixed(2) + ')' : '')
+    + (spotNow ? ' &middot; stock now $' + Number(spotNow).toFixed(2) + (g.breakeven_wavg ? ' = ' + histSigned((spotNow - g.breakeven_wavg) / g.breakeven_wavg * 100) + ' vs weighted BE' : '') : '')
+    + (g.market_value !== null && g.market_value !== undefined ? ' &middot; value ' + histMoney(g.market_value) + ' &middot; P&amp;L ' + histMoneySigned(g.pnl_dollar) : ' &middot; not priced this scan')
+    + (g.marked_contracts && g.marked_contracts < g.contracts ? ' <span style="color:#b45309">(' + (g.contracts - g.marked_contracts) + ' contracts not priced)</span>' : '')
+    + '</span>';
+  var exps = (g.expiries || []).map(function(e) {
+    var ebe = e.breakeven_min === null || e.breakeven_min === undefined ? '&mdash;'
+      : (e.breakeven_min === e.breakeven_max ? '$' + Number(e.breakeven_min).toFixed(2) : '$' + Number(e.breakeven_min).toFixed(2) + '&ndash;$' + Number(e.breakeven_max).toFixed(2));
+    return '<span style="display:inline-block;margin:2px 10px 0 0;padding:1px 7px;border-radius:4px;background:#faf5ff;color:#4c1d95;font-size:11px">'
+      + fmtExpiry(e.expiry) + (e.dte !== null && e.dte !== undefined ? ' <span style="color:#6b7280">(' + e.dte + ' d)</span>' : '')
+      + ': ' + e.contracts + ' &times; $' + (e.strikes || []).join(' / $') + ' &middot; avg cost ' + (e.avg_cost !== null && e.avg_cost !== undefined ? Number(e.avg_cost).toFixed(2) : '&mdash;')
+      + ' &middot; BE ' + ebe + '</span>';
+  }).join('');
+  return '<tr style="background:#f9fafb"><td colspan="' + colspan + '" style="padding:9px 6px 6px;border-top:2px solid #e5e7eb">' + line + '<div>' + exps + '</div></td></tr>';
+}
+function renderLeapsHistory(cycles, lots, th) {
+  var ohead = document.getElementById('history-leaps-open-thead');
+  var obody = document.getElementById('history-leaps-open-tbody');
+  var chead = document.getElementById('history-leaps-closed-thead');
+  var cbody = document.getElementById('history-leaps-closed-tbody');
+  if (!obody || !cbody) return;
+  var td = 'padding:6px 5px;border-bottom:1px solid #f3f4f6;white-space:nowrap;';
+  var green = 'border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534;';
+  var gbg = 'background:#f0fdf4;color:#166534;';
+  var pbg = 'background:#faf5ff;color:#4c1d95;';
+  var nbg = 'border-left:2px solid #ddd6fe;background:#faf5ff;color:#4c1d95;';
+  var openCols = 16;
+  if (ohead) ohead.innerHTML = '<tr style="border-bottom:2px solid #e5e7eb">'
+    + histThL('Symbol') + histThL('Acct') + histThL('Strike &middot; Exp')
+    + histTh('DTE', '', 'Calendar days to expiration as of this scan')
+    + histTh('Qty')
+    + histThL('Bought', green) + histTh('Stock @ buy &middot; r%', gbg, 'Stock price at the buying fill (Schwab minute candle; daily close when minute data is gone), and where that sat in the prior 20 sessions\' range')
+    + histTh('Cost', gbg, 'Price paid per share') + histTh('Intrinsic + time value', gbg, 'Cost split at the fill: intrinsic = stock &minus; strike, time value = cost &minus; intrinsic (as % of the stock price)')
+    + histTh('DTE at buy', gbg)
+    + histTh('Breakeven', pbg, 'strike + cost') + histTh('BE vs stock @ buy', pbg, 'How far the stock had to rise from the buying fill to break even at expiration')
+    + histTh('Stock now', nbg, 'This scan\'s price, and its move since the buy') + histTh('vs BE', 'background:#faf5ff', 'Stock now vs breakeven: positive = above breakeven')
+    + histTh('Mark now', nbg, 'Option mark from this scan\'s position rows') + histTh('P&amp;L', 'background:#faf5ff', 'Mark vs cost, in dollars and as % of cost')
+    + '</tr>';
+  if (!lots.length) {
+    obody.innerHTML = '<tr><td colspan="' + openCols + '" style="text-align:center;padding:30px;color:#9ca3af">No open LEAPS' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
+  } else {
+    var sorted = lots.slice().sort(leapsLotSort);
+    var digest = th.leaps_by_ticker || {};
+    var useDigest = (currentPosFilter || 'ALL').toUpperCase() === 'ALL';
+    var byT = {};
+    sorted.forEach(function(o) { (byT[o.ticker] = byT[o.ticker] || []).push(o); });
+    var scanD = histDateObj(data.scan_date || '');
+    var html = '';
+    Object.keys(byT).sort().forEach(function(tkr) {
+      var rows = byT[tkr];
+      var g = (useDigest && digest[tkr]) ? digest[tkr] : leapsSumLots(rows);
+      var spotNow = null;
+      rows.forEach(function(o) { if (spotNow === null && o.underlying) spotNow = Number(o.underlying); });
+      html += leapsGroupHeader(tkr, g, spotNow, openCols);
+      rows.forEach(function(o) {
+        var dte = (o.dte !== null && o.dte !== undefined) ? o.dte : null;
+        if (dte === null && scanD) { var ed = histDateObj(o.expiry); if (ed) dte = Math.round((ed - scanD) / 86400000); }
+        var priced = o.mark !== null && o.mark !== undefined;
+        var extTxt = (o.intrinsic_at_open === null || o.intrinsic_at_open === undefined) ? '<span style="color:#9ca3af">&mdash;</span>'
+          : Number(o.intrinsic_at_open).toFixed(2) + ' + <span title="time value paid">' + Number(o.extrinsic_at_open).toFixed(2) + '</span>'
+            + ' <span style="font-size:10px;color:' + (o.extrinsic_pct_at_open > 20 ? '#b45309' : '#6b7280') + '">(' + Number(o.extrinsic_pct_at_open).toFixed(1) + '%)</span>';
+        html += '<tr>'
+          + '<td style="' + td + 'font-weight:700">' + escHtml(o.ticker) + '</td>'
+          + '<td style="' + td + '">' + escHtml(o.account || '') + '</td>'
+          + '<td style="' + td + '">$' + o.strike + ' &middot; ' + fmtExpiry(o.expiry) + '</td>'
+          + '<td style="' + td + 'text-align:right;' + (dte !== null && dte < 365 ? 'color:#b45309;font-weight:600' : '') + '">' + histNum(dte) + '</td>'
+          + '<td style="' + td + 'text-align:right">' + (o.qty || 0) + '</td>'
+          + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + histDate(o.open_date) + '</td>'
+          + '<td style="' + td + 'text-align:right">' + histSpot(o.open_spot, o.open_spot_src) + histRange(o.open_range_pct, o.open_r20_low, o.open_r20_high) + '</td>'
+          + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(o.open_price, 2) + ' <span style="font-size:10px;color:#6b7280">' + histMoney(o.cost_dollar) + '</span></td>'
+          + '<td style="' + td + 'text-align:right">' + extTxt + '</td>'
+          + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(o.dte_at_open) + '</td>'
+          + '<td style="' + td + 'text-align:right;font-weight:700;color:#4c1d95;background:#faf5ff">' + (o.breakeven !== null && o.breakeven !== undefined ? '$' + Number(o.breakeven).toFixed(2) : '&mdash;') + '</td>'
+          + '<td style="' + td + 'text-align:right;background:#faf5ff">' + (o.be_vs_open_spot_pct === null || o.be_vs_open_spot_pct === undefined ? '<span style="color:#9ca3af">&mdash;</span>' : '<span style="color:#6b7280">' + (Number(o.be_vs_open_spot_pct) >= 0 ? '+' : '') + Number(o.be_vs_open_spot_pct).toFixed(1) + '%</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right;border-left:2px solid #ddd6fe">' + (priced ? histSpotNow(o.underlying, o.open_spot) : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right">' + (priced ? histSigned(o.spot_vs_be_pct) : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right;font-family:monospace">' + (priced ? Number(o.mark).toFixed(2) : '<span style="color:#9ca3af" title="This contract was not in this scan\'s position feed">not priced</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right">' + (priced ? '<span style="font-weight:600;color:' + ((o.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + histMoney(o.pnl_dollar) + '</span> <span style="font-size:10px">' + histSigned(o.pnl_pct_of_cost) + '</span>' : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
+          + '</tr>';
+      });
+    });
+    obody.innerHTML = html;
+  }
+  var closedCols = 17;
+  if (chead) chead.innerHTML = '<tr style="border-bottom:2px solid #e5e7eb">'
+    + histThL('Symbol') + histThL('Acct') + histThL('Strike &middot; Exp') + histTh('Qty')
+    + histThL('Bought', green) + histTh('Stock @ buy', gbg, 'Stock price at the buying fill')
+    + histTh('Cost', gbg) + histTh('Breakeven', gbg, 'strike + cost') + histTh('DTE at buy', gbg)
+    + histThL('Closed', 'border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b;')
+    + histTh('Stock @ close', 'background:#fef2f2;color:#991b1b;', 'Stock price at the closing fill, and its move since the buy')
+    + histTh('Sold for', 'background:#fef2f2;color:#991b1b;', 'Sale price per share (0 when expired)')
+    + histTh('Days held', 'background:#fef2f2;color:#991b1b;') + histTh('DTE left', 'background:#fef2f2;color:#991b1b;')
+    + histTh('Return on cost', 'border-left:2px solid #e5e7eb', '(sale &minus; cost) / cost')
+    + histTh('%/yr', '', 'Return on cost &times; 365 / days held (shown from 30 days held)')
+    + histTh('P&amp;L $')
+    + '</tr>';
+  if (!cycles.length) {
+    cbody.innerHTML = '<tr><td colspan="' + closedCols + '" style="text-align:center;padding:16px;color:#9ca3af">No closed LEAPS' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
+  } else {
+    var cs = cycles.slice().sort(function(a, b){ return (b.close_time || b.close_date || '') < (a.close_time || a.close_date || '') ? -1 : 1; });
+    cbody.innerHTML = cs.map(function(c) {
+      var howCol = c.how_closed === 'expired' ? '#6b7280' : c.how_closed === 'exercised' ? '#b45309' : '#374151';
+      return '<tr>'
+        + '<td style="' + td + 'font-weight:700">' + escHtml(c.ticker) + '</td>'
+        + '<td style="' + td + '">' + escHtml(c.account || '') + '</td>'
+        + '<td style="' + td + '">$' + c.strike + ' &middot; ' + fmtExpiry(c.expiry) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + (c.qty || 0) + '</td>'
+        + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + histDate(c.open_date) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histSpot(c.open_spot, c.open_spot_src) + histRange(c.open_range_pct, c.open_r20_low, c.open_r20_high) + '</td>'
+        + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(c.open_price, 2) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#4c1d95;font-weight:600">' + (c.breakeven !== null && c.breakeven !== undefined ? '$' + Number(c.breakeven).toFixed(2) : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(c.dte_at_open) + '</td>'
+        + '<td style="' + td + 'border-left:2px solid #fecaca">' + histDate(c.close_date) + ' <span style="font-size:10px;color:' + howCol + '">' + escHtml(c.how_closed || '') + '</span></td>'
+        + '<td style="' + td + 'text-align:right">' + histSpot(c.close_spot, c.close_spot_src, c.open_spot) + histRange(c.close_range_pct) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + histNum(c.close_price, 2) + '</td>'
+        + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(c.days_held) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(c.dte_at_close) + '</td>'
+        + '<td style="' + td + 'text-align:right;border-left:2px solid #e5e7eb">' + histPct(c.realized_pct_of_cost) + '</td>'
+        + '<td style="' + td + 'text-align:right">' + ((c.days_held || 0) >= 30 ? histPct(c.ann_realized_pct) : '<span style="color:#9ca3af" title="held under 30 days &mdash; annualizing a ' + (c.days_held || 0) + '-day hold says nothing">&mdash;</span>') + '</td>'
+        + '<td style="' + td + 'text-align:right;color:' + ((c.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + (c.pnl_dollar !== null && c.pnl_dollar !== undefined ? histMoney(c.pnl_dollar) : '&mdash;') + '</td>'
+        + '</tr>';
+    }).join('');
   }
 }
 
