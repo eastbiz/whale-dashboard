@@ -28,6 +28,20 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
   lots with their per-fill entry price. Newest first; filters for account
   (shared buttons), type (CC / CSP) and symbol (buttons built from the data,
   with counts) — John reads it per name before writing the next call.
+  **LEAPS (A76, 2026-09-16):** a fourth type button. `renderLeapsHistory()`
+  shows the `LONG_CALL` lots grouped by symbol — a summary line per name
+  (contracts, cost, breakeven min–max and contract-weighted, stock now vs
+  weighted BE, value, P&L) and one chip per EXPIRATION (DTE, contracts ×
+  strikes, avg cost, BE range) — then one row per fill: stock at the buy,
+  cost with the intrinsic + time-value split, breakeven and how far the
+  stock had to rise, stock now vs breakeven, mark, P&L. Every number is the
+  scanner's (`breakeven`, `extrinsic_*`, `mark`, `pnl_*`, `spot_vs_be_pct`;
+  group lines from `trade_history.leaps_by_ticker` when all accounts are
+  shown, plain sums of the same lot numbers under an account filter).
+  `mark == null` prints "not priced" — the contract was not in that scan's
+  position feed. "All" is CC + CSP only (`histTypeMatch`); long calls no
+  longer print their cost in the Credit column. The symbol buttons follow
+  the selected type. Closed-LEAPS %/yr is blank under 30 days held.
   Every figure is the scanner's (credit/strike basis, calendar days);
   `renderTradeHistory()` only formats. The note line shows each feed's
   status — "0 Trade rows" on IBKR means the Flex query lacks the Trades
