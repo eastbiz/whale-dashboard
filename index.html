@@ -173,7 +173,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <!-- A55: counts only rows at/near John's own targets (in_zone), per mode.
              Same predicate as the 🎯 At / Near Target filter — keep them identical. -->
         <div class="metric" id="opp-tile" onclick="gotoActionable()" style="cursor:pointer"
-             title="Only trades at or near your own buy/sell targets count here — the same rule as the &#x1F3AF; At / Near Target filter. Click to see the cards.">
+             title="Names at or near your own buy/sell targets, counted once per strategy — the same rule as the &#x1F3AF; At / Near Target filter. One name = one count even when it has many band/expiry rows. Click to see the cards.">
           <div class="metric-lbl">Actionable Today</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
         <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">&#8212;</div><div class="metric-sub">holdings tracked</div></div>
       </div>
@@ -1411,19 +1411,29 @@ function renderMarket() {
   // out-of-zone LEAPS, and 11 of the 18 "execution ready" were out of zone too.
   const allOpps = data.review_candidates || data.dashboard_opportunities || data.opportunities || [];
   const inZone = allOpps.filter(function(o){ return o.in_zone === true; });
+  // Count NAMES per strategy, not rows (John, 2026-09-16). A61 made LEAPS one
+  // row per band per expiry, so 3 in-zone names read as "34 LEAPS" and the
+  // headline hit 40+ — row fan-out is presentation detail, not opportunities.
+  // A ticker actionable in two strategies still counts once per strategy
+  // (two different decisions). The headline is the sum of the lines below.
   const oppByMode = {};
+  const seenModeTicker = {};
   inZone.forEach(function(o){
     var m = o.mode === 'PIO' ? 'CC' : o.mode;  // PIO rows render under the CC filter
+    var k = m + '|' + o.ticker;
+    if (seenModeTicker[k]) return;
+    seenModeTicker[k] = 1;
     oppByMode[m] = (oppByMode[m] || 0) + 1;
   });
+  const oppTotal = Object.keys(oppByMode).reduce(function(a,m){ return a + oppByMode[m]; }, 0);
   const oppEl = document.getElementById('opp-count');
-  oppEl.textContent = inZone.length;
-  oppEl.style.color = inZone.length > 0 ? '#166534' : '#6b7280';
+  oppEl.textContent = oppTotal;
+  oppEl.style.color = oppTotal > 0 ? '#166534' : '#6b7280';
   // The four everyday modes always show — a zero line ("0 Cash-Secured Puts") is
   // information, not clutter. Rare modes appear only when they actually hit.
-  // Each nonzero line links to ITS mode filter with At/Near on, so "2 Spike CC"
-  // opens exactly those 2 cards (A59 — the mixed all-modes view made it hard to
-  // tell which cards a line had counted).
+  // Each nonzero line links to ITS mode filter with At/Near on (A59). Counts
+  // are NAMES, so "3 LEAPS" can open more than 3 rows/cards — one per band and
+  // expiry for those same 3 names, never a 4th name.
   var oppLines = [
     ['CC',       oppByMode.CC || 0,       'Covered Calls'],
     ['CSP',      oppByMode.CSP || 0,      'Cash-Secured Puts'],
@@ -1441,7 +1451,7 @@ function renderMarket() {
         + ' title="Show only these cards"'
         + ' style="color:#374151;font-weight:600;cursor:pointer">' + l[1] + ' ' + l[2] + '</div>';
     }).join('') +
-    '<div style="color:#9ca3af;margin-top:4px">of ' + allOpps.length + ' scanned &middot; click to view</div>';
+    '<div style="color:#9ca3af;margin-top:4px">of ' + [...new Set(allOpps.map(function(o){ return o.ticker; }))].length + ' names scanned &middot; click to view</div>';
 
   const pos = data.positions || [];
   const owned = pos.filter(function(p){ return p.status === 'Owned'; }).length;
