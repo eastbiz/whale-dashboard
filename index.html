@@ -2412,7 +2412,9 @@ function renderTradeHistory() {
       parts.push(allCycles.length + ' closed cycles &middot; ' + allLots.length + ' open lots on file');
     }
     if (isLeaps) {
-      parts.push('LEAPS: breakeven = strike + cost &middot; time value = cost &minus; intrinsic at the fill &middot; returns on the COST basis, calendar days &middot; today\'s mark and stock price are this scan\'s position rows, joined by contract. Grouped by symbol, oldest expiration first.');
+      var nPos = allLots.filter(function(o){ return histIsLong(o) && o.src; }).length;
+      parts.push('LEAPS: breakeven = strike + cost &middot; time value = cost &minus; intrinsic at the buy &middot; returns on the COST basis, calendar days &middot; today\'s mark and stock price are this scan\'s position rows, joined by contract. Grouped by symbol, oldest expiration first.');
+      if (nPos) parts.push('<span style="color:#92400e">' + nPos + ' lot' + (nPos > 1 ? 's' : '') + ' come from the position feed, not fills</span> (IBKR has no fill record until the Flex Trades section is added; Schwab lots older than the 365-day window likewise) &mdash; tagged per row. Closed IBKR LEAPS cannot be shown yet for the same reason.');
     } else {
       parts.push('Returns on the strike basis (credit / strike), calendar days. Newest first.');
     }
@@ -2504,6 +2506,17 @@ function histSpotNow(v, from) {
     move = ' <span style="font-size:10px;color:' + (pct >= 0 ? '#15803d' : '#b91c1c') + '">' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%</span>';
   }
   return '<span title="this scan\'s price">$' + Number(v).toFixed(2) + '</span>' + move;
+}
+// A76b: where a LEAPS lot came from. No tag = a broker fill (time, price,
+// stock at the fill minute). "IBKR lot" = a Flex lot row (its own cost and
+// open date, no fill time). "position avg" = the aggregated position row:
+// cost is the AVERAGE over every lot and the date is the NEWEST lot.
+function histSrcTag(src) {
+  if (!src) return '';
+  var lot = src === 'ibkr_lot';
+  var t = lot ? 'From the IBKR position feed (Flex lot row): this lot\'s own cost basis and open date. Not a fill record — no fill time; stock price is the daily close on the lot date.'
+              : 'From the position feed, not fills: cost is the AVERAGE over every lot in this contract, the date is the newest lot. Per-lot detail arrives once the Flex Trades section is added.';
+  return ' <span title="' + escHtml(t) + '" style="font-size:9px;padding:0 4px;border-radius:3px;background:' + (lot ? '#eef2ff;color:#3730a3' : '#fef3c7;color:#92400e') + '">' + (lot ? 'IBKR lot' : 'position avg') + '</span>';
 }
 function histSigned(v, digits, suffix) {
   if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
@@ -2617,7 +2630,7 @@ function renderLeapsHistory(cycles, lots, th) {
           + '<td style="' + td + '">$' + o.strike + ' &middot; ' + fmtExpiry(o.expiry) + '</td>'
           + '<td style="' + td + 'text-align:right;' + (dte !== null && dte < 365 ? 'color:#b45309;font-weight:600' : '') + '">' + histNum(dte) + '</td>'
           + '<td style="' + td + 'text-align:right">' + (o.qty || 0) + '</td>'
-          + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + histDate(o.open_date) + '</td>'
+          + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + (o.open_date ? histDate(o.open_date) : '<span style="color:#9ca3af">date unknown</span>') + histSrcTag(o.src) + '</td>'
           + '<td style="' + td + 'text-align:right">' + histSpot(o.open_spot, o.open_spot_src) + histRange(o.open_range_pct, o.open_r20_low, o.open_r20_high) + '</td>'
           + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(o.open_price, 2) + ' <span style="font-size:10px;color:#6b7280">' + histMoney(o.cost_dollar) + '</span></td>'
           + '<td style="' + td + 'text-align:right">' + extTxt + '</td>'

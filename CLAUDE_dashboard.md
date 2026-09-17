@@ -42,6 +42,10 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
   position feed. "All" is CC + CSP only (`histTypeMatch`); long calls no
   longer print their cost in the Credit column. The symbol buttons follow
   the selected type. Closed-LEAPS %/yr is blank under 30 days held.
+  **A76b:** lots with `src` set came from the position feed, not fills —
+  `histSrcTag()` prints "IBKR lot" (Flex lot row: own cost + date) or
+  "position avg" (aggregated row: average cost, newest lot date); the note
+  line counts them and says closed IBKR LEAPS are not available yet.
   Every figure is the scanner's (credit/strike basis, calendar days);
   `renderTradeHistory()` only formats. The note line shows each feed's
   status — "0 Trade rows" on IBKR means the Flex query lacks the Trades
