@@ -46,6 +46,11 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
   `histSrcTag()` prints "IBKR lot" (Flex lot row: own cost + date) or
   "position avg" (aggregated row: average cost, newest lot date); the note
   line counts them and says closed IBKR LEAPS are not available yet.
+  **A76c (John, 2026-09-17):** the per-symbol summary sits BELOW the
+  symbol's rows as a subtotal row aligned to the columns (`leapsGroupFooter`:
+  contracts, avg cost + total $, weighted BE with min–max, stock now, vs BE,
+  market value, P&L) plus one thin "By expiration" chip line. A summary row
+  ABOVE the group broke the column alignment for him — do not move it back.
   Every figure is the scanner's (credit/strike basis, calendar days);
   `renderTradeHistory()` only formats. The note line shows each feed's
   status — "0 Trade rows" on IBKR means the Flex query lacks the Trades

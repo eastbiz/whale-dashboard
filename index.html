@@ -2556,27 +2556,42 @@ function leapsSumLots(lots) {
   });
   return out;
 }
-function leapsGroupHeader(tkr, g, spotNow, colspan) {
-  var beRange = g.breakeven_min === null || g.breakeven_min === undefined ? '&mdash;'
-    : (g.breakeven_min === g.breakeven_max ? '$' + Number(g.breakeven_min).toFixed(2)
-       : '$' + Number(g.breakeven_min).toFixed(2) + '&ndash;$' + Number(g.breakeven_max).toFixed(2));
-  var line = '<strong style="font-size:13px">' + escHtml(tkr) + '</strong>'
-    + ' <span style="color:#6b7280">&middot; ' + g.contracts + ' contract' + (g.contracts === 1 ? '' : 's') + ' in ' + g.lots + ' lot' + (g.lots === 1 ? '' : 's')
-    + ' &middot; cost ' + histMoney(g.cost_dollar) + (g.avg_cost !== null && g.avg_cost !== undefined ? ' (avg ' + Number(g.avg_cost).toFixed(2) + ')' : '')
-    + ' &middot; breakeven ' + beRange + (g.breakeven_wavg !== null && g.breakeven_wavg !== undefined && g.breakeven_min !== g.breakeven_max ? ' (weighted $' + Number(g.breakeven_wavg).toFixed(2) + ')' : '')
-    + (spotNow ? ' &middot; stock now $' + Number(spotNow).toFixed(2) + (g.breakeven_wavg ? ' = ' + histSigned((spotNow - g.breakeven_wavg) / g.breakeven_wavg * 100) + ' vs weighted BE' : '') : '')
-    + (g.market_value !== null && g.market_value !== undefined ? ' &middot; value ' + histMoney(g.market_value) + ' &middot; P&amp;L ' + histMoneySigned(g.pnl_dollar) : ' &middot; not priced this scan')
-    + (g.marked_contracts && g.marked_contracts < g.contracts ? ' <span style="color:#b45309">(' + (g.contracts - g.marked_contracts) + ' contracts not priced)</span>' : '')
-    + '</span>';
+// A76c (John, 2026-09-17): the per-symbol summary sits BELOW the symbol's
+// rows, aligned to the columns, so the eye never loses the header. Cells:
+// Qty = contracts, Cost = avg (total $), Breakeven = weighted (min–max),
+// Stock now, vs BE = stock vs weighted BE, Mark = market value, P&L = total.
+// One thin line under it carries the per-expiration chips.
+function leapsGroupFooter(tkr, g, spotNow, colspan) {
+  var ft = 'padding:6px 5px;border-top:1px solid #d1d5db;background:#f9fafb;white-space:nowrap;font-weight:600;';
+  var beTxt = (g.breakeven_wavg === null || g.breakeven_wavg === undefined) ? '&mdash;'
+    : '$' + Number(g.breakeven_wavg).toFixed(2)
+      + (g.breakeven_min !== g.breakeven_max ? ' <span style="font-size:10px;font-weight:400;color:#6b7280">' + Number(g.breakeven_min).toFixed(2) + '&ndash;' + Number(g.breakeven_max).toFixed(2) + '</span>' : '');
+  var vsBe = (spotNow && g.breakeven_wavg) ? histSigned((spotNow - g.breakeven_wavg) / g.breakeven_wavg * 100) : '<span style="color:#9ca3af">&mdash;</span>';
+  var priced = g.market_value !== null && g.market_value !== undefined;
+  var notPriced = (g.marked_contracts && g.marked_contracts < g.contracts) ? ' <span style="font-size:10px;font-weight:400;color:#b45309">(' + (g.contracts - g.marked_contracts) + ' not priced)</span>' : '';
+  var row = '<tr>'
+    + '<td style="' + ft + '" colspan="3">' + escHtml(tkr) + ' total <span style="font-weight:400;color:#6b7280">&middot; ' + g.lots + ' lot' + (g.lots === 1 ? '' : 's') + '</span></td>'
+    + '<td style="' + ft + '"></td>'
+    + '<td style="' + ft + 'text-align:right">' + g.contracts + '</td>'
+    + '<td style="' + ft + '" colspan="2"></td>'
+    + '<td style="' + ft + 'text-align:right">' + (g.avg_cost !== null && g.avg_cost !== undefined ? Number(g.avg_cost).toFixed(2) : '&mdash;') + ' <span style="font-size:10px;font-weight:400;color:#6b7280">' + histMoney(g.cost_dollar) + '</span></td>'
+    + '<td style="' + ft + '" colspan="2"></td>'
+    + '<td style="' + ft + 'text-align:right;color:#4c1d95">' + beTxt + '</td>'
+    + '<td style="' + ft + '"></td>'
+    + '<td style="' + ft + 'text-align:right">' + (spotNow ? '$' + Number(spotNow).toFixed(2) : '&mdash;') + '</td>'
+    + '<td style="' + ft + 'text-align:right">' + vsBe + '</td>'
+    + '<td style="' + ft + 'text-align:right;font-family:monospace;font-weight:400" title="market value">' + (priced ? histMoney(g.market_value) : '<span style="color:#9ca3af">not priced</span>') + '</td>'
+    + '<td style="' + ft + 'text-align:right">' + (priced ? histMoneySigned(g.pnl_dollar) : '&mdash;') + notPriced + '</td>'
+    + '</tr>';
   var exps = (g.expiries || []).map(function(e) {
     var ebe = e.breakeven_min === null || e.breakeven_min === undefined ? '&mdash;'
       : (e.breakeven_min === e.breakeven_max ? '$' + Number(e.breakeven_min).toFixed(2) : '$' + Number(e.breakeven_min).toFixed(2) + '&ndash;$' + Number(e.breakeven_max).toFixed(2));
-    return '<span style="display:inline-block;margin:2px 10px 0 0;padding:1px 7px;border-radius:4px;background:#faf5ff;color:#4c1d95;font-size:11px">'
+    return '<span style="display:inline-block;margin:0 10px 0 0;padding:1px 7px;border-radius:4px;background:#faf5ff;color:#4c1d95;font-size:11px">'
       + fmtExpiry(e.expiry) + (e.dte !== null && e.dte !== undefined ? ' <span style="color:#6b7280">(' + e.dte + ' d)</span>' : '')
       + ': ' + e.contracts + ' &times; $' + (e.strikes || []).join(' / $') + ' &middot; avg cost ' + (e.avg_cost !== null && e.avg_cost !== undefined ? Number(e.avg_cost).toFixed(2) : '&mdash;')
       + ' &middot; BE ' + ebe + '</span>';
   }).join('');
-  return '<tr style="background:#f9fafb"><td colspan="' + colspan + '" style="padding:9px 6px 6px;border-top:2px solid #e5e7eb">' + line + '<div>' + exps + '</div></td></tr>';
+  return row + '<tr><td colspan="' + colspan + '" style="padding:3px 6px 10px;background:#f9fafb;font-size:11px;color:#6b7280">By expiration: ' + exps + '</td></tr>';
 }
 function renderLeapsHistory(cycles, lots, th) {
   var ohead = document.getElementById('history-leaps-open-thead');
@@ -2616,7 +2631,7 @@ function renderLeapsHistory(cycles, lots, th) {
       var g = (useDigest && digest[tkr]) ? digest[tkr] : leapsSumLots(rows);
       var spotNow = null;
       rows.forEach(function(o) { if (spotNow === null && o.underlying) spotNow = Number(o.underlying); });
-      html += leapsGroupHeader(tkr, g, spotNow, openCols);
+      var first = true;
       rows.forEach(function(o) {
         var dte = (o.dte !== null && o.dte !== undefined) ? o.dte : null;
         if (dte === null && scanD) { var ed = histDateObj(o.expiry); if (ed) dte = Math.round((ed - scanD) / 86400000); }
@@ -2624,7 +2639,7 @@ function renderLeapsHistory(cycles, lots, th) {
         var extTxt = (o.intrinsic_at_open === null || o.intrinsic_at_open === undefined) ? '<span style="color:#9ca3af">&mdash;</span>'
           : Number(o.intrinsic_at_open).toFixed(2) + ' + <span title="time value paid">' + Number(o.extrinsic_at_open).toFixed(2) + '</span>'
             + ' <span style="font-size:10px;color:' + (o.extrinsic_pct_at_open > 20 ? '#b45309' : '#6b7280') + '">(' + Number(o.extrinsic_pct_at_open).toFixed(1) + '%)</span>';
-        html += '<tr>'
+        html += '<tr' + (first ? ' style="border-top:2px solid #e5e7eb"' : '') + '>'
           + '<td style="' + td + 'font-weight:700">' + escHtml(o.ticker) + '</td>'
           + '<td style="' + td + '">' + escHtml(o.account || '') + '</td>'
           + '<td style="' + td + '">$' + o.strike + ' &middot; ' + fmtExpiry(o.expiry) + '</td>'
@@ -2642,7 +2657,9 @@ function renderLeapsHistory(cycles, lots, th) {
           + '<td style="' + td + 'text-align:right;font-family:monospace">' + (priced ? Number(o.mark).toFixed(2) : '<span style="color:#9ca3af" title="This contract was not in this scan\'s position feed">not priced</span>') + '</td>'
           + '<td style="' + td + 'text-align:right">' + (priced ? '<span style="font-weight:600;color:' + ((o.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + histMoney(o.pnl_dollar) + '</span> <span style="font-size:10px">' + histSigned(o.pnl_pct_of_cost) + '</span>' : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
           + '</tr>';
+        first = false;
       });
+      html += leapsGroupFooter(tkr, g, spotNow, openCols);
     });
     obody.innerHTML = html;
   }
