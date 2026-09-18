@@ -2936,10 +2936,24 @@ function renderPositions() {
   var feedEl = document.getElementById('pos-feed-warning');
   if (feedEl) {
     var feed = data.positions_feed;
+    var feedMsgs = [];
     if (feed && feed.ok === false) {
-      feedEl.innerHTML = '&#9888; <strong>Schwab positions missing from this scan.</strong> '
+      feedMsgs.push('&#9888; <strong>Schwab positions missing from this scan.</strong> '
         + escHtml(feed.note || '')
-        + ' Names held only at Schwab show as not owned below &mdash; ignore this table until the next scan.';
+        + ' Names held only at Schwab show as not owned below &mdash; ignore this table until the next scan.');
+    }
+    // A86 / EX-62: the IBKR Flex feed has the same failure mode. ibkr_source
+    // says what the scan showed instead: cache (last good scan), xml_file
+    // (the committed May statement) or none (IBKR holdings absent).
+    if (feed && feed.ibkr_ok === false) {
+      var src = feed.ibkr_source || 'none';
+      feedMsgs.push('&#9888; <strong>IBKR positions are '
+        + (src === 'cache' ? 'from the last good scan, not live' : src === 'xml_file' ? 'from an OLD committed file, not live' : 'missing from this scan')
+        + '.</strong> ' + escHtml(feed.ibkr_note || '')
+        + (src === 'none' ? ' Names held only at IBKR show as not owned below.' : ''));
+    }
+    if (feedMsgs.length) {
+      feedEl.innerHTML = feedMsgs.join('<br>');
       feedEl.style.display = 'block';
     } else {
       feedEl.style.display = 'none';
