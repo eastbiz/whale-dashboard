@@ -2091,6 +2091,7 @@ function renderOpps() {
             +'</div>'
             + renderCspLadder(o);
         })() : '')
+      + (o.mode === 'DROP_CSP' ? renderCspLadder(o) : '')   // A87: post-drop rows carry the same ladder
       + (o.mode !== 'LEAPS' && o.mode !== 'CSP'
         ? '<div class="ivp-row">'
           + '<span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>'
