@@ -2170,6 +2170,7 @@ function renderOpps() {
       + (o.reasoning ? '<div class="opp-reasoning">' + o.reasoning + '</div>' : '')
       + ccRoomHtml
       + lastCycleLine(o)
+      + vsLastLine(o)
       + sizingHtml
       + '</div>';
   }).join('');
@@ -2734,6 +2735,20 @@ function lastCycleLine(o) {
        + (plan === null || plan === undefined ? '' : ' (planned ' + Number(plan).toFixed(0) + '%)'))
     + (n > 1 ? ' &middot; ' + n + ' closed ' + want + ' cycles on file' : '');
   return '<div style="margin-top:6px;font-size:11px;color:#6b7280" title="From your broker fills (Trade History view on the Positions page)">&#128213; ' + txt + '</div>';
+}
+
+// A82 (John 2026-09-18): "better than what I did recently" — the scanner
+// compares the candidate with the last closed cycle of the same kind on
+// this name (dollars per contract per day, planned %/yr on the strike
+// basis, % OTM at the write) and ships the finished sentence as
+// `vs_last_text` plus the numbers in `vs_last`. Nothing is computed here.
+function vsLastLine(o) {
+  if (!o || !o.vs_last_text) return '';
+  var v = o.vs_last || {};
+  var col = v.verdict === 'better' ? '#15803d' : v.verdict === 'worse' ? '#b91c1c' : '#6b7280';
+  var tag = v.verdict === 'better' ? '&#9650; better' : v.verdict === 'worse' ? '&#9660; worse' : '&#8776; same';
+  return '<div style="margin-top:4px;font-size:11px;color:#374151" title="Dollars per contract per day and planned %/yr (credit / strike, calendar days) against your last closed cycle of this kind on this name">'
+    + '<span style="font-weight:600;color:' + col + '">' + tag + '</span> &middot; ' + escHtml(o.vs_last_text) + '</div>';
 }
 
 // ── HOLDINGS view (A69, John 2026-09-13) ────────────────────────────────
