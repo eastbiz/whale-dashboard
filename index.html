@@ -439,11 +439,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Shares $</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS $</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e" title="Cash needed if every short put is assigned. Shown for context; NOT part of Total exposure.">CSP oblig.</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #d1fae5;background:#f0fdf4;color:#065f46" title="Covered calls you can still write, per account: shares in that account &divide; 100, less the calls already written there (a call is covered only by shares in the SAME account; LEAPS never count). From the last scan &mdash; a call written after it is not in this number.">CC room</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Shares + LEAPS market value">Total exposure</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
               <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Accts</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #d1fae5;background:#f0fdf4;color:#065f46" title="Covered calls you can still write, per account: shares in that account &divide; 100, less the calls already written there (a call is covered only by shares in the SAME account; LEAPS never count). From the last scan &mdash; a call written after it is not in this number.">CC room</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af" title="Yahoo sell-side consensus. Mean on a 1-5 scale where 1 = Strong Buy and 5 = Sell (the OPPOSITE of Seeking Alpha's scale), then analyst count.">Wall St (Yahoo)</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0f9ff;color:#1e40af" title="Nasdaq analyst consensus (Zacks-based): label and analyst count.">Zacks (Nasdaq)</th>
             </tr>
@@ -2918,11 +2918,11 @@ function renderHoldings() {
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.shares) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #ede9fe;color:#4c1d95">' + money(r.leaps) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #fed7aa;color:#92400e">' + money(r.cso) + '</td>'
+      + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #d1fae5;white-space:nowrap">' + roomTxt + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700">' + money(r.total) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;color:' + sevColor + (r.sev >= 2 ? ';font-weight:600' : '') + '">' + escHtml(r.verdict) + '</td>'
       + '<td style="padding:6px 5px;font-size:10px;color:#9ca3af">' + escHtml(r.accts) + '</td>'
-      + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #d1fae5;white-space:nowrap">' + roomTxt + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #dbeafe;white-space:nowrap">' + yTxt + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;white-space:nowrap">' + nTxt + '</td>'
       + '</tr>';
@@ -2933,17 +2933,18 @@ function renderHoldings() {
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(sum('shares')) + '</td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace;color:#4c1d95">' + money(sum('leaps')) + '</td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace;color:#92400e">' + money(sum('cso')) + '</td>'
+    + '<td></td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(sum('total')) + '</td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(sum('total')) + '</td>'
-    + '<td colspan="5"></td></tr>';
+    + '<td colspan="4"></td></tr>';
   cashRows.forEach(function(r) {
     html += '<tr style="background:#f9fafb;color:#9ca3af">'
       + '<td style="padding:6px 6px" colspan="4">' + escHtml(r.t) + ' &middot; cash equivalent, dry powder &mdash; not ranked</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.shares) + '</td>'
-      + '<td colspan="2"></td>'
+      + '<td colspan="3"></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.total) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
-      + '<td colspan="5"></td></tr>';
+      + '<td colspan="4"></td></tr>';
   });
   if (nav > 0) {
     html += '<tr><td colspan="14" style="padding:6px 6px;font-size:10px;color:#9ca3af">NAV ' + money(nav) + ' &middot; * price derived from market value &divide; shares</td></tr>';
