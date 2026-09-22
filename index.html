@@ -443,11 +443,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
               <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Accts</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #d1fae5;background:#f0fdf4;color:#065f46" title="Covered calls you can still write, per account: shares in that account &divide; 100, less the calls already written there (a call is covered only by shares in the SAME account; LEAPS never count). From the last scan &mdash; a call written after it is not in this number.">CC room</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af" title="Yahoo sell-side consensus. Mean on a 1-5 scale where 1 = Strong Buy and 5 = Sell (the OPPOSITE of Seeking Alpha's scale), then analyst count.">Wall St (Yahoo)</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0f9ff;color:#1e40af" title="Nasdaq analyst consensus (Zacks-based): label and analyst count.">Zacks (Nasdaq)</th>
             </tr>
           </thead>
-          <tbody id="holdings-tbody"><tr><td colspan="13" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+          <tbody id="holdings-tbody"><tr><td colspan="14" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -2802,6 +2803,9 @@ function renderHoldings() {
   var cashSet = {};
   (data.cash_equivalent_tickers || ['SGOV']).forEach(function(t){ cashSet[t] = 1; });
   var acct = currentPosFilter;   // ALL / IRA / CRT / IBKR — same buttons as the Positions table
+  // CC room column: exposure.cc_capacity from the scanner (A56) — the same
+  // rows the "CC room" line on CC cards prints, never re-derived here.
+  var ccRoomBy = exp.cc_capacity || {};
 
   var rows = [], cashRows = [];
   (data.positions || []).forEach(function(p) {
@@ -2823,7 +2827,8 @@ function renderHoldings() {
     if (price === null && p.shares_owned > 0 && p.market_value > 0) { price = p.market_value / p.shares_owned; derived = true; }
     var row = { t: p.ticker, tier: p.tier || '', price: price, derived: derived, shares: shares, leaps: leaps, cso: cso,
                 total: total, verdict: p.size_verdict || p.pos_status || '', sev: p.size_severity || 0,
-                accts: (p.accounts_all || [p.account || 'IBKR']).join('/'), pw: pw, r: ratings[p.ticker] || {} };
+                accts: (p.accounts_all || [p.account || 'IBKR']).join('/'), pw: pw, r: ratings[p.ticker] || {},
+                ccRoom: ccRoomBy[p.ticker] || [] };
     if (cashSet[p.ticker]) cashRows.push(row); else rows.push(row);
   });
   rows.sort(function(a,b){ return b.total - a.total; });
@@ -2837,7 +2842,7 @@ function renderHoldings() {
       + (ratingsBuilt ? ' Ratings as of ' + escHtml(ratingsBuilt) + '.' : ' <span style="color:#991b1b">No ratings in this scan.</span>');
   }
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:#9ca3af">No holdings' + (acct === 'ALL' ? '' : ' in ' + escHtml(acct)) + '.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:#9ca3af">No holdings' + (acct === 'ALL' ? '' : ' in ' + escHtml(acct)) + '.</td></tr>';
     return;
   }
 
@@ -2888,6 +2893,23 @@ function renderHoldings() {
       nTxt = '<span style="color:' + ratingColor(n.label) + ';font-weight:600" title="' + escHtml(cTitle) + '">' + escHtml(n.label) + '</span>'
         + (n.analysts ? ' <span style="color:#9ca3af">&middot; ' + n.analysts + '</span>' : '');
     }
+    // CC room: contracts left per account. Same filter as the CC card line
+    // (skip accounts with <100 shares and no calls written); an account
+    // filter narrows it to that account.
+    var roomRows = r.ccRoom.filter(function(c){
+      if (acct !== 'ALL' && holdingsAcctKey(c.account) !== acct) return false;
+      return (c.shares || 0) >= 100 || (c.cc_contracts || 0) > 0;
+    });
+    var roomTxt = '<span style="color:#d1d5db">&mdash;</span>';
+    if (roomRows.length) {
+      roomTxt = roomRows.map(function(c){
+        var rem = c.remaining_contracts || 0;
+        return '<span title="' + escHtml((c.shares||0) + ' shares in ' + (c.account||'?')
+                 + ' · ' + (c.cc_contracts||0) + ' CC contracts written · room for ' + rem + ' more') + '"'
+          + ' style="font-weight:600;color:' + (rem === 0 ? '#991b1b' : '#065f46') + '">'
+          + escHtml(c.account || '?') + ' ' + (rem === 0 ? '0 &#9888;' : rem) + '</span>';
+      }).join('<span style="color:#d1d5db"> &middot; </span>');
+    }
     html += '<tr style="border-bottom:1px solid #f3f4f6;background:' + (bg || 'transparent') + '">'
       + '<td style="padding:6px 6px;font-weight:700">' + escHtml(r.t) + '</td>'
       + '<td style="padding:6px 4px;font-size:10px;color:#6b7280">' + escHtml(r.tier) + '</td>'
@@ -2900,6 +2922,7 @@ function renderHoldings() {
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;color:' + sevColor + (r.sev >= 2 ? ';font-weight:600' : '') + '">' + escHtml(r.verdict) + '</td>'
       + '<td style="padding:6px 5px;font-size:10px;color:#9ca3af">' + escHtml(r.accts) + '</td>'
+      + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #d1fae5;white-space:nowrap">' + roomTxt + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #dbeafe;white-space:nowrap">' + yTxt + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;white-space:nowrap">' + nTxt + '</td>'
       + '</tr>';
@@ -2912,7 +2935,7 @@ function renderHoldings() {
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace;color:#92400e">' + money(sum('cso')) + '</td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(sum('total')) + '</td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(sum('total')) + '</td>'
-    + '<td colspan="4"></td></tr>';
+    + '<td colspan="5"></td></tr>';
   cashRows.forEach(function(r) {
     html += '<tr style="background:#f9fafb;color:#9ca3af">'
       + '<td style="padding:6px 6px" colspan="4">' + escHtml(r.t) + ' &middot; cash equivalent, dry powder &mdash; not ranked</td>'
@@ -2920,10 +2943,10 @@ function renderHoldings() {
       + '<td colspan="2"></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.total) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
-      + '<td colspan="4"></td></tr>';
+      + '<td colspan="5"></td></tr>';
   });
   if (nav > 0) {
-    html += '<tr><td colspan="13" style="padding:6px 6px;font-size:10px;color:#9ca3af">NAV ' + money(nav) + ' &middot; * price derived from market value &divide; shares</td></tr>';
+    html += '<tr><td colspan="14" style="padding:6px 6px;font-size:10px;color:#9ca3af">NAV ' + money(nav) + ' &middot; * price derived from market value &divide; shares</td></tr>';
   }
   tbody.innerHTML = html;
 }
