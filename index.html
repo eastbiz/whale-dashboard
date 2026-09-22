@@ -444,7 +444,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
               <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Accts</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af" title="Yahoo sell-side consensus. Mean on a 1-5 scale where 1 = Strong Buy and 5 = Sell (the OPPOSITE of Seeking Alpha's scale), then analyst count.">Wall St (Yahoo)</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af" title="Yahoo sell-side consensus: direction only (Strong Buy / Buy / Hold / Underperform / Sell). Hover a cell for the analyst count.">Wall St (Yahoo)</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0f9ff;color:#1e40af" title="Nasdaq analyst consensus (Zacks-based): label and analyst count.">Zacks (Nasdaq)</th>
             </tr>
           </thead>
@@ -2838,7 +2838,6 @@ function renderHoldings() {
       + '<b>Total exposure = shares + LEAPS market value</b>; CSP obligation is context only. '
       + 'Row colour: <span style="color:#166534;font-weight:600">green</span> = at/near your buy target, '
       + '<span style="color:#9a3412;font-weight:600">orange</span> = at/near your sell target (5% / 8% bands, same as Price Watch). '
-      + 'Ratings scale note: Yahoo mean 1 = Strong Buy &hellip; 5 = Sell (opposite of Seeking Alpha).'
       + (ratingsBuilt ? ' Ratings as of ' + escHtml(ratingsBuilt) + '.' : ' <span style="color:#991b1b">No ratings in this scan.</span>');
   }
   if (!rows.length) {
@@ -2879,12 +2878,11 @@ function renderHoldings() {
     // Ratings
     var y = r.r.yahoo || null, n = r.r.nasdaq || null;
     var yTxt = '<span style="color:#9ca3af">n/a</span>';
-    if (y && (y.label || y.mean !== null)) {
-      var tgt = (y.target && r.price) ? ' &middot; target ' + Math.round(y.target) + ' (' + ((y.target / r.price - 1) * 100 >= 0 ? '+' : '') + ((y.target / r.price - 1) * 100).toFixed(0) + '%)' : '';
-      yTxt = '<span style="color:' + ratingColor(y.label) + ';font-weight:600">' + escHtml(y.label || '') + '</span>'
-        + (y.mean !== null && y.mean !== undefined ? ' <span style="color:#374151">' + Number(y.mean).toFixed(1) + '</span>' : '')
-        + (y.analysts ? ' <span style="color:#9ca3af">&middot; ' + y.analysts + '</span>' : '')
-        + '<span style="color:#9ca3af;font-size:10px">' + tgt + '</span>';
+    // Direction only (John, 2026-09-22): no mean score, no price target in
+    // the cell. Analyst count rides the tooltip.
+    if (y && y.label) {
+      yTxt = '<span style="color:' + ratingColor(y.label) + ';font-weight:600"'
+        + (y.analysts ? ' title="' + y.analysts + ' analysts"' : '') + '>' + escHtml(y.label) + '</span>';
     }
     var nTxt = '<span style="color:#9ca3af">n/a</span>';
     if (n && n.label) {
