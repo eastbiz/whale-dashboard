@@ -576,6 +576,56 @@ function escHtml(v) {
   });
 }
 
+// A88: earnings vs THIS option's expiry, at any distance. The question for a
+// short option is not "how many days to earnings" but "does the print land
+// inside my option's life". Source is results.json `earnings`
+// ({TICKER: {date, days, time}}); rows from older scans fall back to their
+// own day count. Returns null when no date is known — never "safe".
+//   inside : earnings on/before expiry           (red)
+//   close  : expiry 1-5 days BEFORE earnings     (amber, P23 buffer = 5)
+//   clear  : earnings more than 5 days after expiry (grey)
+var EARN_EXPIRY_BUFFER_DAYS = 5;   // keep = CC_EARNINGS_BUFFER_DAYS (scanner)
+function _ymdUTC(v) {
+  var raw = String(v || '').replace(/-/g, '').slice(0, 8);
+  if (!/^\d{8}$/.test(raw)) return null;
+  return Date.UTC(+raw.slice(0, 4), +raw.slice(4, 6) - 1, +raw.slice(6, 8));
+}
+function earnVsExpiry(ticker, expiry, dte, rowDays) {
+  var e = ((data && data.earnings) || {})[ticker];
+  var expT = _ymdUTC(expiry);
+  var earnT = null, days = null, time = '';
+  if (e && e.date) {
+    earnT = _ymdUTC(e.date); days = e.days; time = e.time || '';
+  } else if (rowDays != null && rowDays < 999 && data && data.scan_date) {
+    earnT = _ymdUTC(data.scan_date) + rowDays * 86400000; days = rowDays;
+  }
+  if (earnT === null) return null;
+  var d = new Date(earnT);
+  var label = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'});
+  var when = time === 'amc' ? ' after close' : time === 'bmo' ? ' pre-market' : '';
+  var gap = expT === null ? null : Math.round((expT - earnT) / 86400000);   // + = expiry after earnings
+  var level, note;
+  if (gap === null) { level = 'clear'; note = ''; }
+  else if (gap >= 0) { level = 'inside'; note = gap === 0 ? 'on expiry day' : 'inside expiry'; }
+  else if (-gap <= EARN_EXPIRY_BUFFER_DAYS) { level = 'close'; note = 'expiry only ' + (-gap) + 'd before it'; }
+  else { level = 'clear'; note = 'after expiry'; }
+  return {level: level, days: days, label: label, when: when, note: note, gap: gap,
+          text: 'Earn ' + label + (days != null ? ' (' + days + 'd)' : '') + (note ? ' \u00b7 ' + note : '')};
+}
+function earnExpiryBadge(ticker, expiry, dte, rowDays) {
+  var r = earnVsExpiry(ticker, expiry, dte, rowDays);
+  if (!r) return '';
+  var sty = r.level === 'inside' ? 'background:#fee2e2;color:#991b1b;font-weight:700'
+          : r.level === 'close'  ? 'background:#fef9c3;color:#92400e;font-weight:700'
+          : 'background:#f3f4f6;color:#6b7280';
+  var tip = 'Earnings ' + r.label + r.when + '. ' + (r.level === 'inside'
+      ? 'The print lands inside this option\'s life.'
+      : r.level === 'close' ? 'Expiry is within ' + EARN_EXPIRY_BUFFER_DAYS + ' days before the print (P23 buffer).'
+      : 'The option expires before the print.');
+  return '<span title="' + escHtml(tip) + '" style="font-size:10px;padding:1px 6px;border-radius:3px;white-space:nowrap;' + sty + '">'
+    + (r.level === 'clear' ? '' : '&#9888; ') + escHtml(r.text) + '</span>';
+}
+
 // Day-over-day change chip. `riskUp` marks metrics where an INCREASE means
 // more exposure (CSP obligation), so growth reads amber rather than green.
 // Returns '' when there is no prior day or the prior value was zero — a
@@ -957,9 +1007,12 @@ function renderCspLadder(o) {
     var bg = rec ? 'background:#ecfdf5;' : '';
     var fw = rec ? 'font-weight:700;' : '';
     var floor = r.below_floor ? '<span title="under the bucket annualized floor" style="color:#b45309">&dagger;</span>' : '';
+    var _ev = earnVsExpiry(o.ticker, r.expiry, r.dte, null);   // A88
+    var earnMark = _ev && _ev.level !== 'clear'
+      ? ' <span title="' + escHtml(_ev.text) + '" style="color:' + (_ev.level === 'inside' ? '#991b1b' : '#92400e') + '">E</span>' : '';
     return '<tr style="' + bg + '">'
       + td((rec ? '&#9733; ' : '') + r.dte + 'd', 'left', fw)
-      + td(escHtml(String(r.expiry || '')), 'left', fw + 'color:#6b7280')
+      + td(escHtml(String(r.expiry || '')) + earnMark, 'left', fw + 'color:#6b7280')
       + td('$' + r.strike, 'right', fw)
       + td('$' + Number(r.premium).toFixed(2), 'right', fw)
       + td('$' + Number(r.premium_per_contract || r.premium * 100).toLocaleString(undefined, {maximumFractionDigits: 0}), 'right', fw + 'color:#065f46')
@@ -975,6 +1028,7 @@ function renderCspLadder(o) {
     + '</tr></thead><tbody>' + body + '</tbody></table>'
     + (o.rec_reason ? '<div style="font-size:11px;color:#065f46;margin-top:3px">&#9733; ' + escHtml(o.rec_reason) + '</div>' : '')
     + (o.bucket_floor && rows.some(function(r){ return r.below_floor; }) ? '<div style="font-size:10px;color:#b45309">&dagger; under the ' + o.bucket_floor + '% bucket floor &middot; total premium decides, not annualized (P43)</div>' : '')
+    + (rows.some(function(r){ var e = earnVsExpiry(o.ticker, r.expiry, r.dte, null); return e && e.level !== 'clear'; }) ? '<div style="font-size:10px;color:#991b1b">E = earnings inside this expiry, or expiry &le; ' + EARN_EXPIRY_BUFFER_DAYS + 'd before it</div>' : '')
     + (rows.some(function(r){ return r.band_note; }) ? '<div style="font-size:10px;color:#b45309">&#9888; nearest strike, outside your delta band &middot; for comparison only</div>' : '')
     + '</div>';
 }
@@ -2068,7 +2122,7 @@ function renderOpps() {
       +       '<span class="badge ' + bc + '">' + bl + '</span>'
       +       '<span style="color:#9ca3af">&#183;</span>'
       +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
-      +       (o.days_to_earnings && o.days_to_earnings <= 35 ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:' + (o.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (o.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + '">&#9888; Earn ' + o.days_to_earnings + 'd</span>' : '')
+      +       (o.expiry && o.mode !== 'LEAPS' ? earnExpiryBadge(o.ticker, o.expiry, o.dte, o.days_to_earnings) : (o.days_to_earnings && o.days_to_earnings <= 35 ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:' + (o.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (o.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + '">&#9888; Earn ' + o.days_to_earnings + 'd</span>' : ''))
       +       (o.mode === 'LEAPS' && o.trend_label
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
           : (o.mode !== 'CSP' && o.mode !== 'CC' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
@@ -3270,8 +3324,11 @@ function card(r, bg, accent) {
   if (_markStale) pnlColor = '#92400e';
   var beColor  = (r.dist_to_be_pct||0) <= 3 ? '#991b1b' : (r.dist_to_be_pct||0) <= 8 ? '#92400e' : '#166534';
   var dteColor = (r.dte||0) <= 7 ? '#991b1b' : (r.dte||0) <= 14 ? '#92400e' : '#374151';
-  var earnBadge = r.earn_zone && r.earn_zone !== 'SAFE'
-    ? ' <span style="font-size:10px;padding:1px 7px;border-radius:3px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+' earnings</span>' : '';
+  // A88: short options show earnings vs expiry at ANY distance; LEAPS keep
+  // the old near-term zone badge (P24 — earnings does not threaten a LEAP).
+  var _eb = r.type !== 'LEAPS_CALL' ? earnExpiryBadge(r.ticker, r.expiry, r.dte, r.earn_days) : '';
+  var earnBadge = _eb ? ' ' + _eb : (r.earn_zone && r.earn_zone !== 'SAFE'
+    ? ' <span style="font-size:10px;padding:1px 7px;border-radius:3px;background:'+(r.earn_zone==='CRITICAL'?'#fee2e2':'#fef9c3')+';color:'+(r.earn_zone==='CRITICAL'?'#991b1b':'#92400e')+'">'+r.earn_zone+' earnings</span>' : '');
   return '<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-left:3px solid '+accent+';border-radius:8px;margin-bottom:8px;width:100%;box-sizing:border-box;display:grid;grid-template-columns:1fr 1fr;min-height:72px">'
     // LEFT: ticker + metrics
     + '<div style="padding:12px 16px;border-right:0.5px solid var(--color-border-tertiary)">'
@@ -3435,9 +3492,9 @@ function renderActionsTable() {
     var d = actionsDerive(r);
     var pnlColor = (r.pnl_dollar || 0) >= 0 ? '#166534' : '#991b1b';
     var stale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near';
-    var earnHtml = r.earn_zone && r.earn_zone !== 'SAFE'
+    var earnHtml = earnExpiryBadge(r.ticker, r.expiry, r.dte, r.earn_days) || (r.earn_zone && r.earn_zone !== 'SAFE'
       ? '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:' + (r.earn_zone === 'CRITICAL' ? '#fee2e2' : '#fef9c3') + ';color:' + (r.earn_zone === 'CRITICAL' ? '#991b1b' : '#92400e') + '">' + r.earn_zone + ' &middot; ' + r.earn_days + 'd</span>'
-      : '<span style="color:#d1d5db">&#8212;</span>';
+      : '<span style="color:#d1d5db">&#8212;</span>');
 
     return '<tr style="border-bottom:0.5px solid #f3f4f6">'
       + _tickerCell(r)
