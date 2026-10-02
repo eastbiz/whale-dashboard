@@ -19,8 +19,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .scan-btn:hover{background:#eff6ff;}
 .scan-btn:disabled{background:#f9fafb;color:#9ca3af;border-color:#e5e7eb;cursor:not-allowed;}
 .last-scan{font-size:12px;color:#6b7280;}
-.tabs{display:flex;gap:2px;border-bottom:1px solid #e5e7eb;margin-bottom:14px;}
-.tab{padding:8px 16px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #e5e7eb;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
+.tab{padding:8px 16px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;}
 .tab.active{color:#111827;border-bottom-color:#111827;}
 .page{display:none;}
 .page.active{display:block;}
@@ -161,6 +161,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="tab" onclick="showTab('opportunities',this)">Opportunities</button>
     <button class="tab" onclick="showTab('positions',this)">Positions</button>
     <button class="tab" onclick="showTab('actions',this);renderActions()">CSP / CC Actions</button>
+    <button class="tab" onclick="showTab('history',this);renderTradeHistoryPage()" title="Every option fill from the brokers (A73): stock price when you wrote and when you closed, what the trade actually returned for the days held">Trade History</button>
   </div>
 
   <!-- MARKET -->
@@ -337,7 +338,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div style="display:flex;gap:6px" id="pos-view-btns">
         <button class="outline-btn active" onclick="showPosView('positions',this)">Positions</button>
         <button class="outline-btn" onclick="showPosView('holdings',this)">Holdings</button>
-        <button class="outline-btn" onclick="showPosView('history',this)" title="Every option fill from the brokers (A73): stock price when you wrote and when you closed, what the trade actually returned for the days held">Trade History</button>
       </div>
     </div>
     <!-- Position-feed warning (EX-32) — a scan that lost the Schwab position
@@ -371,61 +371,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </table>
     </div>
     <!-- HOLDINGS view (A69) -->
-    <!-- A73: Trade History view (John, 2026-09-15) — the spreadsheet he kept by
-         hand, now from broker fills: results.trade_history. Read-only render;
-         every number is the scanner's (credit/strike basis, calendar days).
-         Filters: account (shared buttons on the left), type (CC / CSP) and
-         symbol — John reads it per name before writing the next call. -->
-    <div id="history-wrap" style="display:none">
-      <div id="history-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px" id="history-type-btns">
-        <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Type</span>
-        <button class="outline-btn active" onclick="histFilterType('ALL',this)">All</button>
-        <button class="outline-btn" onclick="histFilterType('CC',this)">CC</button>
-        <button class="outline-btn" onclick="histFilterType('CSP',this)">CSP</button>
-        <button class="outline-btn" onclick="histFilterType('LEAPS',this)" title="Every long call you bought (A76): cost, breakeven = strike + cost, the time value you paid, today's mark and where the stock sits vs breakeven — grouped by symbol, one line per expiration">LEAPS</button>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px" id="history-sym-btns">
-        <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>
-      </div>
-      <div style="overflow-x:auto;" id="history-short-closed">
-        <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-table">
-          <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open &middot; r%</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Calendar days from the opening fill to expiry">DTE at open</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill, and its move since the open">Stock @ close</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Calendar days from the opening fill to the closing fill">Days held</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Days to expiry still on the option when you closed it">DTE left</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="credit / strike &times; 365 / DTE at open">Planned %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th></tr></thead>
-          <tbody id="history-tbody"><tr><td colspan="18" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
-        </table>
-      </div>
-      <div id="history-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Open lots (entry price per fill)</div>
-      <div style="overflow-x:auto;" id="history-short-open">
-        <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-open-table">
-          <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from the opening fill to this scan">Days so far</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th></tr></thead>
-          <tbody id="history-open-tbody"></tbody>
-        </table>
-      </div>
-      <!-- A76: LEAPS history (John, 2026-09-16: "see all LEAPS for a stock,
-           different DTE, and breakeven values"). Long-call lots from the same
-           broker fills, grouped by symbol with one summary line per
-           expiration. Every number is the scanner's: breakeven = strike +
-           cost, intrinsic / time value at the fill, return on COST, and
-           today's mark joined from this scan's LEAPS position rows by
-           contract. The group totals are sums of those published lot
-           numbers (scanner's leaps_by_ticker when every account is shown). -->
-      <div id="history-leaps-wrap" style="display:none">
-        <div id="history-leaps-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:4px 0 6px">Open LEAPS (one row per fill)</div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-leaps-open-table">
-            <thead id="history-leaps-open-thead"></thead>
-            <tbody id="history-leaps-open-tbody"></tbody>
-          </table>
-        </div>
-        <div style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Closed LEAPS</div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-leaps-closed-table">
-            <thead id="history-leaps-closed-thead"></thead>
-            <tbody id="history-leaps-closed-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
     <div id="holdings-wrap" style="display:none">
       <div id="holdings-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
       <div style="overflow-x:auto;">
@@ -540,6 +485,77 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- TRADE HISTORY (A90, John 2026-10-02: its own top-level tab next to
+       CSP / CC Actions — he uses it often; it used to sit behind Positions →
+       Trade History). Own account buttons (histAcct), same feed warning as
+       the Positions page (feedWarningHtml). -->
+  <div class="page" id="page-history">
+    <div class="filter-row" style="align-items:center">
+      <div style="display:flex;gap:6px" id="hist-acct-btns">
+        <button class="outline-btn active" onclick="histFilterAcct('ALL',this)">All</button>
+        <button class="outline-btn" onclick="histFilterAcct('IRA',this)">IRA</button>
+        <button class="outline-btn" onclick="histFilterAcct('CRT',this)">CRT</button>
+        <button class="outline-btn" onclick="histFilterAcct('IBKR',this)">IBKR</button>
+      </div>
+    </div>
+    <div id="hist-feed-warning" style="display:none;margin:0 0 10px;padding:9px 13px;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px;line-height:1.5"></div>
+      <!-- A73: Trade History view (John, 2026-09-15) — the spreadsheet he kept by
+           hand, now from broker fills: results.trade_history. Read-only render;
+           every number is the scanner's (credit/strike basis, calendar days).
+           Filters: account (shared buttons on the left), type (CC / CSP) and
+           symbol — John reads it per name before writing the next call. -->
+      <div id="history-wrap">
+        <div id="history-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px" id="history-type-btns">
+          <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Type</span>
+          <button class="outline-btn active" onclick="histFilterType('ALL',this)">All</button>
+          <button class="outline-btn" onclick="histFilterType('CC',this)">CC</button>
+          <button class="outline-btn" onclick="histFilterType('CSP',this)">CSP</button>
+          <button class="outline-btn" onclick="histFilterType('LEAPS',this)" title="Every long call you bought (A76): cost, breakeven = strike + cost, the time value you paid, today's mark and where the stock sits vs breakeven — grouped by symbol, one line per expiration">LEAPS</button>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px" id="history-sym-btns">
+          <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>
+        </div>
+        <div style="overflow-x:auto;" id="history-short-closed">
+          <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-table">
+            <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open &middot; r%</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Calendar days from the opening fill to expiry">DTE at open</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill, and its move since the open">Stock @ close</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Calendar days from the opening fill to the closing fill">Days held</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Days to expiry still on the option when you closed it">DTE left</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="credit / strike &times; 365 / DTE at open">Planned %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th></tr></thead>
+            <tbody id="history-tbody"><tr><td colspan="18" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="history-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Open lots (entry price per fill)</div>
+        <div style="overflow-x:auto;" id="history-short-open">
+          <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-open-table">
+            <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from the opening fill to this scan">Days so far</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th></tr></thead>
+            <tbody id="history-open-tbody"></tbody>
+          </table>
+        </div>
+        <!-- A76: LEAPS history (John, 2026-09-16: "see all LEAPS for a stock,
+             different DTE, and breakeven values"). Long-call lots from the same
+             broker fills, grouped by symbol with one summary line per
+             expiration. Every number is the scanner's: breakeven = strike +
+             cost, intrinsic / time value at the fill, return on COST, and
+             today's mark joined from this scan's LEAPS position rows by
+             contract. The group totals are sums of those published lot
+             numbers (scanner's leaps_by_ticker when every account is shown). -->
+        <div id="history-leaps-wrap" style="display:none">
+          <div id="history-leaps-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:4px 0 6px">Open LEAPS (one row per fill)</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-leaps-open-table">
+              <thead id="history-leaps-open-thead"></thead>
+              <tbody id="history-leaps-open-tbody"></tbody>
+            </table>
+          </div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Closed LEAPS</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-leaps-closed-table">
+              <thead id="history-leaps-closed-thead"></thead>
+              <tbody id="history-leaps-closed-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
   </div>
 
 </div>
@@ -1504,6 +1520,7 @@ function renderAll() {
   try { renderOpps(); } catch(e) { console.error('renderOpps:', e); }
   try { renderPriceWatch(); } catch(e) { console.error('renderPriceWatch:', e); }
   try { renderPositions(); } catch(e) { console.error('renderPositions:', e); }
+  try { renderTradeHistoryPage(); } catch(e) { console.error('renderTradeHistoryPage:', e); }
 }
 
 function renderMarket() {
@@ -2353,12 +2370,9 @@ function showPosView(view, btn) {
   }
   var pw = document.getElementById('pos-table-wrap');
   var hw = document.getElementById('holdings-wrap');
-  var tw = document.getElementById('history-wrap');
   if (pw) pw.style.display = view === 'positions' ? '' : 'none';
   if (hw) hw.style.display = view === 'holdings' ? '' : 'none';
-  if (tw) tw.style.display = view === 'history' ? '' : 'none';
   if (data && view === 'holdings') renderHoldings();
-  if (data && view === 'history') { try { renderTradeHistory(); } catch(e) { console.error('renderTradeHistory:', e); } }
 }
 
 // ── TRADE HISTORY view (A73, John 2026-09-15) ───────────────────────────
@@ -2380,8 +2394,21 @@ function histFilterTicker(t, btn) {
   if (btn) { btn.parentElement.querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); }); btn.classList.add('active'); }
   if (data) renderTradeHistory();
 }
+// A90: Trade History is its own tab with its own account buttons.
+var histAcct = 'ALL';
+function histFilterAcct(acct, btn) {
+  histAcct = acct;
+  if (btn) { btn.parentElement.querySelectorAll('.outline-btn').forEach(function(b){ b.classList.remove('active'); }); btn.classList.add('active'); }
+  if (data) renderTradeHistoryPage();
+}
+function renderTradeHistoryPage() {
+  if (!data) return;
+  var w = document.getElementById('hist-feed-warning');
+  if (w) { var h = feedWarningHtml(); w.innerHTML = h; w.style.display = h ? 'block' : 'none'; }
+  try { renderTradeHistory(); } catch(e) { console.error('renderTradeHistory:', e); }
+}
 function histAcctMatch(acct) {
-  var f = (currentPosFilter || 'ALL').toUpperCase();
+  var f = (histAcct || 'ALL').toUpperCase();
   return f === 'ALL' || holdingsAcctKey(acct) === f;
 }
 // Long options (LONG_CALL / LONG_PUT) are the LEAPS view (A76); "All" is
@@ -2695,7 +2722,7 @@ function renderLeapsHistory(cycles, lots, th) {
   } else {
     var sorted = lots.slice().sort(leapsLotSort);
     var digest = th.leaps_by_ticker || {};
-    var useDigest = (currentPosFilter || 'ALL').toUpperCase() === 'ALL';
+    var useDigest = (histAcct || 'ALL').toUpperCase() === 'ALL';
     var byT = {};
     sorted.forEach(function(o) { (byT[o.ticker] = byT[o.ticker] || []).push(o); });
     var scanD = histDateObj(data.scan_date || '');
@@ -2807,7 +2834,7 @@ function lastCycleLine(o) {
     + (ann === null || ann === undefined ? '' : ' = <strong>' + Number(ann).toFixed(0) + '%/yr</strong>'
        + (plan === null || plan === undefined ? '' : ' (planned ' + Number(plan).toFixed(0) + '%)'))
     + (n > 1 ? ' &middot; ' + n + ' closed ' + want + ' cycles on file' : '');
-  return '<div style="margin-top:6px;font-size:11px;color:#6b7280" title="From your broker fills (Trade History view on the Positions page)">&#128213; ' + txt + '</div>';
+  return '<div style="margin-top:6px;font-size:11px;color:#6b7280" title="From your broker fills (Trade History tab)">&#128213; ' + txt + '</div>';
 }
 
 // A82 (John 2026-09-18): "better than what I did recently" — the scanner
@@ -3017,10 +3044,31 @@ function posSort(col) {
   if (data) renderPositions();
 }
 
+// EX-32 / A86 feed warning, shared by the Positions and Trade History tabs (A90).
+function feedWarningHtml() {
+  var feed = data.positions_feed;
+  var feedMsgs = [];
+  if (feed && feed.ok === false) {
+    feedMsgs.push('&#9888; <strong>Schwab positions missing from this scan.</strong> '
+      + escHtml(feed.note || '')
+      + ' Names held only at Schwab show as not owned below &mdash; ignore this table until the next scan.');
+  }
+  // A86 / EX-62: the IBKR Flex feed has the same failure mode. ibkr_source
+  // says what the scan showed instead: cache (last good scan), xml_file
+  // (the committed May statement) or none (IBKR holdings absent).
+  if (feed && feed.ibkr_ok === false) {
+    var src = feed.ibkr_source || 'none';
+    feedMsgs.push('&#9888; <strong>IBKR positions are '
+      + (src === 'cache' ? 'from the last good scan, not live' : src === 'xml_file' ? 'from an OLD committed file, not live' : 'missing from this scan')
+      + '.</strong> ' + escHtml(feed.ibkr_note || '')
+      + (src === 'none' ? ' Names held only at IBKR show as not owned below.' : ''));
+  }
+  return feedMsgs.join('<br>');
+}
+
 function renderPositions() {
   var allPositions = data.positions || [];
   if (posView === 'holdings') { try { renderHoldings(); } catch(e) { console.error('renderHoldings:', e); } }
-  if (posView === 'history')  { try { renderTradeHistory(); } catch(e) { console.error('renderTradeHistory:', e); } }
 
   // EX-32: when a scan loses the Schwab position feed it still publishes a
   // positions table — one in which every IRA/CRT/Personal holding drops into
@@ -3029,29 +3077,9 @@ function renderPositions() {
   // table assert it. `schwab_live` does NOT cover this — it tracks quotes.
   var feedEl = document.getElementById('pos-feed-warning');
   if (feedEl) {
-    var feed = data.positions_feed;
-    var feedMsgs = [];
-    if (feed && feed.ok === false) {
-      feedMsgs.push('&#9888; <strong>Schwab positions missing from this scan.</strong> '
-        + escHtml(feed.note || '')
-        + ' Names held only at Schwab show as not owned below &mdash; ignore this table until the next scan.');
-    }
-    // A86 / EX-62: the IBKR Flex feed has the same failure mode. ibkr_source
-    // says what the scan showed instead: cache (last good scan), xml_file
-    // (the committed May statement) or none (IBKR holdings absent).
-    if (feed && feed.ibkr_ok === false) {
-      var src = feed.ibkr_source || 'none';
-      feedMsgs.push('&#9888; <strong>IBKR positions are '
-        + (src === 'cache' ? 'from the last good scan, not live' : src === 'xml_file' ? 'from an OLD committed file, not live' : 'missing from this scan')
-        + '.</strong> ' + escHtml(feed.ibkr_note || '')
-        + (src === 'none' ? ' Names held only at IBKR show as not owned below.' : ''));
-    }
-    if (feedMsgs.length) {
-      feedEl.innerHTML = feedMsgs.join('<br>');
-      feedEl.style.display = 'block';
-    } else {
-      feedEl.style.display = 'none';
-    }
+    var feedHtml = feedWarningHtml();
+    feedEl.innerHTML = feedHtml;
+    feedEl.style.display = feedHtml ? 'block' : 'none';
   }
 
   var positions = currentPosFilter === 'ALL' ? allPositions : allPositions.filter(function(p) {
