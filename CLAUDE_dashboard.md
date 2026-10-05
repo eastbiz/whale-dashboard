@@ -113,3 +113,15 @@ anything beyond dashboard rendering.
 ## Deploy
 Push `index.html`; changes are live on GitHub Pages after the next scan writes
 fresh `results.json`.
+
+## CSP card layout (A91b, 2026-10-05, John)
+- CSP and Post-Drop views are 2-up on wide screens (`#opps-grid.ladder2`);
+  other views stay 3-up. Grid columns are `minmax(0,1fr)` so a wide ladder
+  table scrolls inside its card and never pushes the page sideways.
+- A card with a `csp_ladder` has NO Strike/DTE/Delta/Premium/$-day/
+  Breakeven block (`_ladderCard`) — the ★ row carries the same numbers.
+- Ladder columns: DTE, Expiry, Strike, Prem, $/ctr, Ann, δ, Entry. The Yield
+  column and the "x% yield/30d" text are gone (yield/30d gates nothing since
+  scanner A91; John counts dollars per contract, P43).
+- The ★ / † / E / ⚠ / Entry legend prints ONCE above the grid
+  (`#csp-legend`), not per card. The per-card ★ reason line stays.

@@ -123,7 +123,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
    stretched short cards to their tall neighbour's height. Threshold is 1100
    (not 1200): Chrome's own page zoom shrinks the CSS viewport that media
    queries measure, and at 1200 a modestly zoomed browser fell back to 2-up. */
-@media(min-width:1100px){#opps-grid.g2{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:1100px){#opps-grid.g2{grid-template-columns:repeat(3,minmax(0,1fr));}}
+/* A91b (2026-10-05, John): CSP and Post-Drop cards carry an expiry ladder
+   table that does not fit a third of the screen (AVGO's card ran off the
+   right edge). Those two views go 2-up; minmax(0,1fr) lets a table scroll
+   inside its card instead of widening the column. */
+@media(min-width:1100px){#opps-grid.g2.ladder2{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:640px){#opps-grid.g2{grid-template-columns:minmax(0,1fr);}}
 </style>
 </head>
 <body>
@@ -320,6 +326,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
     <div id="convex-table-view" style="display:none;overflow-x:auto;margin-bottom:16px"></div>
+    <div id="csp-legend" style="display:none;font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.6"></div>
     <div class="g2" id="opps-grid"><div class="spinner">Loading...</div></div>
   </div>
 
@@ -1032,7 +1039,6 @@ function renderCspLadder(o) {
       + td('$' + r.strike, 'right', fw)
       + td('$' + Number(r.premium).toFixed(2), 'right', fw)
       + td('$' + Number(r.premium_per_contract || r.premium * 100).toLocaleString(undefined, {maximumFractionDigits: 0}), 'right', fw + 'color:#065f46')
-      + td((r.yield_pct != null ? Number(r.yield_pct).toFixed(1) + '%' : ''), 'right', fw)
       + td(Number(r.annualized_return).toFixed(0) + '%' + floor, 'right', fw + (r.below_floor ? 'color:#b45309' : ''))
       + td(r.delta + (r.band_note ? ' <span title="' + escHtml(r.band_note) + '" style="color:#b45309">&#9888;</span>' : ''), 'right', fw + (r.band_note ? 'color:#b45309' : ''))
       + td('$' + r.effective_entry, 'right', fw)
@@ -1040,12 +1046,9 @@ function renderCspLadder(o) {
   }).join('');
   return '<div style="margin:4px 0 6px;overflow-x:auto">'
     + '<table style="border-collapse:collapse;width:100%"><thead><tr>'
-    + th('DTE','left') + th('Expiry','left') + th('Strike') + th('Prem') + th('$/ctr') + th('Yield') + th('Ann') + th('&delta;') + th('Entry')
+    + th('DTE','left') + th('Expiry','left') + th('Strike') + th('Prem') + th('$/ctr') + th('Ann') + th('&delta;') + th('Entry')
     + '</tr></thead><tbody>' + body + '</tbody></table>'
     + (o.rec_reason ? '<div style="font-size:11px;color:#065f46;margin-top:3px">&#9733; ' + escHtml(o.rec_reason) + '</div>' : '')
-    + (o.bucket_floor && rows.some(function(r){ return r.below_floor; }) ? '<div style="font-size:10px;color:#b45309">&dagger; under the ' + o.bucket_floor + '% bucket floor &middot; total premium decides, not annualized (P43)</div>' : '')
-    + (rows.some(function(r){ var e = earnVsExpiry(o.ticker, r.expiry, r.dte, null); return e && e.level !== 'clear'; }) ? '<div style="font-size:10px;color:#991b1b">E = earnings inside this expiry, or expiry &le; ' + EARN_EXPIRY_BUFFER_DAYS + 'd before it</div>' : '')
-    + (rows.some(function(r){ return r.band_note; }) ? '<div style="font-size:10px;color:#b45309">&#9888; nearest strike, outside your delta band &middot; for comparison only</div>' : '')
     + '</div>';
 }
 
@@ -1946,6 +1949,22 @@ function renderOpps() {
     filtered = filtered.slice().sort(actionableFirst);
   }
 
+  // A91b: CSP / Post-Drop views go 2-up, and the ladder legend prints once
+  // above the grid instead of on every card.
+  grid.classList.toggle('ladder2', currentFilter === 'CSP' || currentFilter === 'DROP_CSP');
+  var _lg = document.getElementById('csp-legend');
+  if (_lg) {
+    var _hasLadder = filtered.some(function(o){ return (o.csp_ladder || []).length; });
+    _lg.style.display = _hasLadder ? '' : 'none';
+    _lg.innerHTML = _hasLadder
+      ? '<b>Expiry table:</b> &#9733; = the scanner\'s pick &middot; $/ctr = premium per contract (decides, P43)'
+        + ' &middot; <span style="color:#b45309">&dagger;</span> under the bucket floor (kept: another expiry clears it)'
+        + ' &middot; <span style="color:#991b1b">E</span> earnings inside the expiry, or expiry &le; ' + EARN_EXPIRY_BUFFER_DAYS + 'd before it'
+        + ' &middot; <span style="color:#b45309">&#9888;</span> nearest strike outside your delta band, for comparison only'
+        + ' &middot; Entry = strike &minus; premium (your cost if assigned)'
+      : '';
+  }
+
   if (!filtered.length) {
     grid.innerHTML = '<div class="empty">No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'opportunities in the last scan.</div>';
     return;
@@ -2004,6 +2023,9 @@ function renderOpps() {
     var ic    = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#9ca3af';
     var ilbl  = ivp > 60 ? 'Elevated' : ivp > 35 ? 'Good' : ivp > 20 ? 'Moderate' : 'Low';
     var ppd   = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '&#8212;';
+    // A91b: a CSP / Post-Drop card with a ladder drops the Strike/DTE/Delta/
+    // Premium/$-day/Breakeven block — the ★ row carries the same numbers.
+    var _ladderCard = (o.mode === 'CSP' || o.mode === 'DROP_CSP') && (o.csp_ladder || []).length > 0;
 
     var reasons = [];
     if (o.warnings && o.warnings.length) reasons = reasons.concat(o.warnings);
@@ -2172,7 +2194,6 @@ function renderOpps() {
           if (flags.indexOf('HIGH VOLATILITY')>=0) rp.push('high vol');
           if (flags.indexOf('BEST AVAILABLE')>=0) rp.push('best available');
           if (flags.indexOf('OVER ALLOCATION')>=0) rp.push('over allocation');
-          if (o.yield_30d) rp.push(o.yield_30d+'% yield/30d');
           var reason = rp.join(' · ');
           return '<div style="margin:8px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
             +'<span style="font-size:13px;font-weight:700;padding:4px 14px;border-radius:6px;background:'+bigB+';color:'+bigC+'">'+bigLabel+'</span>'
@@ -2190,7 +2211,7 @@ function renderOpps() {
           + '</div>'
         : '')
       + (o.mode !== 'LEAPS' && o.mode !== 'CSP' && o.warnings && o.warnings.length ? '<div class="warn-box">' + o.warnings.join(' | ') + '</div>' : '')
-      + '<hr class="divider">'
+      + (_ladderCard ? '' : '<hr class="divider">'
       + '<div class="stats">'
       +   '<div><div class="stat-l">Strike</div><div class="stat-v">' + strikeDisp + '</div></div>'
       +   '<div><div class="stat-l">DTE</div><div class="stat-v">' + o.dte + '</div></div>'
@@ -2250,12 +2271,14 @@ function renderOpps() {
           }
           return '<div><div class="stat-l">Breakeven</div><div class="stat-v" style="font-weight:600;color:#1e40af">'+stockBe+'</div></div>';
         })()
-      + '</div>'
-      + '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
+      + '</div>')
+      + (_ladderCard
+        ? (o.position_status ? '<div style="margin-top:6px"><span class="badge b-blue">' + o.position_status + '</span></div>' : '')
+        : '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
       +   (o.mode !== 'CSP' && o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
       +   (o.position_status ? '<span class="badge b-blue">' + o.position_status + '</span>' : '')
       +   '<span style="font-size:10px;color:#9ca3af;margin-left:auto">' + (o.expiry||'') + '</span>'
-      + '</div>'
+      + '</div>')
       + signalHtml
       + (o.reasoning ? '<div class="opp-reasoning">' + o.reasoning + '</div>' : '')
       + ccRoomHtml
