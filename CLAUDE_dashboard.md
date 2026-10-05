@@ -125,3 +125,12 @@ fresh `results.json`.
   scanner A91; John counts dollars per contract, P43).
 - The ★ / † / E / ⚠ / Entry legend prints ONCE above the grid
   (`#csp-legend`), not per card. The per-card ★ reason line stays.
+
+## Text colours (2026-10-05, John: "light gray text is hard to read")
+- Darkest-to-lightest text greys are now #111827 / #374151 / #4b5563 /
+  #6b7280. Do NOT use #9ca3af, #d1d5db or lighter for TEXT (2.5:1 and
+  1.5:1 contrast on white); they stay fine for borders and backgrounds.
+- The sweep mapped text #6b7280 → #4b5563, #9ca3af → #6b7280,
+  #d1d5db / #c7ccd4 → #6b7280, plus the JS colour helpers that return a
+  text colour (flat/neutral cases). Status ternaries that use #6b7280 to
+  set a row apart from #374151 (e.g. "expired") were left alone.

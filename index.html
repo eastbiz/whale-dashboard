@@ -17,10 +17,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .refresh-btn:hover{background:#f3f4f6;}
 .scan-btn{background:#fff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;}
 .scan-btn:hover{background:#eff6ff;}
-.scan-btn:disabled{background:#f9fafb;color:#9ca3af;border-color:#e5e7eb;cursor:not-allowed;}
-.last-scan{font-size:12px;color:#6b7280;}
+.scan-btn:disabled{background:#f9fafb;color:#6b7280;border-color:#e5e7eb;cursor:not-allowed;}
+.last-scan{font-size:12px;color:#4b5563;}
 .tabs{display:flex;gap:2px;border-bottom:1px solid #e5e7eb;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
-.tab{padding:8px 16px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;}
+.tab{padding:8px 16px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;}
 .tab.active{color:#111827;border-bottom-color:#111827;}
 .page{display:none;}
 .page.active{display:block;}
@@ -28,19 +28,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
 .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:12px;}
 .metric{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;}
-.metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#9ca3af;margin-bottom:4px;font-weight:600;}
+.metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;margin-bottom:4px;font-weight:600;}
 .metric-val{font-size:22px;font-weight:700;font-family:monospace;line-height:1;margin-bottom:4px;}
-.metric-sub{font-size:11px;color:#6b7280;line-height:1.5;}
+.metric-sub{font-size:11px;color:#4b5563;line-height:1.5;}
 .exposure-panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;margin-bottom:12px;}
 .exposure-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .exposure-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;}
 .exposure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .exp-cell{padding:8px 10px;background:#f9fafb;border-radius:8px;}
-.exp-lbl{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;}
+.exp-lbl{font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;}
 .exp-val{font-size:17px;font-weight:700;font-family:monospace;color:#111827;}
-.exp-sub{font-size:11px;color:#6b7280;margin-top:2px;}
+.exp-sub{font-size:11px;color:#4b5563;margin-top:2px;}
 .cap-bar-wrap{margin-top:12px;}
-.cap-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:5px;}
+.cap-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#4b5563;margin-bottom:5px;}
 .cap-bar-track{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
 .cap-bar-fill{height:100%;border-radius:4px;transition:width 0.4s;}
 .cap-ok{background:#22c55e;}.cap-warn{background:#f59e0b;}.cap-over{background:#ef4444;}
@@ -64,10 +64,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .opp-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
 .opp-ticker{font-size:18px;font-weight:700;font-family:monospace;}
 .opp-return{font-size:20px;font-weight:700;font-family:monospace;}
-.opp-meta{font-size:11px;color:#6b7280;margin-top:2px;}
+.opp-meta{font-size:11px;color:#4b5563;margin-top:2px;}
 .divider{border:none;border-top:1px solid #f3f4f6;margin:8px 0;}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 10px;}
-.stat-l{font-size:10px;color:#9ca3af;margin-bottom:1px;}
+.stat-l{font-size:10px;color:#6b7280;margin-bottom:1px;}
 .stat-v{font-size:12px;font-family:monospace;font-weight:600;color:#111827;}
 .sizing-panel{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-top:10px;}
 .sizing-panel.over{background:#fff7ed;border-color:#fed7aa;}
@@ -76,7 +76,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sizing-panel.over .sizing-hdr{color:#9a3412;}
 .sizing-panel.warn .sizing-hdr{color:#854d0e;}
 .sizing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-.sz-lbl{font-size:10px;color:#6b7280;margin-bottom:1px;}
+.sz-lbl{font-size:10px;color:#4b5563;margin-bottom:1px;}
 .sz-val{font-size:12px;font-family:monospace;font-weight:600;color:#111827;}
 .sz-result{margin-top:8px;font-size:11px;color:#374151;padding-top:7px;border-top:1px solid #d1fae5;}
 .sizing-panel.over .sz-result{border-color:#fed7aa;}
@@ -85,20 +85,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ivp-bar{flex:1;height:3px;background:#e5e7eb;border-radius:2px;overflow:hidden;}
 .ivp-fill{height:100%;border-radius:2px;}
 .warn-box{font-size:11px;color:#92400e;background:#fef3c7;border-radius:6px;padding:5px 8px;margin-top:8px;}
-.opp-signal{font-size:11px;color:#6b7280;margin-top:10px;line-height:1.5;}
+.opp-signal{font-size:11px;color:#4b5563;margin-top:10px;line-height:1.5;}
 .opp-reasoning{font-size:11px;color:#374151;margin-top:10px;line-height:1.6;padding:10px 12px;background:#f0f9ff;border-left:3px solid #3b82f6;border-radius:4px;word-wrap:break-word;}
-.empty{text-align:center;padding:40px 20px;color:#9ca3af;font-size:13px;}
-.spinner{text-align:center;padding:40px;font-size:13px;color:#6b7280;}
+.empty{text-align:center;padding:40px 20px;color:#6b7280;font-size:13px;}
+.spinner{text-align:center;padding:40px;font-size:13px;color:#4b5563;}
 .pos-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px;}
 .pos-sum-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;}
-.pos-sum-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;margin-bottom:10px;}
+.pos-sum-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#4b5563;margin-bottom:10px;}
 .pos-sum-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#374151;padding:3px 0;border-bottom:0.5px solid #f3f4f6;}
 .pos-sum-row:last-child{border-bottom:none;}
-.pos-sum-lbl{color:#9ca3af;}
+.pos-sum-lbl{color:#6b7280;}
 .pos-sum-val{font-family:monospace;font-weight:600;color:#111827;}
 .acct-filter{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
 .exp-tbl{width:100%;border-collapse:collapse;font-size:12px;}
-.exp-tbl th{padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.7px;color:#9ca3af;font-weight:600;border-bottom:2px solid #e5e7eb;white-space:nowrap;}
+.exp-tbl th{padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.7px;color:#6b7280;font-weight:600;border-bottom:2px solid #e5e7eb;white-space:nowrap;}
 .exp-tbl td{padding:9px 10px;border-bottom:0.5px solid #f3f4f6;vertical-align:top;}
 .exp-tbl tr:hover td{background:#f9fafb;}
 .cov-bar-wrap{display:flex;align-items:center;gap:6px;}
@@ -141,7 +141,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="pw-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.78);z-index:1000;align-items:center;justify-content:center">
   <form id="pw-form" style="background:#fff;border-radius:12px;padding:28px 32px;max-width:340px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.35)">
     <div style="font-size:20px;font-weight:700;margin-bottom:4px">&#x1F40B; Whale Intelligence</div>
-    <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Enter the dashboard password to decrypt scan results.</div>
+    <div style="font-size:13px;color:#4b5563;margin-bottom:14px">Enter the dashboard password to decrypt scan results.</div>
     <input id="pw-input" type="password" autocomplete="current-password" placeholder="Password"
            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px">
     <div id="pw-error" style="display:none;color:#991b1b;font-size:12px;margin-top:8px">Wrong password &#8212; try again.</div>
@@ -155,7 +155,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="logo">&#x1F40B; Whale Intelligence</div>
     <div class="hdr-right">
       <span class="last-scan" id="last-scan">Loading...</span>
-      <span id="schwab-status" style="font-size:11px;color:#6b7280;margin-left:8px"></span>
+      <span id="schwab-status" style="font-size:11px;color:#4b5563;margin-left:8px"></span>
       <button class="scan-btn" id="scan-btn" onclick="runScan()">&#9654; Run Scan</button>
       <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
       <button class="refresh-btn" id="lock-btn" onclick="lockDashboard()" style="display:none" title="Forget the saved password on this browser">&#128274; Lock</button>
@@ -240,13 +240,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <div class="exp-sub">If all CCs assigned</div>
             </div>
           </div>
-          <div id="exp-cc-tickers" style="margin-top:8px;font-size:11px;color:#6b7280;line-height:2;"></div>
+          <div id="exp-cc-tickers" style="margin-top:8px;font-size:11px;color:#4b5563;line-height:2;"></div>
         </div>
         <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
-          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
-          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Premium collected (open book)</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
-          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSPs</span><span id="exp-risk-csp-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
-          <div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CCs</span><span id="exp-risk-cc-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Premium collected (open book)</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
+          <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSPs</span><span id="exp-risk-csp-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
+          <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CCs</span><span id="exp-risk-cc-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
         </div>
       </div>
 
@@ -273,7 +273,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="outline-btn" onclick="filterOpps('PIO',this)">&#x1F4BC; Position Income</button>
       <!-- A32: At / Near Target toggle (default off) -->
       <button id="in-zone-toggle" class="outline-btn" onclick="toggleInZone(this)"
-              style="margin-left:auto;background:#fff;border:1px solid #d1d5db;color:#6b7280"
+              style="margin-left:auto;background:#fff;border:1px solid #d1d5db;color:#4b5563"
               title="Show only what has reached your own buy/sell target, or is close to it.&#10;CSP: at or below Buy Below (near = within 5% above).&#10;CC: at or above Sell Above (near = within 8% below).&#10;LEAPS: at or below Buy Below, or inside the growth allowance for that contract's expiry.&#10;Convexity is exempt — a far-OTM long call has no assignment risk.">
         &#x1F3AF; At / Near Target
       </button>
@@ -281,8 +281,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- Price Watch panel -->
     <div id="price-watch-panel" style="display:none;margin-bottom:12px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb">
       <div id="pw-header" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#f3f4f6;border-bottom:1px solid #e5e7eb;cursor:pointer;user-select:none" onclick="togglePriceWatch()">
-        <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH<span id="pw-side-label" style="font-weight:400;color:#6b7280;margin-left:8px"></span></span>
-        <span id="pw-toggle" style="font-size:11px;color:#9ca3af">&#9660; hide</span>
+        <span style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.2px">&#x23F3; PRICE WATCH<span id="pw-side-label" style="font-weight:400;color:#4b5563;margin-left:8px"></span></span>
+        <span id="pw-toggle" style="font-size:11px;color:#6b7280">&#9660; hide</span>
       </div>
       <div id="pw-body">
         <div id="pw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr))"></div>
@@ -326,7 +326,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
     <div id="convex-table-view" style="display:none;overflow-x:auto;margin-bottom:16px"></div>
-    <div id="csp-legend" style="display:none;font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.6"></div>
+    <div id="csp-legend" style="display:none;font-size:11px;color:#4b5563;margin:0 0 8px;line-height:1.6"></div>
     <div class="g2" id="opps-grid"><div class="spinner">Loading...</div></div>
   </div>
 
@@ -360,47 +360,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <col style="width:96px"><col style="width:76px"><col style="width:50px">
           </colgroup>
           <tr style="border-bottom:2px solid #e5e7eb">
-            <th onclick="posSort('ticker')" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="psi-ticker"></span></th>
-            <th onclick="posSort('tier')" style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Tier<span id="psi-tier"></span></th>
-            <th onclick="posSort('status')" style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Status<span id="psi-status"></span></th>
-            <th onclick="posSort('exposure_pct')" style="text-align:right;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Exp%<span id="psi-exposure_pct"></span></th>
-            <th onclick="posSort('target_range')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Target<span id="psi-target_range"></span></th>
-            <th onclick="posSort('pos_status')" style="text-align:center;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none">Position<span id="psi-pos_status"></span></th>
-            <th onclick="posSort('price_opp')" style="text-align:center;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none">Price<span id="psi-price_opp"></span></th>
+            <th onclick="posSort('ticker')" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="psi-ticker"></span></th>
+            <th onclick="posSort('tier')" style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Tier<span id="psi-tier"></span></th>
+            <th onclick="posSort('status')" style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Status<span id="psi-status"></span></th>
+            <th onclick="posSort('exposure_pct')" style="text-align:right;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Exp%<span id="psi-exposure_pct"></span></th>
+            <th onclick="posSort('target_range')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Target<span id="psi-target_range"></span></th>
+            <th onclick="posSort('pos_status')" style="text-align:center;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none">Position<span id="psi-pos_status"></span></th>
+            <th onclick="posSort('price_opp')" style="text-align:center;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none">Price<span id="psi-price_opp"></span></th>
             <th onclick="posSort('coverage_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af">CC<br>% cvrd<span id="psi-coverage_pct"></span></th>
             <th onclick="posSort('csp_obligation')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e">CSP<br>oblig<span id="psi-csp_obligation"></span></th>
             <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS</th>
             <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;border-left:2px solid #a5b4fc;background:#eef2ff;color:#3730a3">Bull<br>Call</th>
-            <th onclick="posSort('action')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action<span id="psi-action"></span></th>
+            <th onclick="posSort('action')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap">Action<span id="psi-action"></span></th>
           </tr>
         </thead>
-        <tbody id="pos-tbody"><tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+        <tbody id="pos-tbody"><tr><td colspan="12" style="text-align:center;padding:40px;color:#6b7280">Loading...</td></tr></tbody>
       </table>
     </div>
     <!-- HOLDINGS view (A69) -->
     <div id="holdings-wrap" style="display:none">
-      <div id="holdings-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
+      <div id="holdings-note" style="font-size:11px;color:#4b5563;margin:0 0 8px;line-height:1.5"></div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px" id="holdings-table">
           <thead>
             <tr style="border-bottom:2px solid #e5e7eb">
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th>
-              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Tier</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Price</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Price vs your buy_under / sell_above. Green = at or within 5% above buy target; orange = at or within 8% below sell target &mdash; the same bands as the Price Watch panel.">vs your targets</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Shares $</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Symbol</th>
+              <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Tier</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Price</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Price vs your buy_under / sell_above. Green = at or within 5% above buy target; orange = at or within 8% below sell target &mdash; the same bands as the Price Watch panel.">vs your targets</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Shares $</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS $</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e" title="Cash needed if every short put is assigned. Shown for context; NOT part of Total exposure.">CSP oblig.</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #d1fae5;background:#f0fdf4;color:#065f46" title="Covered calls you can still write, per account: shares in that account &divide; 100, less the calls already written there (a call is covered only by shares in the SAME account; LEAPS never count). From the last scan &mdash; a call written after it is not in this number.">CC room</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Shares + LEAPS market value">Total exposure</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
-              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Accts</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Shares + LEAPS market value">Total exposure</th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
+              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
+              <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Accts</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #bfdbfe;background:#f0f9ff;color:#1e40af" title="Yahoo sell-side consensus: direction only (Strong Buy / Buy / Hold / Underperform / Sell). Hover a cell for the analyst count.">Wall St (Yahoo)</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;background:#f0f9ff;color:#1e40af" title="Nasdaq analyst consensus (Zacks-based): label and analyst count.">Zacks (Nasdaq)</th>
             </tr>
           </thead>
-          <tbody id="holdings-tbody"><tr><td colspan="14" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+          <tbody id="holdings-tbody"><tr><td colspan="14" style="text-align:center;padding:40px;color:#6b7280">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -423,8 +423,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="margin-top:8px;padding-bottom:28px">
       <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
         <span style="font-size:14px;font-weight:600">&#128203; All Open CSP/CC Positions</span>
-        <span style="font-size:12px;color:#9ca3af" id="actions-table-count"></span>
-        <span style="font-size:11px;color:#9ca3af">&mdash; short options only, every account</span>
+        <span style="font-size:12px;color:#6b7280" id="actions-table-count"></span>
+        <span style="font-size:11px;color:#6b7280">&mdash; short options only, every account</span>
       </div>
       <div style="overflow-x:auto">
         <table class="wide-tbl" id="actions-table">
@@ -437,23 +437,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </colgroup>
           <thead>
             <tr style="border-bottom:2px solid #e5e7eb">
-              <th class="stick" onclick="actionsSort('ticker')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="atsi-ticker"></span></th>
-              <th onclick="actionsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="atsi-account"></span></th>
-              <th onclick="actionsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="atsi-strike"></span></th>
-              <th onclick="actionsSort('dte')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">DTE<span id="atsi-dte"></span></th>
-              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Ctr</th>
-              <th onclick="actionsSort('premium_received')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Fill<span id="atsi-premium_received"></span></th>
-              <th onclick="actionsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="atsi-mark"></span></th>
-              <th onclick="actionsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="atsi-pnl_dollar"></span></th>
-              <th onclick="actionsSort('remaining_prem')" title="Cost to buy the option back right now" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #e5e7eb">Cost to<br>close<span id="atsi-remaining_prem"></span></th>
-              <th onclick="actionsSort('ann_roi_remaining')" title="Annualized return on capital if held to expiry and the option decays to zero. Only shown for profitable positions &mdash; meaningless for a position that&#39;s currently a loss." style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ann. ROI<br>if held<span id="atsi-ann_roi_remaining"></span></th>
-              <th onclick="actionsSort('day_chg_pct')" title="Underlying move: 1-day and 3-day % change" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Move<span id="atsi-day_chg_pct"></span></th>
-              <th onclick="actionsSort('dist_to_be_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Cushion<span id="atsi-dist_to_be_pct"></span></th>
-              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Earnings</th>
-              <th onclick="actionsSort('action')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Action / Reason<span id="atsi-action"></span></th>
+              <th class="stick" onclick="actionsSort('ticker')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="atsi-ticker"></span></th>
+              <th onclick="actionsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="atsi-account"></span></th>
+              <th onclick="actionsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="atsi-strike"></span></th>
+              <th onclick="actionsSort('dte')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">DTE<span id="atsi-dte"></span></th>
+              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Ctr</th>
+              <th onclick="actionsSort('premium_received')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Fill<span id="atsi-premium_received"></span></th>
+              <th onclick="actionsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="atsi-mark"></span></th>
+              <th onclick="actionsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="atsi-pnl_dollar"></span></th>
+              <th onclick="actionsSort('remaining_prem')" title="Cost to buy the option back right now" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap;border-left:2px solid #e5e7eb">Cost to<br>close<span id="atsi-remaining_prem"></span></th>
+              <th onclick="actionsSort('ann_roi_remaining')" title="Annualized return on capital if held to expiry and the option decays to zero. Only shown for profitable positions &mdash; meaningless for a position that&#39;s currently a loss." style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ann. ROI<br>if held<span id="atsi-ann_roi_remaining"></span></th>
+              <th onclick="actionsSort('day_chg_pct')" title="Underlying move: 1-day and 3-day % change" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Move<span id="atsi-day_chg_pct"></span></th>
+              <th onclick="actionsSort('dist_to_be_pct')" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Cushion<span id="atsi-dist_to_be_pct"></span></th>
+              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Earnings</th>
+              <th onclick="actionsSort('action')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Action / Reason<span id="atsi-action"></span></th>
             </tr>
           </thead>
-          <tbody id="actions-tbody"><tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">Loading...</td></tr></tbody>
+          <tbody id="actions-tbody"><tr><td colspan="14" style="text-align:center;padding:30px;color:#6b7280">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -461,8 +461,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="padding-bottom:40px">
       <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
         <span style="font-size:14px;font-weight:600">&#128200; Long LEAPS Calls</span>
-        <span style="font-size:12px;color:#9ca3af" id="leaps-table-count"></span>
-        <span style="font-size:11px;color:#9ca3af">&mdash; held long, no assignment risk</span>
+        <span style="font-size:12px;color:#6b7280" id="leaps-table-count"></span>
+        <span style="font-size:11px;color:#6b7280">&mdash; held long, no assignment risk</span>
       </div>
       <div style="overflow-x:auto">
         <table class="wide-tbl" id="leaps-table">
@@ -474,21 +474,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </colgroup>
           <thead>
             <tr style="border-bottom:2px solid #e5e7eb">
-              <th class="stick" onclick="leapsSort('ticker')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="ltsi-ticker"></span></th>
-              <th onclick="leapsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="ltsi-account"></span></th>
-              <th onclick="leapsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="ltsi-strike"></span></th>
-              <th onclick="leapsSort('dte')" title="Days to expiry and expiry date" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Expiry<span id="ltsi-dte"></span></th>
-              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Ctr</th>
-              <th onclick="leapsSort('avg_cost')" title="Average price paid per contract" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Avg cost<span id="ltsi-avg_cost"></span></th>
-              <th onclick="leapsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="ltsi-mark"></span></th>
-              <th onclick="leapsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="ltsi-pnl_dollar"></span></th>
-              <th onclick="leapsSort('underlying')" title="Current underlying price" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Stock<span id="ltsi-underlying"></span></th>
-              <th onclick="leapsSort('dist_to_be_pct')" title="How far the stock is above the option breakeven" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">vs BE<span id="ltsi-dist_to_be_pct"></span></th>
-              <th onclick="leapsSort('week52_high')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">52w high<span id="ltsi-week52_high"></span></th>
-              <th onclick="leapsSort('action')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Note<span id="ltsi-action"></span></th>
+              <th class="stick" onclick="leapsSort('ticker')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Ticker<span id="ltsi-ticker"></span></th>
+              <th onclick="leapsSort('account')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Acct<span id="ltsi-account"></span></th>
+              <th onclick="leapsSort('strike')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Strike<span id="ltsi-strike"></span></th>
+              <th onclick="leapsSort('dte')" title="Days to expiry and expiry date" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Expiry<span id="ltsi-dte"></span></th>
+              <th style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Ctr</th>
+              <th onclick="leapsSort('avg_cost')" title="Average price paid per contract" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Avg cost<span id="ltsi-avg_cost"></span></th>
+              <th onclick="leapsSort('mark')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Mark<span id="ltsi-mark"></span></th>
+              <th onclick="leapsSort('pnl_dollar')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">P&amp;L<span id="ltsi-pnl_dollar"></span></th>
+              <th onclick="leapsSort('underlying')" title="Current underlying price" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Stock<span id="ltsi-underlying"></span></th>
+              <th onclick="leapsSort('dist_to_be_pct')" title="How far the stock is above the option breakeven" style="text-align:center;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">vs BE<span id="ltsi-dist_to_be_pct"></span></th>
+              <th onclick="leapsSort('week52_high')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">52w high<span id="ltsi-week52_high"></span></th>
+              <th onclick="leapsSort('action')" style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600; cursor:pointer;user-select:none;white-space:nowrap">Note<span id="ltsi-action"></span></th>
             </tr>
           </thead>
-          <tbody id="leaps-tbody"><tr><td colspan="12" style="text-align:center;padding:30px;color:#9ca3af">Loading...</td></tr></tbody>
+          <tbody id="leaps-tbody"><tr><td colspan="12" style="text-align:center;padding:30px;color:#6b7280">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -514,27 +514,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
            Filters: account (shared buttons on the left), type (CC / CSP) and
            symbol — John reads it per name before writing the next call. -->
       <div id="history-wrap">
-        <div id="history-note" style="font-size:11px;color:#6b7280;margin:0 0 8px;line-height:1.5"></div>
+        <div id="history-note" style="font-size:11px;color:#4b5563;margin:0 0 8px;line-height:1.5"></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px" id="history-type-btns">
-          <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Type</span>
+          <span style="font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;margin-right:2px">Type</span>
           <button class="outline-btn active" onclick="histFilterType('ALL',this)">All</button>
           <button class="outline-btn" onclick="histFilterType('CC',this)">CC</button>
           <button class="outline-btn" onclick="histFilterType('CSP',this)">CSP</button>
           <button class="outline-btn" onclick="histFilterType('LEAPS',this)" title="Every long call you bought (A76): cost, breakeven = strike + cost, the time value you paid, today's mark and where the stock sits vs breakeven — grouped by symbol, one line per expiration">LEAPS</button>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px" id="history-sym-btns">
-          <span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>
+          <span style="font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;margin-right:2px">Symbol</span>
         </div>
         <div style="overflow-x:auto;" id="history-short-closed">
           <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-table">
-            <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open &middot; r%</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Calendar days from the opening fill to expiry">DTE at open</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill, and its move since the open">Stock @ close</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Calendar days from the opening fill to the closing fill">Days held</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Days to expiry still on the option when you closed it">DTE left</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="credit / strike &times; 365 / DTE at open">Planned %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">P&amp;L $</th></tr></thead>
-            <tbody id="history-tbody"><tr><td colspan="18" style="text-align:center;padding:40px;color:#9ca3af">Loading...</td></tr></tbody>
+            <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;border-left:2px solid #bbf7d0;background:#f0fdf4;color:#166534">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Stock price at the opening fill (Schwab minute candle; daily close when minute data is gone)">Stock @ open &middot; r%</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#166534" title="Calendar days from the opening fill to expiry">DTE at open</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;border-left:2px solid #fecaca;background:#fef2f2;color:#991b1b">Closed</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Stock price at the closing fill, and its move since the open">Stock @ close</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Buy-back price (0 when expired or assigned)">Buy-back</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Calendar days from the opening fill to the closing fill">Days held</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;background:#fef2f2;color:#991b1b" title="Days to expiry still on the option when you closed it">DTE left</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;border-left:2px solid #e5e7eb" title="(credit &minus; buy-back) / credit">Kept</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="credit / strike &times; 365 / DTE at open">Planned %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="(credit &minus; buy-back) / strike &times; 365 / days held &mdash; the return for the period you actually held it">Realized %/yr</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">P&amp;L $</th></tr></thead>
+            <tbody id="history-tbody"><tr><td colspan="18" style="text-align:center;padding:40px;color:#6b7280">Loading...</td></tr></tbody>
           </table>
         </div>
         <div id="history-open-title" style="font-size:12px;font-weight:600;color:#374151;margin:16px 0 6px">Open lots (entry price per fill)</div>
         <div style="overflow-x:auto;" id="history-short-open">
           <table style="width:100%;border-collapse:collapse;font-size:12px" id="history-open-table">
-            <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">DTE at open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="Calendar days from the opening fill to this scan">Days so far</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">Planned %/yr</th></tr></thead>
+            <thead><tr style="border-bottom:2px solid #e5e7eb"><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Symbol</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Acct</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Type</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Strike &middot; Exp</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Qty</th><th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Opened</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Stock @ open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Credit</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">DTE at open</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Calendar days from the opening fill to this scan">Days so far</th><th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Planned %/yr</th></tr></thead>
             <tbody id="history-open-tbody"></tbody>
           </table>
         </div>
@@ -640,7 +640,7 @@ function earnExpiryBadge(ticker, expiry, dte, rowDays) {
   if (!r) return '';
   var sty = r.level === 'inside' ? 'background:#fee2e2;color:#991b1b;font-weight:700'
           : r.level === 'close'  ? 'background:#fef9c3;color:#92400e;font-weight:700'
-          : 'background:#f3f4f6;color:#6b7280';
+          : 'background:#f3f4f6;color:#4b5563';
   var tip = 'Earnings ' + r.label + r.when + '. ' + (r.level === 'inside'
       ? 'The print lands inside this option\'s life.'
       : r.level === 'close' ? 'Expiry is within ' + EARN_EXPIRY_BUFFER_DAYS + ' days before the print (P23 buffer).'
@@ -657,7 +657,7 @@ function dayChg(pct, riskUp) {
   if (pct === null || pct === undefined || isNaN(pct)) return '';
   var up   = pct > 0;
   var flat = Math.abs(pct) < 0.05;
-  var color = flat ? '#9ca3af' : (riskUp ? (up ? '#92400e' : '#166534')
+  var color = flat ? '#6b7280' : (riskUp ? (up ? '#92400e' : '#166534')
                                          : (up ? '#166534' : '#92400e'));
   var arrow = flat ? '' : (up ? '▲ ' : '▼ ');
   var txt   = flat ? 'unchanged' : arrow + (up ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
@@ -1023,7 +1023,7 @@ function renderLeapsExpiryButtons(leaps) {
 function renderCspLadder(o) {
   var rows = o.csp_ladder || [];
   if (!rows.length) return '';
-  var th = function(t, align){ return '<th style="text-align:' + (align||'right') + ';padding:3px 6px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap">' + t + '</th>'; };
+  var th = function(t, align){ return '<th style="text-align:' + (align||'right') + ';padding:3px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">' + t + '</th>'; };
   var td = function(v, align, extra){ return '<td style="text-align:' + (align||'right') + ';padding:3px 6px;font-family:monospace;font-size:11px;white-space:nowrap;' + (extra||'') + '">' + v + '</td>'; };
   var body = rows.map(function(r){
     var rec = !!r.is_rec;
@@ -1035,7 +1035,7 @@ function renderCspLadder(o) {
       ? ' <span title="' + escHtml(_ev.text) + '" style="color:' + (_ev.level === 'inside' ? '#991b1b' : '#92400e') + '">E</span>' : '';
     return '<tr style="' + bg + '">'
       + td((rec ? '&#9733; ' : '') + r.dte + 'd', 'left', fw)
-      + td(escHtml(String(r.expiry || '')) + earnMark, 'left', fw + 'color:#6b7280')
+      + td(escHtml(String(r.expiry || '')) + earnMark, 'left', fw + 'color:#4b5563')
       + td('$' + r.strike, 'right', fw)
       + td('$' + Number(r.premium).toFixed(2), 'right', fw)
       + td('$' + Number(r.premium_per_contract || r.premium * 100).toLocaleString(undefined, {maximumFractionDigits: 0}), 'right', fw + 'color:#065f46')
@@ -1092,7 +1092,7 @@ function renderLeapsMissing(leapsRows) {
     else if (pw.buy_under && pw.pct_from_buy != null)
       zone = fmtPct(pw.pct_from_buy, 1) + ' vs $' + pw.buy_under;
     var px = pw.price != null ? '$' + Number(pw.price).toFixed(2) : '';
-    var dim = i.r === 3 ? 'color:#9ca3af' : 'color:#374151';
+    var dim = i.r === 3 ? 'color:#6b7280' : 'color:#374151';
     return '<div style="padding:3px 0;font-size:12px;' + dim + '"><b>' + i.t + '</b> ' + px
       + (zone ? ' &middot; ' + zone : '') + ' &mdash; ' + escHtml(i.s.reason || '') + '</div>';
   }).join('');
@@ -1115,29 +1115,29 @@ function renderLeapsTable(leaps) {
       tickers.map(function(t){ return '<option value="'+t+'"'+(t===cv?' selected':'')+'>'+t+'</option>'; }).join('');
   }
   var rows = tickerFilter === 'all' ? leaps : leaps.filter(function(o){ return o.ticker === tickerFilter; });
-  if (!rows.length) { document.getElementById('leaps-table-view').innerHTML = '<div style="padding:20px;color:#9ca3af">No LEAPS data.</div>'; return; }
+  if (!rows.length) { document.getElementById('leaps-table-view').innerHTML = '<div style="padding:20px;color:#6b7280">No LEAPS data.</div>'; return; }
   rows = rows.slice().sort(function(a,b){
     var av = a[leapsSortCol]; var bv = b[leapsSortCol];
     if (av==null) av = leapsSortAsc?9999:-9999;
     if (bv==null) bv = leapsSortAsc?9999:-9999;
     return leapsSortAsc ? av-bv : bv-av;
   });
-  function sico(col){ return col!==leapsSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(leapsSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
-  function th(col,lbl,extra){ return '<th onclick="leapsSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
+  function sico(col){ return col!==leapsSortCol?'<span style="color:#6b7280"> \u21C5</span>':(leapsSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
+  function th(col,lbl,extra){ return '<th onclick="leapsSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
   var html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
-    + '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Band</th>'
+    + '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600">Band</th>'
     + th('strike','Strike') + th('premium','Cost') 
-    + '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Expiry / DTE</th>'
+    + '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600">Expiry / DTE</th>'
     + th('delta','\u03B4 Delta')
     + th('extrinsic_pct','Extrinsic%','background:#f5f3ff')
     + th('breakeven','Breakeven')
     + th('breakeven_pct','BE% above','background:#f5f3ff')
-    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap" title="'
+    + '<th style="padding:7px 6px;text-align:right;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="'
     + (leapsSameDateScope()
         ? 'Breakeven vs LEAPS you own with the SAME expiration as each row. Same date, so the comparison is apples-to-apples \u2014 rows where you own no LEAPS on that row\u2019s date show no comparison.'
         : 'Breakeven vs your owned position (best breakeven on ANY date). Note the DTE column \u2014 a longer-dated option naturally has a higher breakeven. Pick expiration buttons above for a same-date comparison.')
     + '">vs Owned</th>'
-    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Note</th>'
+    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600">Note</th>'
     + '</tr></thead><tbody>';
   var bandOrder = {conservative:0,sweet_spot:1,aggressive:2};
   // When sorting by ticker, group by ticker and sort bands within; otherwise flat sort
@@ -1159,7 +1159,7 @@ function renderLeapsTable(leaps) {
     if (buDist!==null) {
       if (buDist<=0) tNote='<span style="color:#16a34a;font-weight:700">\u25BC '+Math.abs(buDist).toFixed(1)+'% below buy target $'+bu+' \u2014 strong timing</span>';
       else if (buDist<=5) tNote='<span style="color:#ca8a04">\u25B2 '+buDist.toFixed(1)+'% above $'+bu+' \u2014 approaching</span>';
-      else tNote='<span style="color:#9ca3af">'+buDist.toFixed(1)+'% above buy target $'+bu+'</span>';
+      else tNote='<span style="color:#6b7280">'+buDist.toFixed(1)+'% above buy target $'+bu+'</span>';
     }
     var eNote = first.days_to_earnings&&first.days_to_earnings<=35
       ? ' <span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:'+(first.days_to_earnings<=14?'#fee2e2':'#fef9c3')+';color:'+(first.days_to_earnings<=14?'#991b1b':'#92400e')+'">&#9888; Earn '+first.days_to_earnings+'d</span>' : '';
@@ -1184,7 +1184,7 @@ function renderLeapsTable(leaps) {
         + '<td style="padding:7px 10px;white-space:nowrap">'+o.leaps_label+(o.is_recommended?' <span style="font-size:10px;font-weight:700;background:#fef08a;color:#713f12;padding:1px 6px;border-radius:3px">&#9733; REC</span>':'')+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:700;color:#1e40af">$'+o.premium.toFixed(2)+'</td>'
-        + '<td style="padding:7px 6px;text-align:center;color:#6b7280;white-space:nowrap">'+fmtExpiry(o.expiry)+' <span style="color:#9ca3af;font-size:10px">('+o.dte+'d)</span></td>'
+        + '<td style="padding:7px 6px;text-align:center;color:#4b5563;white-space:nowrap">'+fmtExpiry(o.expiry)+' <span style="color:#6b7280;font-size:10px">('+o.dte+'d)</span></td>'
         + '<td style="padding:7px 6px;text-align:right">'+o.delta+'</td>'
         + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+ec+';background:#faf5ff">'+o.extrinsic_pct+'%</td>'
         + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
@@ -1217,21 +1217,21 @@ function renderLeapsTable(leaps) {
               var adOwn = Math.abs(dOwn).toFixed(1);
               cmp = dOwn > 1  ? '<span style="font-weight:700;color:#92400e">&#8593; '+adOwn+'% worse than yours</span>'
                   : dOwn < -1 ? '<span style="font-weight:700;color:#166534">&#8595; '+adOwn+'% better than yours</span>'
-                  :             '<span style="color:#6b7280">&#8776; same as yours</span>';
-              cmp += '<div style="font-size:9px;font-weight:400;color:#6b7280;white-space:nowrap">today BE $'+curBe+' vs your BE $'+ownBe+'</div>';
+                  :             '<span style="color:#4b5563">&#8776; same as yours</span>';
+              cmp += '<div style="font-size:9px;font-weight:400;color:#4b5563;white-space:nowrap">today BE $'+curBe+' vs your BE $'+ownBe+'</div>';
             }
             return '<td style="padding:7px 6px;text-align:right;font-size:11px;white-space:nowrap" title="You already hold this exact contract'+(accts?' in '+accts:'')+'.'+beNote+'">'
               + cmp
               + '<div style="font-weight:700;color:#1e40af'+(cmp?';font-size:10px;margin-top:1px':'')+'">OWNED &middot; '+n+' @ $'+cost.toFixed(2)+'</div></td>';
           }
-          if (!ownedLeaps.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!ownedLeaps.length) return '<td style="padding:7px 6px;text-align:right;color:#6b7280;font-size:11px">&#8212;</td>';
           // Raw breakeven comparison vs your best (lowest-BE) owned position.
           // A DTE-mismatch flag warns when the expiries differ enough that the
           // lower/higher breakeven is partly just a function of time, not value.
           var ownedWithBE = ownedLeaps.filter(function(l){ return (parseFloat(l.breakeven)||0) > 0; });
-          if (!ownedWithBE.length) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!ownedWithBE.length) return '<td style="padding:7px 6px;text-align:right;color:#6b7280;font-size:11px">&#8212;</td>';
           var newBe = parseFloat(o.breakeven) || 0;
-          if (!newBe) return '<td style="padding:7px 6px;text-align:right;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!newBe) return '<td style="padding:7px 6px;text-align:right;color:#6b7280;font-size:11px">&#8212;</td>';
           // Benchmark = owned position with the lowest (best) breakeven
           var bench = ownedWithBE.reduce(function(a,b){ return (parseFloat(b.breakeven)||9e9) < (parseFloat(a.breakeven)||9e9) ? b : a; });
           var bestOwned = parseFloat(bench.breakeven) || 0;
@@ -1251,11 +1251,11 @@ function renderLeapsTable(leaps) {
           } else if (diff > 1) {
             main = '<span style="font-weight:700;color:#92400e">&#8593; '+ad+'% worse</span>';
           } else {
-            main = '<span style="color:#6b7280">&#8776; same</span>';
+            main = '<span style="color:#4b5563">&#8776; same</span>';
           }
           return '<td style="padding:7px 6px;text-align:right;font-size:11px;white-space:nowrap" title="'+ttl+'">'+main+dteFlag+'</td>';
         })()
-        + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:180px">'+o.leaps_note+'</td>'
+        + '<td style="padding:7px 6px;font-size:10px;color:#4b5563;max-width:180px">'+o.leaps_note+'</td>'
         + '</tr>';
     });
   });
@@ -1289,11 +1289,11 @@ var convexSortAsc = true;
 function convexSortBy(col){ if(convexSortCol===col){ convexSortAsc=!convexSortAsc; } else { convexSortCol=col; convexSortAsc=(col==='required_cagr'||col==='premium_pct'||col==='dte'||col==='ann_burden_pct'||col==='spread_pct'); } renderOpps(); }
 
 function _cvxHeaderRow(){
-  function sico(col){ return col!==convexSortCol?'<span style="color:#d1d5db"> \u21C5</span>':(convexSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
-  function th(col,lbl,extra){ return '<th onclick="convexSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
-  function thx(lbl,extra){ return '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600'+(extra?';'+extra:'')+'">'+lbl+'</th>'; }
+  function sico(col){ return col!==convexSortCol?'<span style="color:#6b7280"> \u21C5</span>':(convexSortAsc?'<span style="color:#6366f1"> \u2191</span>':'<span style="color:#6366f1"> \u2193</span>'); }
+  function th(col,lbl,extra){ return '<th onclick="convexSortBy(\''+col+'\')" style="padding:7px 6px;cursor:pointer;text-align:right;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap'+(extra?';'+extra:'')+'">'+lbl+sico(col)+'</th>'; }
+  function thx(lbl,extra){ return '<th style="padding:7px 6px;text-align:center;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600'+(extra?';'+extra:'')+'">'+lbl+'</th>'; }
   return '<tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">'
-    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Grade</th>'
+    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600">Grade</th>'
     + th('ticker','Ticker','text-align:left')
     + th('strike','Strike')
     + th('premium','Ask') + thx('Mid')
@@ -1306,7 +1306,7 @@ function _cvxHeaderRow(){
     + th('cov20','Cov@20%') + th('cov25','Cov@25%')
     + th('cov30','Cov@30%','background:#f5f3ff')
     + th('spread_pct','Spread') + th('open_interest','OI')
-    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600">Why it passed</th>'
+    + '<th style="padding:7px 6px;text-align:left;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600">Why it passed</th>'
     + '</tr>';
 }
 
@@ -1325,9 +1325,9 @@ function _cvxDataRow(o){
     + '<td style="padding:7px 10px;font-weight:700;color:#374151">'+o.ticker+'</td>'
     + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
     + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:700;color:#6b21a8">$'+o.premium.toFixed(2)+'</td>'
-    + '<td style="padding:7px 6px;text-align:center;font-family:monospace;color:#6b7280">$'+o.mid.toFixed(2)+'</td>'
-    + '<td style="padding:7px 6px;text-align:center;color:#6b7280">'+fmtExpiry(o.expiry)+'</td>'
-    + '<td style="padding:7px 6px;text-align:right;color:#6b7280">'+o.dte+'</td>'
+    + '<td style="padding:7px 6px;text-align:center;font-family:monospace;color:#4b5563">$'+o.mid.toFixed(2)+'</td>'
+    + '<td style="padding:7px 6px;text-align:center;color:#4b5563">'+fmtExpiry(o.expiry)+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;color:#4b5563">'+o.dte+'</td>'
     + '<td style="padding:7px 6px;text-align:right;font-family:monospace">$'+o.breakeven+'</td>'
     + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+cagrColor+';background:#faf5ff">'+o.required_cagr+'%</td>'
     + '<td style="padding:7px 6px;text-align:right;font-weight:700;color:'+convColor+';background:#faf5ff">'+o.convexity_score+'\u00D7</td>'
@@ -1337,8 +1337,8 @@ function _cvxDataRow(o){
     + '<td style="padding:7px 6px;text-align:right">'+cov(o.cov25)+'</td>'
     + '<td style="padding:7px 6px;text-align:right;background:#faf5ff">'+cov(o.cov30)+'</td>'
     + '<td style="padding:7px 6px;text-align:right;color:'+spreadColor+'">'+o.spread_pct+'%</td>'
-    + '<td style="padding:7px 6px;text-align:right;color:#6b7280">'+o.open_interest+'</td>'
-    + '<td style="padding:7px 6px;font-size:10px;color:#6b7280;max-width:280px">'+o.convexity_note+'</td>'
+    + '<td style="padding:7px 6px;text-align:right;color:#4b5563">'+o.open_interest+'</td>'
+    + '<td style="padding:7px 6px;font-size:10px;color:#4b5563;max-width:280px">'+o.convexity_note+'</td>'
     + '</tr>';
 }
 
@@ -1369,9 +1369,9 @@ function renderConvexityTable(rows) {
       + '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead>'+_cvxHeaderRow()+'</thead><tbody>'
       + view.map(_cvxDataRow).join('') + '</tbody></table>';
   } else {
-    html = '<div style="padding:28px;text-align:center;color:#6b7280;background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;font-size:15px">'
+    html = '<div style="padding:28px;text-align:center;color:#4b5563;background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;font-size:15px">'
       + '&#x1F50D; No actionable Cheap Convexity LEAPS found.'
-      + '<div style="font-size:12px;color:#9ca3af;margin-top:8px">Zero results is expected &mdash; strict filters only surface rare, high-quality setups.</div></div>';
+      + '<div style="font-size:12px;color:#6b7280;margin-top:8px">Zero results is expected &mdash; strict filters only surface rare, high-quality setups.</div></div>';
   }
   document.getElementById('convex-table-view').innerHTML = html;
 }
@@ -1438,7 +1438,7 @@ function renderPriceWatch() {
     // Nothing on this side. Under a strategy filter say so rather than making
     // the whole panel vanish (which reads as "Price Watch is gone").
     if (want === 'all') { panel.style.display = 'none'; return; }
-    grid.innerHTML = '<div style="padding:10px 13px;font-size:12px;color:#9ca3af;grid-column:1/-1">No names at or near a '
+    grid.innerHTML = '<div style="padding:10px 13px;font-size:12px;color:#6b7280;grid-column:1/-1">No names at or near a '
       + (want === 'buy' ? 'buy' : 'sell') + ' target right now.</div>';
     panel.style.display = 'block';
     return;
@@ -1453,10 +1453,10 @@ function renderPriceWatch() {
   var GREEN  = { bg: '#dcfce7', border: '#16a34a' };
   var YELLOW = { bg: '#fef9c3', border: '#ca8a04' };
 
-  function mCol(v){ return v<=-5?'#dc2626':v<=-2?'#ea580c':v>=5?'#16a34a':v>=2?'#65a30d':'#9ca3af'; }
+  function mCol(v){ return v<=-5?'#dc2626':v<=-2?'#ea580c':v>=5?'#16a34a':v>=2?'#65a30d':'#6b7280'; }
   function mChip(v,lbl){
     if(Math.abs(v||0)<0.5) return '';
-    return '<span style="font-size:9px;color:'+mCol(v)+';margin-right:5px">'+(v>0?'+':'')+v.toFixed(1)+'%<span style="color:#9ca3af;font-size:8px"> '+lbl+'</span></span>';
+    return '<span style="font-size:9px;color:'+mCol(v)+';margin-right:5px">'+(v>0?'+':'')+v.toFixed(1)+'%<span style="color:#6b7280;font-size:8px"> '+lbl+'</span></span>';
   }
 
   grid.innerHTML = items.map(function(it) {
@@ -1488,7 +1488,7 @@ function renderPriceWatch() {
       + '  <span style="font-size:12px;color:#374151;margin-left:auto;font-family:monospace">$'+p.price.toFixed(2)+'</span>'
       + '</div>'
       + '<div style="margin-bottom:4px">'+distTxt+'</div>'
-      + '<div style="font-size:10px;color:#6b7280">'+tgtRow+'</div>'
+      + '<div style="font-size:10px;color:#4b5563">'+tgtRow+'</div>'
       + (movRow ? '<div style="margin-top:5px;line-height:1.8">'+movRow+'</div>' : '')
       + (p.days_to_earnings && p.days_to_earnings <= 35 ? '<div style="margin-top:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:' + (p.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (p.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + ';display:inline-block">&#9888; Earnings in ' + p.days_to_earnings + 'd</div>' : '')
       + '</div>';
@@ -1583,12 +1583,12 @@ function renderMarket() {
   });
   document.getElementById('opp-sub').innerHTML =
     oppLines.map(function(l){
-      if (!l[1]) return '<div style="color:#c7ccd4">' + l[1] + ' ' + l[2] + '</div>';
+      if (!l[1]) return '<div style="color:#6b7280">' + l[1] + ' ' + l[2] + '</div>';
       return '<div onclick="event.stopPropagation();gotoActionable(\'' + l[0] + '\')"'
         + ' title="Show only these cards"'
         + ' style="color:#374151;font-weight:600;cursor:pointer">' + l[1] + ' ' + l[2] + '</div>';
     }).join('') +
-    '<div style="color:#9ca3af;margin-top:4px">of ' + [...new Set(allOpps.map(function(o){ return o.ticker; }))].length + ' names scanned &middot; click to view</div>';
+    '<div style="color:#6b7280;margin-top:4px">of ' + [...new Set(allOpps.map(function(o){ return o.ticker; }))].length + ' names scanned &middot; click to view</div>';
 
   const pos = data.positions || [];
   const owned = pos.filter(function(p){ return p.status === 'Owned'; }).length;
@@ -1651,7 +1651,7 @@ function renderMarket() {
     var csoChg = dayChg(exp.csp_obligation_change_pct, true);
     document.getElementById('exp-cso-pct').innerHTML   =
       pct.toFixed(1) + '% of portfolio (' + nPuts + ' open puts)'
-      + (csoChg ? '<br>' + csoChg + '<span style="color:#9ca3af">'
+      + (csoChg ? '<br>' + csoChg + '<span style="color:#6b7280">'
                   + escHtml(vsDay(exp.prev_day_date)) + '</span>' : '');
     document.getElementById('exp-room').textContent     = fmtK(room);
     document.getElementById('exp-room-sub').textContent = 'Max ' + maxPct + '% = ' + fmtK(maxCso);
@@ -1682,7 +1682,7 @@ function renderMarket() {
         var tgt = next.take_profit_threshold || (next.tier === 'Opportunistic' ? 80 : 90);
         closeSubEl.innerHTML = 'Next: ' + escHtml(next.ticker) + ' $' + next.strike
           + (next.type === 'CSP' ? 'P' : 'C') + ' ' + Math.round(next.profit_pct||0)
-          + '% <span style="color:#9ca3af">(target ' + Math.round(tgt) + '%)</span>';
+          + '% <span style="color:#6b7280">(target ' + Math.round(tgt) + '%)</span>';
       } else {
         closeSubEl.textContent = posActs.length ? 'Nothing near target' : 'No open positions';
       }
@@ -1720,7 +1720,7 @@ function renderMarket() {
       return '<span style="margin-right:14px;color:'+color+'"><strong>'+t+'</strong> '+p+'% covered ('+covered.toLocaleString()+' shares)</span>';
     }).join('');
     var tickerEl = document.getElementById('exp-cc-tickers');
-    if (tickerEl) tickerEl.innerHTML = tickerLines || '<span style="color:#9ca3af">No covered calls open</span>';
+    if (tickerEl) tickerEl.innerHTML = tickerLines || '<span style="color:#6b7280">No covered calls open</span>';
 
     // Top CSP positions — aggregated per ticker, biggest obligation first.
     // Premium is the credit actually received; P&L comes from position_actions
@@ -1746,7 +1746,7 @@ function renderMarket() {
       // — it just had no header. "Net cash" is that obligation less the
       // premium already received: the cash actually needed to take assignment.
       var hdr = '<div style="display:flex;align-items:center;gap:8px;font-size:9px;font-weight:700;'
-        + 'text-transform:uppercase;letter-spacing:0.5px;color:#9ca3af;padding-bottom:4px;'
+        + 'text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;padding-bottom:4px;'
         + 'border-bottom:1px solid #f3f4f6;margin-bottom:2px;">'
         + '<span style="min-width:52px">Name</span>'
         + '<span style="min-width:64px" title="Strike x 100 x contracts — the cash set aside if every put is assigned.">Cash obl.</span>'
@@ -1764,16 +1764,16 @@ function renderMarket() {
           : '<span style="color:#92400e" title="stale mark">&#8212;</span>';
         var pctBook = cso > 0 ? (a.cso / cso * 100) : 0;
         var netCash = a.cso - a.prem;
-        return '<div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#6b7280;padding:3px 0;">'
+        return '<div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#4b5563;padding:3px 0;">'
           + '<span style="font-weight:700;color:#374151;min-width:52px">' + escHtml(t) + '</span>'
           + '<span style="min-width:64px;font-family:monospace">' + fmtK(a.cso) + '</span>'
           + '<span style="min-width:64px;font-family:monospace;color:#374151" title="Cash obligation less premium received">' + fmtK(netCash) + '</span>'
           + '<span style="min-width:78px">' + a.contracts + ' contract' + (a.contracts !== 1 ? 's' : '') + '</span>'
           + '<span style="min-width:92px">' + fmtK(a.prem) + ' premium</span>'
           + '<span style="min-width:60px">' + pnlTxt + '</span>'
-          + '<span style="color:#9ca3af">' + pctBook.toFixed(0) + '% of book</span>'
+          + '<span style="color:#6b7280">' + pctBook.toFixed(0) + '% of book</span>'
           + '</div>';
-      }).join('') : '<span style="color:#9ca3af;font-size:11px">No open CSPs</span>';
+      }).join('') : '<span style="color:#6b7280;font-size:11px">No open CSPs</span>';
     }
 
     // Risk Summary — spec §4
@@ -1934,9 +1934,9 @@ function renderOpps() {
       return (b.cov30||0) - (a.cov30||0);
     });
     if (!cvxPass.length) {
-      grid.innerHTML = '<div style="padding:28px;text-align:center;color:#6b7280;background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;font-size:15px">'
+      grid.innerHTML = '<div style="padding:28px;text-align:center;color:#4b5563;background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;font-size:15px">'
         + '&#x1F50D; No actionable Cheap Convexity LEAPS found.'
-        + '<div style="font-size:12px;color:#9ca3af;margin-top:8px">Zero results is expected &mdash; strict filters only surface rare, high-quality setups.</div></div>';
+        + '<div style="font-size:12px;color:#6b7280;margin-top:8px">Zero results is expected &mdash; strict filters only surface rare, high-quality setups.</div></div>';
       return;
     }
     filtered = cvxPass;
@@ -1990,26 +1990,26 @@ function renderOpps() {
         covRows = Object.keys(o.coverage).map(function(k){ return parseInt(k); }).sort(function(a,b){return a-b;}).map(function(g){
           var v = o.coverage[g];
           var c = v>=1.15?'#166534':v>=1.05?'#15803d':v>=1.00?'#92400e':'#991b1b';
-          return '<div style="text-align:center"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase">'+g+'% CAGR</div><div style="font-weight:700;color:'+c+';font-size:12px">'+(v!=null?v.toFixed(2):'\u2014')+'</div></div>';
+          return '<div style="text-align:center"><div style="font-size:9px;color:#6b7280;text-transform:uppercase">'+g+'% CAGR</div><div style="font-weight:700;color:'+c+';font-size:12px">'+(v!=null?v.toFixed(2):'\u2014')+'</div></div>';
         }).join('');
       }
       return '<div class="opp-card" style="border-left:4px solid '+st.badge+'">'
         + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
-        +   '<div><span style="font-weight:700;font-size:15px">'+o.ticker+'</span> <span style="font-family:monospace;color:#6b7280;font-size:12px">$'+o.price.toFixed(2)+'</span>'+recBadge+'</div>'
+        +   '<div><span style="font-weight:700;font-size:15px">'+o.ticker+'</span> <span style="font-family:monospace;color:#4b5563;font-size:12px">$'+o.price.toFixed(2)+'</span>'+recBadge+'</div>'
         +   '<span style="font-size:10px;font-weight:700;background:'+st.badgeBg+';color:'+st.badge+';padding:2px 7px;border-radius:4px;white-space:nowrap">'+o.class_label+'</span>'
         + '</div>'
         + '<div style="display:flex;gap:14px;margin-top:8px;font-size:13px">'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Strike</span><br><strong style="font-family:monospace">$'+o.strike+'</strong> <span style="color:#9ca3af;font-size:10px">('+o.strike_pct+'%)</span></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Ask / Mid</span><br><strong style="font-family:monospace;color:#6b21a8">$'+o.premium.toFixed(2)+'</strong> <span style="color:#9ca3af;font-size:10px">/ $'+o.mid.toFixed(2)+'</span></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Expiry</span><br><strong>'+fmtExpiry(o.expiry)+'</strong> <span style="color:#9ca3af;font-size:11px">('+o.dte+'d)</span></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Breakeven</span><br><strong style="font-family:monospace">$'+o.breakeven+'</strong></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Strike</span><br><strong style="font-family:monospace">$'+o.strike+'</strong> <span style="color:#6b7280;font-size:10px">('+o.strike_pct+'%)</span></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Ask / Mid</span><br><strong style="font-family:monospace;color:#6b21a8">$'+o.premium.toFixed(2)+'</strong> <span style="color:#6b7280;font-size:10px">/ $'+o.mid.toFixed(2)+'</span></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Expiry</span><br><strong>'+fmtExpiry(o.expiry)+'</strong> <span style="color:#6b7280;font-size:11px">('+o.dte+'d)</span></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Breakeven</span><br><strong style="font-family:monospace">$'+o.breakeven+'</strong></div>'
         + '</div>'
         + '<div style="display:flex;gap:14px;margin-top:8px;font-size:13px;padding-top:8px;border-top:1px solid #f3f4f6">'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Req CAGR</span><br><strong style="color:'+cagrColor+'">'+o.required_cagr+'%</strong></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Convexity</span><br><strong>'+o.convexity_score+'\u00D7</strong></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Premium%</span><br><strong style="color:'+premColor+'">'+o.premium_pct+'%</strong></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Burden/yr</span><br><strong>'+o.ann_burden_pct+'%</strong></div>'
-        +   '<div><span style="color:#9ca3af;font-size:11px">Cov@30%</span><br><strong style="color:'+covColor+'">'+(o.cov30!=null?o.cov30.toFixed(2):'\u2014')+'</strong></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Req CAGR</span><br><strong style="color:'+cagrColor+'">'+o.required_cagr+'%</strong></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Convexity</span><br><strong>'+o.convexity_score+'\u00D7</strong></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Premium%</span><br><strong style="color:'+premColor+'">'+o.premium_pct+'%</strong></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Burden/yr</span><br><strong>'+o.ann_burden_pct+'%</strong></div>'
+        +   '<div><span style="color:#6b7280;font-size:11px">Cov@30%</span><br><strong style="color:'+covColor+'">'+(o.cov30!=null?o.cov30.toFixed(2):'\u2014')+'</strong></div>'
         + '</div>'
         + (covRows ? '<div style="display:flex;justify-content:space-around;margin-top:10px;padding:8px;background:#faf5ff;border-radius:6px">'+covRows+'</div>' : '')
         + '<div class="opp-reasoning" style="margin-top:8px">'+o.convexity_note+'</div>'
@@ -2020,7 +2020,7 @@ function renderOpps() {
     var ret   = o.annualized_return || 0;
     var ivp   = o.ivp || 0;
     var rc    = ret > 25 ? '#166534' : ret > 20 ? '#15803d' : ret > 15 ? '#92400e' : '#6b7280';
-    var ic    = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#9ca3af';
+    var ic    = ivp > 60 ? '#166534' : ivp > 35 ? '#92400e' : '#6b7280';
     var ilbl  = ivp > 60 ? 'Elevated' : ivp > 35 ? 'Good' : ivp > 20 ? 'Moderate' : 'Low';
     var ppd   = (o.premium && o.dte) ? (o.premium / o.dte).toFixed(2) : '&#8212;';
     // A91b: a CSP / Post-Drop card with a ladder drops the Strike/DTE/Delta/
@@ -2039,7 +2039,7 @@ function renderOpps() {
 
     var maxScore = {'CSP':12,'CC':13,'LEAPS':13,'PIO':13,'SPIKE_CC':10,'DROP_CSP':12,'BCS':10}[o.mode] || 12;
     var scoreDisp = o.score !== undefined
-      ? '<span style="font-size:11px;font-weight:700;color:' + (o.score/maxScore>=0.75?'#166534':o.score/maxScore>=0.50?'#92400e':'#9ca3af') + '" title="Score: '+o.score+'/'+maxScore+'">'+o.score+'/'+maxScore+'</span>'
+      ? '<span style="font-size:11px;font-weight:700;color:' + (o.score/maxScore>=0.75?'#166534':o.score/maxScore>=0.50?'#92400e':'#6b7280') + '" title="Score: '+o.score+'/'+maxScore+'">'+o.score+'/'+maxScore+'</span>'
       : '';
 
     // Sizing panel — spec sections 5 and 6
@@ -2099,8 +2099,8 @@ function renderOpps() {
           + (full ? '&#9888; 0 left' : rem + ' left') + '</span>';
       });
       if (roomParts.length) {
-        ccRoomHtml = '<div style="margin-top:6px;font-size:11px;color:#6b7280">'
-          + '&#9997;&#65039; CC room: ' + roomParts.join('<span style="color:#d1d5db"> | </span>')
+        ccRoomHtml = '<div style="margin-top:6px;font-size:11px;color:#4b5563">'
+          + '&#9997;&#65039; CC room: ' + roomParts.join('<span style="color:#6b7280"> | </span>')
           + '</div>';
       }
     }
@@ -2129,7 +2129,7 @@ function renderOpps() {
       if (t === 'NO_BUY') return '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#fee2e2;color:#991b1b" title="' + escHtml(r) + '">NO BUY</span>';
       if (t === 'EXEMPT') return o.no_buy_name
         ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#fee2e2;color:#991b1b" title="' + escHtml(r) + '">&#9888; NO BUY name</span>' : '';
-      if (t === 'OUT')  return '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:#f3f4f6;color:#6b7280" title="' + escHtml(r) + '">Off target' + gap + '</span>';
+      if (t === 'OUT')  return '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:#f3f4f6;color:#4b5563" title="' + escHtml(r) + '">Off target' + gap + '</span>';
       return '';
     })();
 
@@ -2155,12 +2155,12 @@ function renderOpps() {
       + '<div class="opp-top">'
       +   '<div>'
       +     '<div class="opp-ticker">' + o.ticker
-      +       '<span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px">' + (o.price ? '$'+o.price : '') + '</span>'
+      +       '<span style="font-size:11px;font-weight:400;color:#4b5563;margin-left:6px">' + (o.price ? '$'+o.price : '') + '</span>'
       +     '</div>'
       +     '<div class="opp-meta" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px">'
       +       '<span class="badge ' + bc + '">' + bl + '</span>'
-      +       '<span style="color:#9ca3af">&#183;</span>'
-      +       '<span style="font-size:11px;color:#6b7280">' + o.tier + '</span>'
+      +       '<span style="color:#6b7280">&#183;</span>'
+      +       '<span style="font-size:11px;color:#4b5563">' + o.tier + '</span>'
       +       (o.expiry && o.mode !== 'LEAPS' ? earnExpiryBadge(o.ticker, o.expiry, o.dte, o.days_to_earnings) : (o.days_to_earnings && o.days_to_earnings <= 35 ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:' + (o.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (o.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + '">&#9888; Earn ' + o.days_to_earnings + 'd</span>' : ''))
       +       (o.mode === 'LEAPS' && o.trend_label
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
@@ -2204,7 +2204,7 @@ function renderOpps() {
       + (o.mode === 'DROP_CSP' ? renderCspLadder(o) : '')   // A87: post-drop rows carry the same ladder
       + (o.mode !== 'LEAPS' && o.mode !== 'CSP'
         ? '<div class="ivp-row">'
-          + '<span style="font-size:10px;color:#9ca3af;min-width:22px">IVP</span>'
+          + '<span style="font-size:10px;color:#6b7280;min-width:22px">IVP</span>'
           + '<div class="ivp-bar"><div class="ivp-fill" style="width:' + Math.min(ivp,100) + '%;background:' + ic + '"></div></div>'
           + '<span style="font-family:monospace;font-size:11px;color:' + ic + ';min-width:30px">' + ivp + '%</span>'
           + '<span style="font-size:10px;color:' + ic + '">' + ilbl + '</span>'
@@ -2226,7 +2226,7 @@ function renderOpps() {
       +   (o.mode === 'LEAPS' && o.implied_growth_pct != null
           ? '<div><div class="stat-l">Assumes/yr</div><div class="stat-v" style="font-weight:700;color:' + (o.growth_allowed_pct != null && o.implied_growth_pct > o.growth_allowed_pct ? '#991b1b' : '#166534') + '" title="Entry assumes this annual growth from your Buy Below to expiry'
             + (o.growth_allowed_pct != null ? ' · allowance for this name: ' + o.growth_allowed_pct + '%/yr' : '') + '">' + o.implied_growth_pct.toFixed(0) + '%'
-            + (o.growth_allowed_pct != null ? '<span style="font-size:9px;font-weight:400;color:#6b7280"> / ' + o.growth_allowed_pct.toFixed(0) + '%</span>' : '') + '</div></div>'
+            + (o.growth_allowed_pct != null ? '<span style="font-size:9px;font-weight:400;color:#4b5563"> / ' + o.growth_allowed_pct.toFixed(0) + '%</span>' : '') + '</div></div>'
           : '')
       + (function(){
           var stockBe = o.breakeven ? '$'+o.breakeven : '&#8212;';
@@ -2259,7 +2259,7 @@ function renderOpps() {
               } else if (diffCard > 1) {
                 vsOwnedHtml = '<div style="font-size:10px;font-weight:700;color:#92400e;margin-top:2px">&#8593; '+absDiffCard+'% above your BE $'+bestOwnedCard+'</div>';
               } else {
-                vsOwnedHtml = '<div style="font-size:10px;color:#6b7280;margin-top:2px">&#8776; same as your BE $'+bestOwnedCard+'</div>';
+                vsOwnedHtml = '<div style="font-size:10px;color:#4b5563;margin-top:2px">&#8776; same as your BE $'+bestOwnedCard+'</div>';
               }
             }
             return '<div>'
@@ -2277,7 +2277,7 @@ function renderOpps() {
         : '<div style="margin-top:8px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'
       +   (o.mode !== 'CSP' && o.risk_level ? '<span class="badge ' + (o.risk_level==='Low'?'b-green':o.risk_level==='Medium'?'b-amber':'b-red') + '">' + o.risk_level + '</span>' : '')
       +   (o.position_status ? '<span class="badge b-blue">' + o.position_status + '</span>' : '')
-      +   '<span style="font-size:10px;color:#9ca3af;margin-left:auto">' + (o.expiry||'') + '</span>'
+      +   '<span style="font-size:10px;color:#6b7280;margin-left:auto">' + (o.expiry||'') + '</span>'
       + '</div>')
       + signalHtml
       + (o.reasoning ? '<div class="opp-reasoning">' + o.reasoning + '</div>' : '')
@@ -2460,17 +2460,17 @@ function histDate(s) {
   return d ? d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : (s ? escHtml(s) : '&mdash;');
 }
 function histSpot(v, src, from) {
-  if (v === null || v === undefined || v === '') return '<span style="color:#9ca3af">&mdash;</span>';
+  if (v === null || v === undefined || v === '') return '<span style="color:#6b7280">&mdash;</span>';
   var t = src === 'daily_close' ? 'daily close (minute data not available)' : 'at the fill minute';
   var move = '';
   if (from !== undefined && from !== null && from > 0) {
     var pct = (Number(v) - Number(from)) / Number(from) * 100;
     move = ' <span style="font-size:10px;color:' + (pct >= 0 ? '#15803d' : '#b91c1c') + '">' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%</span>';
   }
-  return '<span title="' + t + '"' + (src === 'daily_close' ? ' style="color:#6b7280"' : '') + '>$' + Number(v).toFixed(2) + '</span>' + move;
+  return '<span title="' + t + '"' + (src === 'daily_close' ? ' style="color:#4b5563"' : '') + '>$' + Number(v).toFixed(2) + '</span>' + move;
 }
 function histPct(v, good) {
-  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  if (v === null || v === undefined) return '<span style="color:#6b7280">&mdash;</span>';
   var col = good === undefined ? (v > 0 ? '#15803d' : v < 0 ? '#b91c1c' : '#374151') : (good ? '#15803d' : '#b91c1c');
   return '<span style="font-weight:600;color:' + col + '">' + Number(v).toFixed(1) + '%</span>';
 }
@@ -2493,11 +2493,11 @@ function renderHistSymbolButtons(allRows) {
   allRows.forEach(function(r){ if (r.ticker) counts[r.ticker] = (counts[r.ticker] || 0) + 1; });
   var tickers = Object.keys(counts).sort();
   if (histTicker !== 'ALL' && tickers.indexOf(histTicker) < 0) histTicker = 'ALL';
-  var html = '<span style="font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;margin-right:2px">Symbol</span>'
+  var html = '<span style="font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;margin-right:2px">Symbol</span>'
     + '<button class="outline-btn' + (histTicker === 'ALL' ? ' active' : '') + '" onclick="histFilterTicker(\'ALL\',this)">All</button>';
   tickers.forEach(function(t) {
     html += '<button class="outline-btn' + (histTicker === t ? ' active' : '') + '" onclick="histFilterTicker(\'' + escHtml(t) + '\',this)">'
-      + escHtml(t) + ' <span style="color:#9ca3af;font-weight:400">' + counts[t] + '</span></button>';
+      + escHtml(t) + ' <span style="color:#6b7280;font-weight:400">' + counts[t] + '</span></button>';
   });
   wrap.innerHTML = html;
 }
@@ -2546,7 +2546,7 @@ function renderTradeHistory() {
   }
   if (isLeaps) { renderLeapsHistory(cycles, lots, th); return; }
   if (!cycles.length) {
-    tbody.innerHTML = '<tr><td colspan="18" style="text-align:center;padding:30px;color:#9ca3af">No closed cycles' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="18" style="text-align:center;padding:30px;color:#6b7280">No closed cycles' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
   } else {
     tbody.innerHTML = cycles.map(function(c) {
       var howCol = c.how_closed === 'assigned' ? '#b45309' : c.how_closed === 'expired' ? '#6b7280' : '#374151';
@@ -2567,9 +2567,9 @@ function renderTradeHistory() {
         + '<td style="' + td + 'text-align:right">' + histSpot(c.close_spot, c.close_spot_src, c.open_spot) + histRange(c.close_range_pct) + '</td>'
         + '<td style="' + td + 'text-align:right">' + histNum(c.close_price, 2) + '</td>'
         + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(c.days_held) + '</td>'
-        + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(c.dte_at_close) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#4b5563">' + histNum(c.dte_at_close) + '</td>'
         + '<td style="' + td + 'text-align:right;border-left:2px solid #e5e7eb">' + histPct(c.realized_pct_of_credit) + '</td>'
-        + '<td style="' + td + 'text-align:right;color:#6b7280">' + (planned !== null && planned !== undefined ? Number(planned).toFixed(1) + '%' : '&mdash;') + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#4b5563">' + (planned !== null && planned !== undefined ? Number(planned).toFixed(1) + '%' : '&mdash;') + '</td>'
         + '<td style="' + td + 'text-align:right" title="' + (beatPlan === undefined ? '' : (beatPlan ? 'better than planned' : 'worse than planned')) + '">' + histPct(realized, beatPlan) + '</td>'
         + '<td style="' + td + 'text-align:right;color:' + ((c.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + (c.pnl_dollar !== null && c.pnl_dollar !== undefined ? '$' + Math.round(c.pnl_dollar).toLocaleString() : '&mdash;') + '</td>'
         + '</tr>';
@@ -2594,7 +2594,7 @@ function renderTradeHistory() {
         + '<td style="' + td + 'text-align:right">' + histNum(soFar) + '</td>'
         + '<td style="' + td + 'text-align:right">' + (o.ann_planned_pct !== null && o.ann_planned_pct !== undefined ? Number(o.ann_planned_pct).toFixed(1) + '%' : '&mdash;') + '</td>'
         + '</tr>';
-    }).join('') : '<tr><td colspan="11" style="text-align:center;padding:16px;color:#9ca3af">No open lots' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="11" style="text-align:center;padding:16px;color:#6b7280">No open lots' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
   }
 }
 
@@ -2609,21 +2609,21 @@ function renderTradeHistory() {
 // Group lines: the scanner's leaps_by_ticker when every account is shown;
 // with an account filter, plain sums of the same published lot numbers.
 function histTh(label, extra, title) {
-  return '<th' + (title ? ' title="' + escHtml(title) + '"' : '') + ' style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600;white-space:nowrap;' + (extra || '') + '">' + label + '</th>';
+  return '<th' + (title ? ' title="' + escHtml(title) + '"' : '') + ' style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;' + (extra || '') + '">' + label + '</th>';
 }
 function histThL(label, extra, title) { return histTh(label, 'text-align:left;' + (extra || ''), title); }
 function histMoney(v) {
-  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  if (v === null || v === undefined) return '<span style="color:#6b7280">&mdash;</span>';
   var n = Math.round(Number(v));
   return (n < 0 ? '&minus;$' : '$') + Math.abs(n).toLocaleString();
 }
 function histMoneySigned(v) {
-  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  if (v === null || v === undefined) return '<span style="color:#6b7280">&mdash;</span>';
   var n = Math.round(Number(v)), col = n > 0 ? '#15803d' : n < 0 ? '#b91c1c' : '#374151';
   return '<span style="font-weight:600;color:' + col + '">' + (n > 0 ? '+$' : n < 0 ? '&minus;$' : '$') + Math.abs(n).toLocaleString() + '</span>';
 }
 function histSpotNow(v, from) {
-  if (v === null || v === undefined || !(Number(v) > 0)) return '<span style="color:#9ca3af">&mdash;</span>';
+  if (v === null || v === undefined || !(Number(v) > 0)) return '<span style="color:#6b7280">&mdash;</span>';
   var move = '';
   if (from !== undefined && from !== null && Number(from) > 0) {
     var pct = (Number(v) - Number(from)) / Number(from) * 100;
@@ -2643,7 +2643,7 @@ function histSrcTag(src) {
   return ' <span title="' + escHtml(t) + '" style="font-size:9px;padding:0 4px;border-radius:3px;background:' + (lot ? '#eef2ff;color:#3730a3' : '#fef3c7;color:#92400e') + '">' + (lot ? 'IBKR lot' : 'position avg') + '</span>';
 }
 function histSigned(v, digits, suffix) {
-  if (v === null || v === undefined) return '<span style="color:#9ca3af">&mdash;</span>';
+  if (v === null || v === undefined) return '<span style="color:#6b7280">&mdash;</span>';
   var n = Number(v), col = n > 0 ? '#15803d' : n < 0 ? '#b91c1c' : '#374151';
   return '<span style="font-weight:600;color:' + col + '">' + (n > 0 ? '+' : '') + n.toFixed(digits === undefined ? 1 : digits) + (suffix || '%') + '</span>';
 }
@@ -2689,33 +2689,33 @@ function leapsGroupFooter(tkr, g, spotNow, colspan) {
   var ft = 'padding:6px 5px;border-top:1px solid #d1d5db;background:#f9fafb;white-space:nowrap;font-weight:600;';
   var beTxt = (g.breakeven_wavg === null || g.breakeven_wavg === undefined) ? '&mdash;'
     : '$' + Number(g.breakeven_wavg).toFixed(2)
-      + (g.breakeven_min !== g.breakeven_max ? ' <span style="font-size:10px;font-weight:400;color:#6b7280">' + Number(g.breakeven_min).toFixed(2) + '&ndash;' + Number(g.breakeven_max).toFixed(2) + '</span>' : '');
-  var vsBe = (spotNow && g.breakeven_wavg) ? histSigned((spotNow - g.breakeven_wavg) / g.breakeven_wavg * 100) : '<span style="color:#9ca3af">&mdash;</span>';
+      + (g.breakeven_min !== g.breakeven_max ? ' <span style="font-size:10px;font-weight:400;color:#4b5563">' + Number(g.breakeven_min).toFixed(2) + '&ndash;' + Number(g.breakeven_max).toFixed(2) + '</span>' : '');
+  var vsBe = (spotNow && g.breakeven_wavg) ? histSigned((spotNow - g.breakeven_wavg) / g.breakeven_wavg * 100) : '<span style="color:#6b7280">&mdash;</span>';
   var priced = g.market_value !== null && g.market_value !== undefined;
   var notPriced = (g.marked_contracts && g.marked_contracts < g.contracts) ? ' <span style="font-size:10px;font-weight:400;color:#b45309">(' + (g.contracts - g.marked_contracts) + ' not priced)</span>' : '';
   var row = '<tr>'
-    + '<td style="' + ft + '" colspan="3">' + escHtml(tkr) + ' total <span style="font-weight:400;color:#6b7280">&middot; ' + g.lots + ' lot' + (g.lots === 1 ? '' : 's') + '</span></td>'
+    + '<td style="' + ft + '" colspan="3">' + escHtml(tkr) + ' total <span style="font-weight:400;color:#4b5563">&middot; ' + g.lots + ' lot' + (g.lots === 1 ? '' : 's') + '</span></td>'
     + '<td style="' + ft + '"></td>'
     + '<td style="' + ft + 'text-align:right">' + g.contracts + '</td>'
     + '<td style="' + ft + '" colspan="2"></td>'
-    + '<td style="' + ft + 'text-align:right">' + (g.avg_cost !== null && g.avg_cost !== undefined ? Number(g.avg_cost).toFixed(2) : '&mdash;') + ' <span style="font-size:10px;font-weight:400;color:#6b7280">' + histMoney(g.cost_dollar) + '</span></td>'
+    + '<td style="' + ft + 'text-align:right">' + (g.avg_cost !== null && g.avg_cost !== undefined ? Number(g.avg_cost).toFixed(2) : '&mdash;') + ' <span style="font-size:10px;font-weight:400;color:#4b5563">' + histMoney(g.cost_dollar) + '</span></td>'
     + '<td style="' + ft + '" colspan="2"></td>'
     + '<td style="' + ft + 'text-align:right;color:#4c1d95">' + beTxt + '</td>'
     + '<td style="' + ft + '"></td>'
     + '<td style="' + ft + 'text-align:right">' + (spotNow ? '$' + Number(spotNow).toFixed(2) : '&mdash;') + '</td>'
     + '<td style="' + ft + 'text-align:right">' + vsBe + '</td>'
-    + '<td style="' + ft + 'text-align:right;font-family:monospace;font-weight:400" title="market value">' + (priced ? histMoney(g.market_value) : '<span style="color:#9ca3af">not priced</span>') + '</td>'
+    + '<td style="' + ft + 'text-align:right;font-family:monospace;font-weight:400" title="market value">' + (priced ? histMoney(g.market_value) : '<span style="color:#6b7280">not priced</span>') + '</td>'
     + '<td style="' + ft + 'text-align:right">' + (priced ? histMoneySigned(g.pnl_dollar) : '&mdash;') + notPriced + '</td>'
     + '</tr>';
   var exps = (g.expiries || []).map(function(e) {
     var ebe = e.breakeven_min === null || e.breakeven_min === undefined ? '&mdash;'
       : (e.breakeven_min === e.breakeven_max ? '$' + Number(e.breakeven_min).toFixed(2) : '$' + Number(e.breakeven_min).toFixed(2) + '&ndash;$' + Number(e.breakeven_max).toFixed(2));
     return '<span style="display:inline-block;margin:0 10px 0 0;padding:1px 7px;border-radius:4px;background:#faf5ff;color:#4c1d95;font-size:11px">'
-      + fmtExpiry(e.expiry) + (e.dte !== null && e.dte !== undefined ? ' <span style="color:#6b7280">(' + e.dte + ' d)</span>' : '')
+      + fmtExpiry(e.expiry) + (e.dte !== null && e.dte !== undefined ? ' <span style="color:#4b5563">(' + e.dte + ' d)</span>' : '')
       + ': ' + e.contracts + ' &times; $' + (e.strikes || []).join(' / $') + ' &middot; avg cost ' + (e.avg_cost !== null && e.avg_cost !== undefined ? Number(e.avg_cost).toFixed(2) : '&mdash;')
       + ' &middot; BE ' + ebe + '</span>';
   }).join('');
-  return row + '<tr><td colspan="' + colspan + '" style="padding:3px 6px 10px;background:#f9fafb;font-size:11px;color:#6b7280">By expiration: ' + exps + '</td></tr>';
+  return row + '<tr><td colspan="' + colspan + '" style="padding:3px 6px 10px;background:#f9fafb;font-size:11px;color:#4b5563">By expiration: ' + exps + '</td></tr>';
 }
 function renderLeapsHistory(cycles, lots, th) {
   var ohead = document.getElementById('history-leaps-open-thead');
@@ -2741,7 +2741,7 @@ function renderLeapsHistory(cycles, lots, th) {
     + histTh('Mark now', nbg, 'Option mark from this scan\'s position rows') + histTh('P&amp;L', 'background:#faf5ff', 'Mark vs cost, in dollars and as % of cost')
     + '</tr>';
   if (!lots.length) {
-    obody.innerHTML = '<tr><td colspan="' + openCols + '" style="text-align:center;padding:30px;color:#9ca3af">No open LEAPS' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
+    obody.innerHTML = '<tr><td colspan="' + openCols + '" style="text-align:center;padding:30px;color:#6b7280">No open LEAPS' + (th.open_lots ? ' for this filter' : '') + '</td></tr>';
   } else {
     var sorted = lots.slice().sort(leapsLotSort);
     var digest = th.leaps_by_ticker || {};
@@ -2760,7 +2760,7 @@ function renderLeapsHistory(cycles, lots, th) {
         var dte = (o.dte !== null && o.dte !== undefined) ? o.dte : null;
         if (dte === null && scanD) { var ed = histDateObj(o.expiry); if (ed) dte = Math.round((ed - scanD) / 86400000); }
         var priced = o.mark !== null && o.mark !== undefined;
-        var extTxt = (o.intrinsic_at_open === null || o.intrinsic_at_open === undefined) ? '<span style="color:#9ca3af">&mdash;</span>'
+        var extTxt = (o.intrinsic_at_open === null || o.intrinsic_at_open === undefined) ? '<span style="color:#6b7280">&mdash;</span>'
           : Number(o.intrinsic_at_open).toFixed(2) + ' + <span title="time value paid">' + Number(o.extrinsic_at_open).toFixed(2) + '</span>'
             + ' <span style="font-size:10px;color:' + (o.extrinsic_pct_at_open > 20 ? '#b45309' : '#6b7280') + '">(' + Number(o.extrinsic_pct_at_open).toFixed(1) + '%)</span>';
         html += '<tr' + (first ? ' style="border-top:2px solid #e5e7eb"' : '') + '>'
@@ -2769,17 +2769,17 @@ function renderLeapsHistory(cycles, lots, th) {
           + '<td style="' + td + '">$' + o.strike + ' &middot; ' + fmtExpiry(o.expiry) + '</td>'
           + '<td style="' + td + 'text-align:right;' + (dte !== null && dte < 365 ? 'color:#b45309;font-weight:600' : '') + '">' + histNum(dte) + '</td>'
           + '<td style="' + td + 'text-align:right">' + (o.qty || 0) + '</td>'
-          + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + (o.open_date ? histDate(o.open_date) : '<span style="color:#9ca3af">date unknown</span>') + histSrcTag(o.src) + '</td>'
+          + '<td style="' + td + 'border-left:2px solid #bbf7d0">' + (o.open_date ? histDate(o.open_date) : '<span style="color:#6b7280">date unknown</span>') + histSrcTag(o.src) + '</td>'
           + '<td style="' + td + 'text-align:right">' + histSpot(o.open_spot, o.open_spot_src) + histRange(o.open_range_pct, o.open_r20_low, o.open_r20_high) + '</td>'
-          + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(o.open_price, 2) + ' <span style="font-size:10px;color:#6b7280">' + histMoney(o.cost_dollar) + '</span></td>'
+          + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(o.open_price, 2) + ' <span style="font-size:10px;color:#4b5563">' + histMoney(o.cost_dollar) + '</span></td>'
           + '<td style="' + td + 'text-align:right">' + extTxt + '</td>'
-          + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(o.dte_at_open) + '</td>'
+          + '<td style="' + td + 'text-align:right;color:#4b5563">' + histNum(o.dte_at_open) + '</td>'
           + '<td style="' + td + 'text-align:right;font-weight:700;color:#4c1d95;background:#faf5ff">' + (o.breakeven !== null && o.breakeven !== undefined ? '$' + Number(o.breakeven).toFixed(2) : '&mdash;') + '</td>'
-          + '<td style="' + td + 'text-align:right;background:#faf5ff">' + (o.be_vs_open_spot_pct === null || o.be_vs_open_spot_pct === undefined ? '<span style="color:#9ca3af">&mdash;</span>' : '<span style="color:#6b7280">' + (Number(o.be_vs_open_spot_pct) >= 0 ? '+' : '') + Number(o.be_vs_open_spot_pct).toFixed(1) + '%</span>') + '</td>'
-          + '<td style="' + td + 'text-align:right;border-left:2px solid #ddd6fe">' + (priced ? histSpotNow(o.underlying, o.open_spot) : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
-          + '<td style="' + td + 'text-align:right">' + (priced ? histSigned(o.spot_vs_be_pct) : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
-          + '<td style="' + td + 'text-align:right;font-family:monospace">' + (priced ? Number(o.mark).toFixed(2) : '<span style="color:#9ca3af" title="This contract was not in this scan\'s position feed">not priced</span>') + '</td>'
-          + '<td style="' + td + 'text-align:right">' + (priced ? '<span style="font-weight:600;color:' + ((o.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + histMoney(o.pnl_dollar) + '</span> <span style="font-size:10px">' + histSigned(o.pnl_pct_of_cost) + '</span>' : '<span style="color:#9ca3af">&mdash;</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right;background:#faf5ff">' + (o.be_vs_open_spot_pct === null || o.be_vs_open_spot_pct === undefined ? '<span style="color:#6b7280">&mdash;</span>' : '<span style="color:#4b5563">' + (Number(o.be_vs_open_spot_pct) >= 0 ? '+' : '') + Number(o.be_vs_open_spot_pct).toFixed(1) + '%</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right;border-left:2px solid #ddd6fe">' + (priced ? histSpotNow(o.underlying, o.open_spot) : '<span style="color:#6b7280">&mdash;</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right">' + (priced ? histSigned(o.spot_vs_be_pct) : '<span style="color:#6b7280">&mdash;</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right;font-family:monospace">' + (priced ? Number(o.mark).toFixed(2) : '<span style="color:#6b7280" title="This contract was not in this scan\'s position feed">not priced</span>') + '</td>'
+          + '<td style="' + td + 'text-align:right">' + (priced ? '<span style="font-weight:600;color:' + ((o.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + histMoney(o.pnl_dollar) + '</span> <span style="font-size:10px">' + histSigned(o.pnl_pct_of_cost) + '</span>' : '<span style="color:#6b7280">&mdash;</span>') + '</td>'
           + '</tr>';
         first = false;
       });
@@ -2801,7 +2801,7 @@ function renderLeapsHistory(cycles, lots, th) {
     + histTh('P&amp;L $')
     + '</tr>';
   if (!cycles.length) {
-    cbody.innerHTML = '<tr><td colspan="' + closedCols + '" style="text-align:center;padding:16px;color:#9ca3af">No closed LEAPS' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
+    cbody.innerHTML = '<tr><td colspan="' + closedCols + '" style="text-align:center;padding:16px;color:#6b7280">No closed LEAPS' + (th.cycles ? ' for this filter' : '') + '</td></tr>';
   } else {
     var cs = cycles.slice().sort(function(a, b){ return (b.close_time || b.close_date || '') < (a.close_time || a.close_date || '') ? -1 : 1; });
     cbody.innerHTML = cs.map(function(c) {
@@ -2815,14 +2815,14 @@ function renderLeapsHistory(cycles, lots, th) {
         + '<td style="' + td + 'text-align:right">' + histSpot(c.open_spot, c.open_spot_src) + histRange(c.open_range_pct, c.open_r20_low, c.open_r20_high) + '</td>'
         + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(c.open_price, 2) + '</td>'
         + '<td style="' + td + 'text-align:right;color:#4c1d95;font-weight:600">' + (c.breakeven !== null && c.breakeven !== undefined ? '$' + Number(c.breakeven).toFixed(2) : '&mdash;') + '</td>'
-        + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(c.dte_at_open) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#4b5563">' + histNum(c.dte_at_open) + '</td>'
         + '<td style="' + td + 'border-left:2px solid #fecaca">' + histDate(c.close_date) + ' <span style="font-size:10px;color:' + howCol + '">' + escHtml(c.how_closed || '') + '</span></td>'
         + '<td style="' + td + 'text-align:right">' + histSpot(c.close_spot, c.close_spot_src, c.open_spot) + histRange(c.close_range_pct) + '</td>'
         + '<td style="' + td + 'text-align:right">' + histNum(c.close_price, 2) + '</td>'
         + '<td style="' + td + 'text-align:right;font-weight:600">' + histNum(c.days_held) + '</td>'
-        + '<td style="' + td + 'text-align:right;color:#6b7280">' + histNum(c.dte_at_close) + '</td>'
+        + '<td style="' + td + 'text-align:right;color:#4b5563">' + histNum(c.dte_at_close) + '</td>'
         + '<td style="' + td + 'text-align:right;border-left:2px solid #e5e7eb">' + histPct(c.realized_pct_of_cost) + '</td>'
-        + '<td style="' + td + 'text-align:right">' + ((c.days_held || 0) >= 30 ? histPct(c.ann_realized_pct) : '<span style="color:#9ca3af" title="held under 30 days &mdash; annualizing a ' + (c.days_held || 0) + '-day hold says nothing">&mdash;</span>') + '</td>'
+        + '<td style="' + td + 'text-align:right">' + ((c.days_held || 0) >= 30 ? histPct(c.ann_realized_pct) : '<span style="color:#6b7280" title="held under 30 days &mdash; annualizing a ' + (c.days_held || 0) + '-day hold says nothing">&mdash;</span>') + '</td>'
         + '<td style="' + td + 'text-align:right;color:' + ((c.pnl_dollar || 0) >= 0 ? '#15803d' : '#b91c1c') + '">' + (c.pnl_dollar !== null && c.pnl_dollar !== undefined ? histMoney(c.pnl_dollar) : '&mdash;') + '</td>'
         + '</tr>';
     }).join('');
@@ -2857,7 +2857,7 @@ function lastCycleLine(o) {
     + (ann === null || ann === undefined ? '' : ' = <strong>' + Number(ann).toFixed(0) + '%/yr</strong>'
        + (plan === null || plan === undefined ? '' : ' (planned ' + Number(plan).toFixed(0) + '%)'))
     + (n > 1 ? ' &middot; ' + n + ' closed ' + want + ' cycles on file' : '');
-  return '<div style="margin-top:6px;font-size:11px;color:#6b7280" title="From your broker fills (Trade History tab)">&#128213; ' + txt + '</div>';
+  return '<div style="margin-top:6px;font-size:11px;color:#4b5563" title="From your broker fills (Trade History tab)">&#128213; ' + txt + '</div>';
 }
 
 // A82 (John 2026-09-18): "better than what I did recently" — the scanner
@@ -2887,7 +2887,7 @@ function holdingsAcctKey(a) { return ((a || 'IBKR') + '').toUpperCase(); }
 
 function ratingColor(label) {
   var l = (label || '').toLowerCase();
-  if (!l) return '#9ca3af';
+  if (!l) return '#6b7280';
   if (l.indexOf('strong buy') === 0) return '#166534';
   if (l.indexOf('buy') === 0)        return '#15803d';
   if (l.indexOf('hold') === 0)       return '#6b7280';
@@ -2945,16 +2945,16 @@ function renderHoldings() {
       + (ratingsBuilt ? ' Ratings as of ' + escHtml(ratingsBuilt) + '.' : ' <span style="color:#991b1b">No ratings in this scan.</span>');
   }
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:#9ca3af">No holdings' + (acct === 'ALL' ? '' : ' in ' + escHtml(acct)) + '.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:#6b7280">No holdings' + (acct === 'ALL' ? '' : ' in ' + escHtml(acct)) + '.</td></tr>';
     return;
   }
 
-  var money = function(v) { return v ? '$' + Math.round(v).toLocaleString() : '<span style="color:#d1d5db">&mdash;</span>'; };
+  var money = function(v) { return v ? '$' + Math.round(v).toLocaleString() : '<span style="color:#6b7280">&mdash;</span>'; };
   var pct = function(v) { return nav > 0 ? (v / nav * 100).toFixed(1) + '%' : '&mdash;'; };
   var html = '';
   rows.forEach(function(r) {
     // Zone from the scanner's own price-watch status (sell side wins if both).
-    var bg = '', fg = '#6b7280', bold = false, zoneTxt = '<span style="color:#9ca3af">no target</span>';
+    var bg = '', fg = '#6b7280', bold = false, zoneTxt = '<span style="color:#6b7280">no target</span>';
     var pw = r.pw;
     if (pw) {
       var bu = pw.buy_under || 0, sa = pw.sell_above || 0;
@@ -2975,25 +2975,25 @@ function renderHoldings() {
         zoneTxt = parts.join(' &middot; ');
       }
     }
-    var priceTxt = r.price === null ? '<span style="color:#d1d5db">&mdash;</span>'
+    var priceTxt = r.price === null ? '<span style="color:#6b7280">&mdash;</span>'
       : Number(r.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
-        + (r.derived ? '<span style="color:#9ca3af" title="Derived: market value &divide; shares (name is not on the watchlist, so the scan carries no quote)">*</span>' : '');
+        + (r.derived ? '<span style="color:#6b7280" title="Derived: market value &divide; shares (name is not on the watchlist, so the scan carries no quote)">*</span>' : '');
     var sevColor = r.sev >= 2 ? '#991b1b' : r.sev === 1 ? '#9a3412' : '#6b7280';
     // Ratings
     var y = r.r.yahoo || null, n = r.r.nasdaq || null;
-    var yTxt = '<span style="color:#9ca3af">n/a</span>';
+    var yTxt = '<span style="color:#6b7280">n/a</span>';
     // Direction only (John, 2026-09-22): no mean score, no price target in
     // the cell. Analyst count rides the tooltip.
     if (y && y.label) {
       yTxt = '<span style="color:' + ratingColor(y.label) + ';font-weight:600"'
         + (y.analysts ? ' title="' + y.analysts + ' analysts"' : '') + '>' + escHtml(y.label) + '</span>';
     }
-    var nTxt = '<span style="color:#9ca3af">n/a</span>';
+    var nTxt = '<span style="color:#6b7280">n/a</span>';
     if (n && n.label) {
       var c = n.counts || {};
       var cTitle = Object.keys(c).length ? Object.keys(c).map(function(k){ return k + ' ' + c[k]; }).join(', ') : '';
       nTxt = '<span style="color:' + ratingColor(n.label) + ';font-weight:600" title="' + escHtml(cTitle) + '">' + escHtml(n.label) + '</span>'
-        + (n.analysts ? ' <span style="color:#9ca3af">&middot; ' + n.analysts + '</span>' : '');
+        + (n.analysts ? ' <span style="color:#6b7280">&middot; ' + n.analysts + '</span>' : '');
     }
     // CC room: contracts left per account. Same filter as the CC card line
     // (skip accounts with <100 shares and no calls written); an account
@@ -3002,7 +3002,7 @@ function renderHoldings() {
       if (acct !== 'ALL' && holdingsAcctKey(c.account) !== acct) return false;
       return (c.shares || 0) >= 100 || (c.cc_contracts || 0) > 0;
     });
-    var roomTxt = '<span style="color:#d1d5db">&mdash;</span>';
+    var roomTxt = '<span style="color:#6b7280">&mdash;</span>';
     if (roomRows.length) {
       roomTxt = roomRows.map(function(c){
         var rem = c.remaining_contracts || 0;
@@ -3010,11 +3010,11 @@ function renderHoldings() {
                  + ' · ' + (c.cc_contracts||0) + ' CC contracts written · room for ' + rem + ' more') + '"'
           + ' style="font-weight:600;color:' + (rem === 0 ? '#991b1b' : '#065f46') + '">'
           + escHtml(c.account || '?') + ' ' + (rem === 0 ? '0 &#9888;' : rem) + '</span>';
-      }).join('<span style="color:#d1d5db"> &middot; </span>');
+      }).join('<span style="color:#6b7280"> &middot; </span>');
     }
     html += '<tr style="border-bottom:1px solid #f3f4f6;background:' + (bg || 'transparent') + '">'
       + '<td style="padding:6px 6px;font-weight:700">' + escHtml(r.t) + '</td>'
-      + '<td style="padding:6px 4px;font-size:10px;color:#6b7280">' + escHtml(r.tier) + '</td>'
+      + '<td style="padding:6px 4px;font-size:10px;color:#4b5563">' + escHtml(r.tier) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + priceTxt + '</td>'
       + '<td style="padding:6px 6px;color:' + fg + ';font-weight:' + (bold ? 600 : 400) + ';white-space:nowrap">' + zoneTxt + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.shares) + '</td>'
@@ -3024,7 +3024,7 @@ function renderHoldings() {
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700">' + money(r.total) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(r.total) + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;color:' + sevColor + (r.sev >= 2 ? ';font-weight:600' : '') + '">' + escHtml(r.verdict) + '</td>'
-      + '<td style="padding:6px 5px;font-size:10px;color:#9ca3af">' + escHtml(r.accts) + '</td>'
+      + '<td style="padding:6px 5px;font-size:10px;color:#6b7280">' + escHtml(r.accts) + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;border-left:2px solid #dbeafe;white-space:nowrap">' + yTxt + '</td>'
       + '<td style="padding:6px 6px;font-size:11px;white-space:nowrap">' + nTxt + '</td>'
       + '</tr>';
@@ -3040,7 +3040,7 @@ function renderHoldings() {
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + pct(sum('total')) + '</td>'
     + '<td colspan="4"></td></tr>';
   cashRows.forEach(function(r) {
-    html += '<tr style="background:#f9fafb;color:#9ca3af">'
+    html += '<tr style="background:#f9fafb;color:#6b7280">'
       + '<td style="padding:6px 6px" colspan="4">' + escHtml(r.t) + ' &middot; cash equivalent, dry powder &mdash; not ranked</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + money(r.shares) + '</td>'
       + '<td colspan="3"></td>'
@@ -3049,7 +3049,7 @@ function renderHoldings() {
       + '<td colspan="4"></td></tr>';
   });
   if (nav > 0) {
-    html += '<tr><td colspan="14" style="padding:6px 6px;font-size:10px;color:#9ca3af">NAV ' + money(nav) + ' &middot; * price derived from market value &divide; shares</td></tr>';
+    html += '<tr><td colspan="14" style="padding:6px 6px;font-size:10px;color:#6b7280">NAV ' + money(nav) + ' &middot; * price derived from market value &divide; shares</td></tr>';
   }
   tbody.innerHTML = html;
 }
@@ -3124,7 +3124,7 @@ function renderPositions() {
 
   var tbody = document.getElementById('pos-tbody');
   if (!positions.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#9ca3af">No positions found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#6b7280">No positions found.</td></tr>';
     return;
   }
 
@@ -3148,14 +3148,14 @@ function renderPositions() {
         + '<div style="width:34px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;flex-shrink:0">'
         + '<div style="height:100%;width:' + Math.min(covPct,100) + '%;background:' + barColor + ';border-radius:3px"></div></div>'
         + '<span style="font-size:11px;font-family:monospace;color:' + barColor + '">' + covPct + '%</span></div>'
-      : '<span style="color:#d1d5db">&#8212;</span>';
+      : '<span style="color:#6b7280">&#8212;</span>';
 
     return '<tr style="border-bottom:0.5px solid #f3f4f6" onmouseover="this.style.background=&apos;#f9fafb&apos;" onmouseout="this.style.background=&apos;&apos;">'
       + '<td style="padding:6px 6px;font-weight:600;font-family:monospace;font-size:12px">'
-        + p.ticker + (p.status==='Watchlist' ? '<span style="font-size:9px;color:#9ca3af;font-weight:400;margin-left:4px">watch</span>' : '')
+        + p.ticker + (p.status==='Watchlist' ? '<span style="font-size:9px;color:#6b7280;font-weight:400;margin-left:4px">watch</span>' : '')
         + '</td>'
       + '<td style="padding:9px 10px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:' + tierBg(p.tier) + ';color:' + tierColor(p.tier) + '">' + p.tier + '</span></td>'
-      + '<td style="padding:6px 5px;font-size:12px;color:#6b7280">' + p.status + '</td>'
+      + '<td style="padding:6px 5px;font-size:12px;color:#4b5563">' + p.status + '</td>'
       + (function(){
           if (!p.exposure_pct || p.exposure_pct <= 0) return '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;font-size:13px">&#8212;</td>';
           // Show account-specific $ if filtered, otherwise total
@@ -3168,7 +3168,7 @@ function renderPositions() {
             // If not in mv_by_account, fall back to total (IBKR positions)
             if (!mv && currentPosFilter === 'IBKR') mv = p.market_value || 0;
           }
-          var mvStr = mv > 0 ? '<div style="font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
+          var mvStr = mv > 0 ? '<div style="font-size:10px;color:#6b7280;font-weight:400;margin-top:1px">'+fmtK(mv)+'</div>' : '';
           // Compute LEAPS MV from existing leaps_positions data (already working)
           var portSize    = (data.exposure && data.exposure.portfolio_size) ? data.exposure.portfolio_size : 0;
           var leapsForTicker = ((data.exposure || {}).leaps_positions || []).filter(function(l){ return l.ticker === p.ticker; });
@@ -3188,13 +3188,13 @@ function renderPositions() {
             + leapsBreakdown
             + '</td>';
         })()
-      + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:#6b7280">' + (p.target_range && p.target_range !== '0–0%' ? p.target_range : '&#8212;') + '</td>'
+      + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:#4b5563">' + (p.target_range && p.target_range !== '0–0%' ? p.target_range : '&#8212;') + '</td>'
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;font-weight:600;color:' + posColor(p.pos_status) + '">' + p.pos_status + '</td>'
       + '<td style="padding:6px 5px;text-align:center;font-size:11px;color:' + priceColor(p.price_opp) + ';font-weight:500">'
-        + p.price_opp + (p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#9ca3af">' + p.pullback_pct + '% off high</span>' : '')
+        + p.price_opp + (p.pullback_pct > 8 ? '<br><span style="font-size:10px;color:#6b7280">' + p.pullback_pct + '% off high</span>' : '')
         + '</td>'
       + '<td style="padding:6px 5px;text-align:center;border-left:2px solid #bfdbfe">' + covHtml + '</td>'
-      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;border-left:2px solid #fed7aa;color:' + (cspObl > 0 ? '#92400e' : '#d1d5db') + '">'
+      + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:600;border-left:2px solid #fed7aa;color:' + (cspObl > 0 ? '#92400e' : '#6b7280') + '">'
         + (cspObl > 0 ? fmtK(cspObl) : '&#8212;') + '</td>'
       + (function(){
           var leaps = p.leaps || [];
@@ -3204,7 +3204,7 @@ function renderPositions() {
               return (l.account || 'IBKR').toUpperCase() === currentPosFilter;
             });
           }
-          if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#6b7280;font-size:11px">&#8212;</td>';
           var lines = leaps.map(function(l){
             return '<div style="margin-bottom:4px;padding-bottom:4px;border-bottom:0.5px solid #e9d5ff">'
               + '<div style="font-size:11px;color:#4c1d95;white-space:nowrap">'+(l.contracts||1)+' x <span style="font-weight:400">$'+l.strike+'</span></div>'
@@ -3216,7 +3216,7 @@ function renderPositions() {
         })()
       + (function(){
           var bcs = p.bcs || [];
-          if (!bcs.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #a5b4fc;color:#d1d5db;font-size:11px">&#8212;</td>';
+          if (!bcs.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #a5b4fc;color:#6b7280;font-size:11px">&#8212;</td>';
           var lines = bcs.map(function(b){
             var ct = b.contracts > 1 ? b.contracts+' x ' : '';
             return '<div style="font-family:monospace;font-size:11px;color:#3730a3;font-weight:600;white-space:nowrap">'+ct+'$'+b.strike+'</div>'
@@ -3230,17 +3230,17 @@ function renderPositions() {
 
   var html = '';
   if (owned.length) {
-    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Owned</td></tr>';
+    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Owned</td></tr>';
     owned.forEach(function(p) { html += makeRow(p); });
   }
   if (watchlist.length) {
-    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Watchlist</td></tr>';
+    html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Watchlist</td></tr>';
     watchlist.forEach(function(p) { html += makeRow(p); });
   }
 
   // Total row — CSP
   html += '<tr style="border-top:2px solid #e5e7eb;background:#f9fafb">'
-    + '<td colspan="8" style="padding:6px 5px;text-align:right;font-size:11px;color:#6b7280;font-weight:600">Total CSP obligation</td>'
+    + '<td colspan="8" style="padding:6px 5px;text-align:right;font-size:11px;color:#4b5563;font-weight:600">Total CSP obligation</td>'
     + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;border-left:2px solid #fed7aa;color:#92400e">' + fmtK(totalCSP) + '</td>'
     + '<td></td><td></td><td></td></tr>';
 
@@ -3252,7 +3252,7 @@ function renderPositions() {
   if (lPos > 0) {
     var lVal = lMV > 0 ? fmtK(lMV) : '~' + fmtK(lCost);
     html += '<tr style="background:#f9fafb">'
-      + '<td colspan="9" style="padding:6px 5px;text-align:right;font-size:11px;color:#6b7280;font-weight:600">Total LEAPS market value</td>'
+      + '<td colspan="9" style="padding:6px 5px;text-align:right;font-size:11px;color:#4b5563;font-weight:600">Total LEAPS market value</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;border-left:2px solid #c4b5fd;color:#4c1d95">' + lVal + '</td>'
       + '<td colspan="2"></td></tr>';
   }
@@ -3287,7 +3287,7 @@ function fmtPnl(r) {
 function renderActions() {
   try {
     if (!data || !data.position_actions) {
-      document.getElementById('actions-content').innerHTML = '<div style="padding:40px;text-align:center;color:#9ca3af">No position data — run a scan first</div>';
+      document.getElementById('actions-content').innerHTML = '<div style="padding:40px;text-align:center;color:#6b7280">No position data — run a scan first</div>';
       return;
     }
     var accountFilter = window._actionsAccountFilter || 'ALL';
@@ -3330,16 +3330,16 @@ function renderActions() {
 
     var html = '';
 
-    html += section('&#128308; ACT NOW', urgent.length, urgent.map(function(r){ return card(r,'#fee2e2','#991b1b'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#9ca3af;font-size:13px">No urgent positions</div>');
-    html += section('&#128993; TAKE PROFIT', profit.length, profit.map(function(r){ return card(r,'#fef3c7','#92400e'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#9ca3af;font-size:13px">No profit-taking opportunities</div>');
+    html += section('&#128308; ACT NOW', urgent.length, urgent.map(function(r){ return card(r,'#fee2e2','#991b1b'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#6b7280;font-size:13px">No urgent positions</div>');
+    html += section('&#128993; TAKE PROFIT', profit.length, profit.map(function(r){ return card(r,'#fef3c7','#92400e'); }).join('') || '<div style="padding:14px;border-radius:8px;border:0.5px solid #e2e8f0;color:#6b7280;font-size:13px">No profit-taking opportunities</div>');
     if (otherRows.length) {
       html += section('&#128280; OTHER', otherRows.length, otherRows.map(function(r){ return card(r,'#e0f2fe','#075985'); }).join(''));
     }
 
     html += '<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleSafe()">'
-      + '<span style="font-size:14px;font-weight:600;color:#6b7280">&#9898; SAFE &mdash; NO ACTION</span>'
-      + '<span style="font-size:12px;color:#9ca3af">'+safeRows.length+' positions</span>'
-      + '<span id="safe-chevron" style="font-size:11px;color:#9ca3af">&#9660; expand</span>'
+      + '<span style="font-size:14px;font-weight:600;color:#4b5563">&#9898; SAFE &mdash; NO ACTION</span>'
+      + '<span style="font-size:12px;color:#6b7280">'+safeRows.length+' positions</span>'
+      + '<span id="safe-chevron" style="font-size:11px;color:#6b7280">&#9660; expand</span>'
       + '</div>'
       + '<div id="safe-section" style="display:none">'
       + safeRows.map(function(r){ return card(r,'#f9fafb','#6b7280'); }).join('')
@@ -3358,13 +3358,13 @@ function section(title, count, body) {
   return '<div style="margin-bottom:24px;width:100%">'
     + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
     + '<span style="font-size:14px;font-weight:600">'+title+'</span>'
-    + '<span style="font-size:12px;color:#9ca3af">'+count+' position'+(count!==1?'s':'')+'</span>'
+    + '<span style="font-size:12px;color:#6b7280">'+count+' position'+(count!==1?'s':'')+'</span>'
     + '</div>' + body + '</div>';
 }
 
 function mbar(label, val, color) {
   return '<div style="display:flex;align-items:baseline;gap:5px">'
-    + '<span style="font-size:11px;color:#9ca3af">'+label+'</span>'
+    + '<span style="font-size:11px;color:#6b7280">'+label+'</span>'
     + '<span style="font-size:15px;font-weight:700;color:'+color+'">'+val+'</span>'
     + '</div>';
 }
@@ -3385,8 +3385,8 @@ function card(r, bg, accent) {
     + '<div style="padding:12px 16px;border-right:0.5px solid var(--color-border-tertiary)">'
     +   '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
     +     '<span style="font-size:16px;font-weight:800;color:var(--color-text-primary)">'+r.ticker+'</span>'
-    +     '<span style="font-size:11px;color:#6b7280;background:var(--color-background-secondary);padding:1px 7px;border-radius:4px">'+fmtPosType(r.type)+'</span>'
-    +     '<span style="font-size:11px;color:#9ca3af">'+r.account+'</span>'
+    +     '<span style="font-size:11px;color:#4b5563;background:var(--color-background-secondary);padding:1px 7px;border-radius:4px">'+fmtPosType(r.type)+'</span>'
+    +     '<span style="font-size:11px;color:#6b7280">'+r.account+'</span>'
     +     earnBadge
     +   '</div>'
     +   '<div style="display:flex;gap:16px;flex-wrap:wrap">'
@@ -3407,7 +3407,7 @@ function card(r, bg, accent) {
 }
 
 function metric(label, val, color) {
-  return '<div><span style="font-size:10px;color:#9ca3af">'+label+' </span>'
+  return '<div><span style="font-size:10px;color:#6b7280">'+label+' </span>'
     + '<span style="font-size:12px;font-weight:600;color:'+color+'">'+val+'</span></div>';
 }
 
@@ -3495,14 +3495,14 @@ function leapsSort(col) {
 var _fmtPctCell = function(v) { return v == null ? '&#8212;' : (v >= 0 ? '+' : '') + v + '%'; };
 var _tickerCell = function(r) {
   return '<td class="stick" style="padding:6px 6px;font-weight:700;font-family:monospace;font-size:12px">' + escHtml(r.ticker)
-    + '<span style="font-size:9px;font-weight:500;color:#9ca3af;margin-left:5px">' + escHtml(fmtPosType(r.type)) + '</span></td>';
+    + '<span style="font-size:9px;font-weight:500;color:#6b7280;margin-left:5px">' + escHtml(fmtPosType(r.type)) + '</span></td>';
 };
 
 function renderActionsTable() {
   var tbody = document.getElementById('actions-tbody');
   if (!tbody) return;
   if (!data || !data.position_actions) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No position data — run a scan first</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#6b7280">No position data — run a scan first</td></tr>';
     return;
   }
 
@@ -3520,7 +3520,7 @@ function renderActionsTable() {
   rows = sortPosRows(rows, actionsSortCol, actionsSortAsc);
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9ca3af">No open CSP/CC positions'
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#6b7280">No open CSP/CC positions'
       + (accountFilter !== 'ALL' ? ' in ' + accountFilter : '') + '.</td></tr>';
     return;
   }
@@ -3532,7 +3532,7 @@ function renderActionsTable() {
   // Direction matters: a big underlying drop is bad for a CSP (assignment risk) but fine for a CC;
   // a big rally is bad for a CC (called-away risk) but fine for a CSP.
   var moveColor = function(r, val) {
-    if (val === undefined || val === null) return '#9ca3af';
+    if (val === undefined || val === null) return '#6b7280';
     var bad  = r.type === 'CSP' ? val <= -5 : val >= 5;
     var good = r.type === 'CSP' ? val >= 5  : val <= -5;
     return bad ? '#991b1b' : good ? '#166534' : '#6b7280';
@@ -3545,31 +3545,31 @@ function renderActionsTable() {
     var stale = r.mark_src && r.mark_src !== 'chain' && r.mark_src !== 'chain_near';
     var earnHtml = earnExpiryBadge(r.ticker, r.expiry, r.dte, r.earn_days) || (r.earn_zone && r.earn_zone !== 'SAFE'
       ? '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;background:' + (r.earn_zone === 'CRITICAL' ? '#fee2e2' : '#fef9c3') + ';color:' + (r.earn_zone === 'CRITICAL' ? '#991b1b' : '#92400e') + '">' + r.earn_zone + ' &middot; ' + r.earn_days + 'd</span>'
-      : '<span style="color:#d1d5db">&#8212;</span>');
+      : '<span style="color:#6b7280">&#8212;</span>');
 
     return '<tr style="border-bottom:0.5px solid #f3f4f6">'
       + _tickerCell(r)
-      + '<td style="padding:6px 5px;font-size:11px;color:#6b7280">' + escHtml(r.account || '') + '</td>'
+      + '<td style="padding:6px 5px;font-size:11px;color:#4b5563">' + escHtml(r.account || '') + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.strike || 0) + '</td>'
       + '<td style="padding:6px 5px;text-align:center">'
         + '<span style="font-weight:700;color:' + dteColor(r.dte) + '">' + r.dte + 'd</span>'
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + fmtExpiry(r.expiry) + '</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">' + fmtExpiry(r.expiry) + '</div></td>'
       + '<td style="padding:6px 5px;text-align:center">' + (r.contracts || 0) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.premium_received || 0).toFixed(2)
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(d.totalCredit).toLocaleString() + ' credit</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">$' + Math.round(d.totalCredit).toLocaleString() + ' credit</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace' + (stale ? ';color:#92400e' : '') + '">$' + (r.mark || 0).toFixed(2)
         + (stale ? '<div style="font-size:9px;color:#92400e;white-space:nowrap">stale</div>' : '') + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
         + fmtPct(r.profit_pct)
         + '<div style="font-size:10px">' + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #e5e7eb">$' + Math.round(d.remainingVal).toLocaleString()
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + (r.remaining_prem || 0) + '% left</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">' + (r.remaining_prem || 0) + '% left</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + (d.annRoi != null ? d.annRoi.toFixed(0) + '%' : '&#8212;') + '</td>'
       + '<td style="padding:6px 5px;text-align:center">'
         + '<span style="color:' + moveColor(r, r.day_chg_pct) + ';font-weight:700">' + fmtPct(r.day_chg_pct) + '</span>'
         + '<div style="font-size:10px;color:' + moveColor(r, r.chg_3d_pct) + ';white-space:nowrap">3d ' + fmtPct(r.chg_3d_pct) + '</div></td>'
       + '<td style="padding:6px 5px;text-align:center;color:' + beColor(r.dist_to_be_pct) + ';font-weight:600">' + (r.dist_to_be_pct || 0) + '%'
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">BE $' + r.breakeven + '</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">BE $' + r.breakeven + '</div></td>'
       + '<td style="padding:6px 5px;text-align:center">' + earnHtml + '</td>'
       + '<td style="padding:6px 8px">'
         + '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:' + actionBg(r.action) + ';color:' + actionColor(r.action) + '">' + escHtml(r.action) + '</span>'
@@ -3593,7 +3593,7 @@ function renderLeapsPositionsTable() {
   var tbody = document.getElementById('leaps-tbody');
   if (!tbody) return;
   if (!data || !data.position_actions) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#9ca3af">No position data — run a scan first</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#6b7280">No position data — run a scan first</td></tr>';
     return;
   }
 
@@ -3610,7 +3610,7 @@ function renderLeapsPositionsTable() {
   rows = sortPosRows(rows, leapsSortCol, leapsSortAsc);
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#9ca3af">No long LEAPS calls'
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#6b7280">No long LEAPS calls'
       + (accountFilter !== 'ALL' ? ' in ' + accountFilter : '') + '.</td></tr>';
     return;
   }
@@ -3637,32 +3637,32 @@ function renderLeapsPositionsTable() {
     // Above breakeven is the healthy state for a long call, so the polarity here
     // is the opposite of the short-option cushion column.
     var beVal     = r.dist_to_be_pct;
-    var beColor   = beVal == null ? '#9ca3af' : beVal >= 10 ? '#166534' : beVal >= 0 ? '#92400e' : '#991b1b';
+    var beColor   = beVal == null ? '#6b7280' : beVal >= 10 ? '#166534' : beVal >= 0 ? '#92400e' : '#991b1b';
     var hi        = r.week52_high;
     var fromHi    = (hi && r.underlying) ? ((r.underlying - hi) / hi * 100) : null;
 
     return '<tr style="border-bottom:0.5px solid #f3f4f6">'
       + _tickerCell(r)
-      + '<td style="padding:6px 5px;font-size:11px;color:#6b7280">' + escHtml(r.account || '') + '</td>'
+      + '<td style="padding:6px 5px;font-size:11px;color:#4b5563">' + escHtml(r.account || '') + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.strike || 0) + '</td>'
       + '<td style="padding:6px 5px;text-align:center">'
         + '<span style="font-weight:700;color:#374151">' + (r.dte || 0) + 'd</span>'
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + fmtExpiry(r.expiry) + '</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">' + fmtExpiry(r.expiry) + '</div></td>'
       + '<td style="padding:6px 5px;text-align:center">' + (r.contracts || 0) + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.avg_cost || 0).toFixed(2)
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(totalCost).toLocaleString() + ' paid</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">$' + Math.round(totalCost).toLocaleString() + ' paid</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.mark || 0).toFixed(2)
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">$' + Math.round(mktVal).toLocaleString() + '</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">$' + Math.round(mktVal).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
         + _fmtPctCell(r.profit_pct)
         + '<div style="font-size:10px">' + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">$' + (r.underlying || 0).toFixed(2)
-        + (r.sell_above ? '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">sell $' + r.sell_above + '</div>' : '') + '</td>'
+        + (r.sell_above ? '<div style="font-size:10px;color:#6b7280;white-space:nowrap">sell $' + r.sell_above + '</div>' : '') + '</td>'
       + '<td style="padding:6px 5px;text-align:center;font-weight:600;color:' + beColor + '">'
         + (beVal == null ? '&#8212;' : (beVal >= 0 ? '+' : '') + beVal + '%')
-        + '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">BE $' + (r.breakeven != null ? r.breakeven : '&#8212;') + '</div></td>'
+        + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">BE $' + (r.breakeven != null ? r.breakeven : '&#8212;') + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace">' + (hi ? '$' + hi.toFixed(2) : '&#8212;')
-        + (fromHi != null ? '<div style="font-size:10px;color:#9ca3af;white-space:nowrap">' + (fromHi >= 0 ? '+' : '') + fromHi.toFixed(1) + '%</div>' : '') + '</td>'
+        + (fromHi != null ? '<div style="font-size:10px;color:#6b7280;white-space:nowrap">' + (fromHi >= 0 ? '+' : '') + fromHi.toFixed(1) + '%</div>' : '') + '</td>'
       + '<td style="padding:6px 8px">'
         + '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:' + noteBg(r.action) + ';color:' + noteColor(r.action) + '">' + escHtml(r.action) + '</span>'
         + '<div style="font-size:11px;color:#374151;margin-top:3px">' + escHtml(r.reason || '') + '</div></td>'
