@@ -1583,10 +1583,12 @@ function renderMarket() {
   });
   document.getElementById('opp-sub').innerHTML =
     oppLines.map(function(l){
-      if (!l[1]) return '<div style="color:#6b7280">' + l[1] + ' ' + l[2] + '</div>';
+      if (!l[1]) return '<div style="color:#6b7280;padding:5px 0">' + l[1] + ' ' + l[2] + '</div>';
       return '<div onclick="event.stopPropagation();gotoActionable(\'' + l[0] + '\')"'
         + ' title="Show only these cards"'
-        + ' style="color:#374151;font-weight:600;cursor:pointer">' + l[1] + ' ' + l[2] + '</div>';
+        // A93b: padded tap target — the bare ~20px lines touched each other and a
+        // finger aimed at "3 Covered Calls" could open the CSP line below it.
+        + ' style="color:#374151;font-weight:600;cursor:pointer;padding:5px 0;border-bottom:1px solid #f3f4f6">' + l[1] + ' ' + l[2] + ' &rsaquo;</div>';
     }).join('') +
     '<div style="color:#6b7280;margin-top:4px">of ' + [...new Set(allOpps.map(function(o){ return o.ticker; }))].length + ' names scanned &middot; click to view</div>';
 
