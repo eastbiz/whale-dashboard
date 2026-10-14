@@ -2355,6 +2355,17 @@ function gotoActionable(mode) {
   if (btn) filterOpps(mode || 'all', btn);
   var iz = document.getElementById('in-zone-toggle');
   if (iz && !window.inZoneOnly) toggleInZone(iz);
+  // A93: land on the counted cards, not on the Price Watch panel above them.
+  // On the CC view that panel shows every name above its sell target in
+  // green (MSFT/AAPL/PLTR on 2026-10-14) — on a small screen it filled the
+  // view, the 3 CC cards sat below the fold, and the panel read as "3 Spike
+  // CC" while the CC link seemed to show nothing. Line clicks only; the
+  // tile itself opens All at the top as before.
+  if (mode) {
+    var tgt = (mode === 'LEAPS' && leapsView === 'table') ? document.getElementById('leaps-table-view')
+            : document.getElementById('opps-grid');
+    if (tgt) setTimeout(function(){ tgt.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 50);
+  }
 }
 
 // Apply persisted state on load
