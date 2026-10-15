@@ -1052,6 +1052,48 @@ function renderCspLadder(o) {
     + '</div>';
 }
 
+// A96: the CC strike x expiry grid on the card — every call in the delta
+// band (±0.03, flagged) at each expiry 30-70 days, sorted by DTE then
+// strike. ★ = the CSP ladder rule on the in-band contract nearest the band
+// middle at each expiry. Sale = strike + premium (your exit if called away).
+// OTM = strike vs the scan price. Never parse r.expiry with new Date (A64).
+function renderCcLadder(o) {
+  var rows = o.cc_ladder || [];
+  if (!rows.length) return '';
+  var th = function(t, align){ return '<th style="text-align:' + (align||'right') + ';padding:3px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">' + t + '</th>'; };
+  var td = function(v, align, extra){ return '<td style="text-align:' + (align||'right') + ';padding:3px 6px;font-family:monospace;font-size:11px;white-space:nowrap;' + (extra||'') + '">' + v + '</td>'; };
+  var prevExp = null;
+  var body = rows.map(function(r){
+    var rec = !!r.is_rec;
+    var newExp = r.expiry !== prevExp; prevExp = r.expiry;
+    var bg = rec ? 'background:#ecfdf5;' : '';
+    var sep = newExp ? 'border-top:1px solid #e5e7eb;' : '';
+    var fw = rec ? 'font-weight:700;' : '';
+    var floor = r.below_floor ? '<span title="under the bucket annualized floor" style="color:#b45309">&dagger;</span>' : '';
+    var _ev = newExp ? earnVsExpiry(o.ticker, r.expiry, r.dte, null) : null;   // A88
+    var earnMark = _ev && _ev.level !== 'clear'
+      ? ' <span title="' + escHtml(_ev.text) + '" style="color:' + (_ev.level === 'inside' ? '#991b1b' : '#92400e') + '">E</span>' : '';
+    var saleOk = !o.sell_above || r.effective_sale >= o.sell_above;
+    return '<tr style="' + bg + sep + '">'
+      + td(newExp || rec ? (rec ? '&#9733; ' : '') + r.dte + 'd' : '', 'left', fw)
+      + td(newExp ? escHtml(String(r.expiry || '')) + earnMark : '', 'left', fw + 'color:#4b5563')
+      + td('$' + r.strike, 'right', fw)
+      + td(r.otm_pct != null ? '+' + Number(r.otm_pct).toFixed(1) + '%' : '&#8212;', 'right', fw + 'color:#4b5563')
+      + td('$' + Number(r.premium).toFixed(2), 'right', fw)
+      + td('$' + Number(r.premium_per_contract || r.premium * 100).toLocaleString(undefined, {maximumFractionDigits: 0}), 'right', fw + 'color:#065f46')
+      + td(Number(r.annualized_return).toFixed(0) + '%' + floor, 'right', fw + (r.below_floor ? 'color:#b45309' : ''))
+      + td(r.delta + (r.band_note ? ' <span title="' + escHtml(r.band_note) + '" style="color:#b45309">&#9888;</span>' : ''), 'right', fw + (r.band_note ? 'color:#b45309' : ''))
+      + td('$' + r.effective_sale, 'right', fw + (saleOk ? '' : 'color:#991b1b'))
+      + '</tr>';
+  }).join('');
+  return '<div style="margin:6px 0;overflow-x:auto">'
+    + '<table style="border-collapse:collapse;width:100%"><thead><tr>'
+    + th('DTE','left') + th('Expiry','left') + th('Strike') + th('OTM') + th('Prem') + th('$/ctr') + th('Ann') + th('&delta;') + th('Sale')
+    + '</tr></thead><tbody>' + body + '</tbody></table>'
+    + (o.rec_reason ? '<div style="font-size:11px;color:#065f46;margin-top:3px">&#9733; ' + escHtml(o.rec_reason) + '</div>' : '')
+    + '</div>';
+}
+
 // A70: why a name has no deep-ITM LEAPS row. The scanner publishes
 // leaps_status = { TICKER: { rows, reason, longest_expiry, longest_dte, dte_min } }.
 // Names at or near their buy target come first — that is where a missing
@@ -1953,18 +1995,28 @@ function renderOpps() {
 
   // A91b: CSP / Post-Drop views go 2-up, and the ladder legend prints once
   // above the grid instead of on every card.
-  grid.classList.toggle('ladder2', currentFilter === 'CSP' || currentFilter === 'DROP_CSP');
+  grid.classList.toggle('ladder2', currentFilter === 'CSP' || currentFilter === 'DROP_CSP' || currentFilter === 'CC');
   var _lg = document.getElementById('csp-legend');
   if (_lg) {
     var _hasLadder = filtered.some(function(o){ return (o.csp_ladder || []).length; });
-    _lg.style.display = _hasLadder ? '' : 'none';
-    _lg.innerHTML = _hasLadder
+    var _hasCcLadder = filtered.some(function(o){ return (o.cc_ladder || []).length; });   // A96
+    _lg.style.display = (_hasLadder || _hasCcLadder) ? '' : 'none';
+    _lg.innerHTML = (_hasCcLadder
+      ? '<b>CC table:</b> every strike in your delta band at each expiry 30-70d &middot; &#9733; = the scanner\'s pick'
+        + ' &middot; OTM = strike above the scan price &middot; $/ctr = premium per contract'
+        + ' &middot; <span style="color:#b45309">&dagger;</span> under the bucket floor'
+        + ' &middot; <span style="color:#991b1b">E</span> earnings inside the expiry, or expiry &le; ' + EARN_EXPIRY_BUFFER_DAYS + 'd before it'
+        + ' &middot; <span style="color:#b45309">&#9888;</span> outside your delta band, comparison only'
+        + ' &middot; Sale = strike + premium (red = under your sell target)'
+        + (_hasLadder ? '<br>' : '')
+      : '')
+      + (_hasLadder
       ? '<b>Expiry table:</b> &#9733; = the scanner\'s pick &middot; $/ctr = premium per contract (decides, P43)'
         + ' &middot; <span style="color:#b45309">&dagger;</span> under the bucket floor (kept: another expiry clears it)'
         + ' &middot; <span style="color:#991b1b">E</span> earnings inside the expiry, or expiry &le; ' + EARN_EXPIRY_BUFFER_DAYS + 'd before it'
         + ' &middot; <span style="color:#b45309">&#9888;</span> nearest strike outside your delta band, for comparison only'
         + ' &middot; Entry = strike &minus; premium (your cost if assigned)'
-      : '';
+      : '');
   }
 
   if (!filtered.length) {
@@ -2204,6 +2256,7 @@ function renderOpps() {
             + renderCspLadder(o);
         })() : '')
       + (o.mode === 'DROP_CSP' ? renderCspLadder(o) : '')   // A87: post-drop rows carry the same ladder
+      + (o.mode === 'CC' ? renderCcLadder(o) : '')          // A96: CC strike x expiry grid
       + (o.mode !== 'LEAPS' && o.mode !== 'CSP'
         ? '<div class="ivp-row">'
           + '<span style="font-size:10px;color:#6b7280;min-width:22px">IVP</span>'
