@@ -31,6 +31,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#6b7280;margin-bottom:4px;font-weight:600;}
 .metric-val{font-size:22px;font-weight:700;font-family:monospace;line-height:1;margin-bottom:4px;}
 .metric-sub{font-size:11px;color:#4b5563;line-height:1.5;}
+.metric-wide{grid-column:span 2;}
+.metric-val-lg{font-size:34px;}
+.metric-compact .metric-lbl{margin-bottom:0;}
+.mc-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.mc-val{font-size:14px;font-weight:700;font-family:monospace;}
+.mc-sub{font-size:10px;color:#6b7280;line-height:1.3;margin-bottom:6px;}
+.mc-sub:last-child{margin-bottom:0;}
 .exposure-panel{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;margin-bottom:12px;}
 .exposure-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .exposure-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;}
@@ -112,7 +119,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .wide-tbl th.stick,.wide-tbl td.stick{position:sticky;left:0;z-index:2;background:#fff;box-shadow:inset -1px 0 0 #e5e7eb;}
 .wide-tbl thead th.stick{z-index:3;}
 .wide-tbl tbody tr:hover td{background:#f9fafb;}
-@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}.pos-summary-grid{grid-template-columns:1fr;}}
+@media(max-width:640px){.g4{grid-template-columns:repeat(2,1fr);}#page-market .g4>.metric{grid-column:span 2;}.g2,.g3{grid-template-columns:1fr;}.exposure-grid{grid-template-columns:1fr 1fr;}.sizing-grid{grid-template-columns:1fr 1fr;}.pos-summary-grid{grid-template-columns:1fr;}}
 /* Desktop: scale the whole UI up 5% so text is comfortably readable on
    high-resolution laptops. zoom shrinks the available CSS width by the same
    factor (e.g. 1920px screen -> ~1829px), which the 1750px .app cap then
@@ -174,50 +181,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page active" id="page-market">
     <div id="market-loading" class="spinner">Loading latest scan results...</div>
     <div id="market-content" style="display:none">
+      <!-- Top row (John, 2026-10-15): VIX / S&P / Positions are glance-only, so
+           they share ONE compact tile. Actionable Today is the tile he uses most
+           and spans two columns. Close Candidates moved up here from the
+           exposure panel. -->
       <div class="g4">
-        <div class="metric"><div class="metric-lbl">VIX</div><div class="metric-val" id="vix-val">&#8212;</div><div class="metric-sub" id="vix-sub">&#8212;</div></div>
-        <div class="metric"><div class="metric-lbl">S&amp;P 500</div><div class="metric-val" id="spy-val" style="color:#1e40af">&#8212;</div><div class="metric-sub" id="spy-sub">&#8212;</div></div>
+        <div class="metric metric-compact">
+          <div class="mc-row"><span class="metric-lbl">VIX</span><span class="mc-val" id="vix-val">&#8212;</span></div>
+          <div class="mc-sub" id="vix-sub">&#8212;</div>
+          <div class="mc-row"><span class="metric-lbl">S&amp;P 500</span><span class="mc-val" id="spy-val" style="color:#1e40af">&#8212;</span></div>
+          <div class="mc-sub" id="spy-sub">&#8212;</div>
+          <div class="mc-row"><span class="metric-lbl">Positions</span><span class="mc-val" id="port-val">&#8212;</span></div>
+          <div class="mc-sub">holdings tracked</div>
+        </div>
         <!-- A55: counts only rows at/near John's own targets (in_zone), per mode.
              Same predicate as the 🎯 At / Near Target filter — keep them identical. -->
-        <div class="metric" id="opp-tile" onclick="gotoActionable()" style="cursor:pointer"
+        <div class="metric metric-wide" id="opp-tile" onclick="gotoActionable()" style="cursor:pointer"
              title="Names at or near your own buy/sell targets, counted once per strategy — the same rule as the &#x1F3AF; At / Near Target filter. One name = one count even when it has many band/expiry rows. Click to see the cards.">
-          <div class="metric-lbl">Actionable Today</div><div class="metric-val" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
-        <div class="metric"><div class="metric-lbl">Positions</div><div class="metric-val" id="port-val" style="font-size:18px">&#8212;</div><div class="metric-sub">holdings tracked</div></div>
+          <div class="metric-lbl">Actionable Today</div><div class="metric-val metric-val-lg" id="opp-count">0</div><div class="metric-sub" id="opp-sub">from last scan</div></div>
+        <div class="metric" onclick="gotoActions()" style="cursor:pointer" title="Short options ready to close (TAKE PROFIT / BIG MOVE / P&amp;L SWING). Click to open CSP / CC Actions.">
+          <div class="metric-lbl">Close Candidates</div>
+          <div class="metric-val metric-val-lg" id="exp-close">&#8212;</div>
+          <div class="metric-sub" id="exp-close-sub">Positions ready to close</div>
+        </div>
       </div>
 
-      <!-- EXPOSURE PANEL — spec sections 4 and 7 -->
-      <div class="exposure-panel" id="exposure-panel" style="display:none">
-        <div class="exposure-hdr">
-          <span class="exposure-title">Portfolio Exposure &amp; Capacity</span>
-          <span id="exp-limit-badge" class="badge b-green"></span>
-        </div>
-        <div class="exposure-grid">
-          <div class="exp-cell">
-            <div class="exp-lbl">CSP Obligation (total)</div>
-            <div class="exp-val" id="exp-cso">&#8212;</div>
-            <div class="exp-sub" id="exp-cso-pct">Cash secured puts open</div>
-          </div>
-          <div class="exp-cell">
-            <div class="exp-lbl">Remaining CSP Capacity</div>
-            <div class="exp-val" id="exp-room" style="color:#166534">&#8212;</div>
-            <div class="exp-sub" id="exp-room-sub">Available for new CSPs</div>
-          </div>
-          <div class="exp-cell">
-            <div class="exp-lbl">Close Candidates</div>
-            <div class="exp-val" id="exp-close" style="cursor:pointer" onclick="gotoActions()">&#8212;</div>
-            <div class="exp-sub" id="exp-close-sub">Positions ready to close</div>
-          </div>
-        </div>
-        <div class="cap-bar-wrap">
-          <div class="cap-bar-label">
-            <span>CSP utilization</span>
-            <span id="cap-bar-lbl-r">0% of 25% limit</span>
-          </div>
-          <div class="cap-bar-track">
-            <div class="cap-bar-fill cap-ok" id="cap-bar-fill" style="width:0%"></div>
-          </div>
-        </div>
-        <div style="border-top:1px solid #e5e7eb;margin-top:14px;padding-top:12px;">
+      <!-- Open CSP / CC positions — moved up directly under the tiles (John, 2026-10-15). -->
+      <div class="exposure-panel" id="exp-open-panel" style="display:none">
+        <div>
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#374151;margin-bottom:10px;">Top CSP Positions</div>
           <div id="exp-top-csp"></div>
         </div>
@@ -241,6 +232,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
           <div id="exp-cc-tickers" style="margin-top:8px;font-size:11px;color:#4b5563;line-height:2;"></div>
+        </div>
+      </div>
+
+      <!-- EXPOSURE PANEL — spec sections 4 and 7 -->
+      <div class="exposure-panel" id="exposure-panel" style="display:none">
+        <div class="exposure-hdr">
+          <span class="exposure-title">Portfolio Exposure &amp; Capacity</span>
+          <span id="exp-limit-badge" class="badge b-green"></span>
+        </div>
+        <div class="exposure-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="exp-cell">
+            <div class="exp-lbl">CSP Obligation (total)</div>
+            <div class="exp-val" id="exp-cso">&#8212;</div>
+            <div class="exp-sub" id="exp-cso-pct">Cash secured puts open</div>
+          </div>
+          <div class="exp-cell">
+            <div class="exp-lbl">Remaining CSP Capacity</div>
+            <div class="exp-val" id="exp-room" style="color:#166534">&#8212;</div>
+            <div class="exp-sub" id="exp-room-sub">Available for new CSPs</div>
+          </div>
+        </div>
+        <div class="cap-bar-wrap">
+          <div class="cap-bar-label">
+            <span>CSP utilization</span>
+            <span id="cap-bar-lbl-r">0% of 25% limit</span>
+          </div>
+          <div class="cap-bar-track">
+            <div class="cap-bar-fill cap-ok" id="cap-bar-fill" style="width:0%"></div>
+          </div>
         </div>
         <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
           <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
@@ -1651,6 +1671,7 @@ function renderMarket() {
   // placeholder values until new whale_scanner.py has run and written
   // the "exposure" key into results.json.
   document.getElementById('exposure-panel').style.display = 'block';
+  document.getElementById('exp-open-panel').style.display = 'block';
   const exp     = data.exposure || {};
   const hasExp  = !!data.exposure;
 
@@ -1707,10 +1728,13 @@ function renderMarket() {
     if (closable.length) {
       closeEl.textContent  = String(closable.length);
       closeEl.style.color  = '#92400e';
-      closeSubEl.innerHTML = closable.slice(0,2).map(function(r){
-        return escHtml(r.ticker) + ' $' + r.strike + (r.type === 'CSP' ? 'P' : 'C')
-             + ' ' + Math.round(r.profit_pct||0) + '%';
-      }).join(' · ') + (closable.length > 2 ? ' +' + (closable.length-2) + ' more' : '');
+      // One line per position, account shown — the same contract held in two
+      // accounts is two decisions (IBIT $54C IRA + CRT).
+      closeSubEl.innerHTML = closable.slice(0,5).map(function(r){
+        return '<div style="padding:2px 0"><strong>' + escHtml(r.ticker) + ' $' + r.strike + (r.type === 'CSP' ? 'P' : 'C')
+             + '</strong> ' + escHtml(r.account || '') + ' &middot; ' + escHtml(r.action || '')
+             + ' &middot; <strong style="color:#92400e">' + Math.round(r.profit_pct||0) + '%</strong></div>';
+      }).join('') + (closable.length > 5 ? '<div style="color:#6b7280">+' + (closable.length-5) + ' more</div>' : '');
     } else {
       closeEl.textContent = '0';
       closeEl.style.color = '';
