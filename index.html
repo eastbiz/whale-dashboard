@@ -635,6 +635,16 @@ function earnVsExpiry(ticker, expiry, dte, rowDays) {
   return {level: level, days: days, label: label, when: when, note: note, gap: gap,
           text: 'Earn ' + label + (days != null ? ' (' + days + 'd)' : '') + (note ? ' \u00b7 ' + note : '')};
 }
+// A101: the near-term earnings badge on LEAPS / convexity / Price Watch.
+// `d && d <= 35` hid the badge on the print day itself (d = 0) — the one day
+// it matters most now that the scanner no longer skips earnings-week names.
+function earnSoon(d) { return d != null && d >= 0 && d <= 35; }
+function earnSoonBadge(d) {
+  if (!earnSoon(d)) return '';
+  return '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;white-space:nowrap;background:'
+    + (d <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (d <= 14 ? '#991b1b' : '#92400e') + '">&#9888; '
+    + (d === 0 ? 'Earnings today' : 'Earn ' + d + 'd') + '</span>';
+}
 function earnExpiryBadge(ticker, expiry, dte, rowDays) {
   var r = earnVsExpiry(ticker, expiry, dte, rowDays);
   if (!r) return '';
@@ -1203,8 +1213,7 @@ function renderLeapsTable(leaps) {
       else if (buDist<=5) tNote='<span style="color:#ca8a04">\u25B2 '+buDist.toFixed(1)+'% above $'+bu+' \u2014 approaching</span>';
       else tNote='<span style="color:#6b7280">'+buDist.toFixed(1)+'% above buy target $'+bu+'</span>';
     }
-    var eNote = first.days_to_earnings&&first.days_to_earnings<=35
-      ? ' <span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:'+(first.days_to_earnings<=14?'#fee2e2':'#fef9c3')+';color:'+(first.days_to_earnings<=14?'#991b1b':'#92400e')+'">&#9888; Earn '+first.days_to_earnings+'d</span>' : '';
+    var eNote = earnSoon(first.days_to_earnings) ? ' ' + earnSoonBadge(first.days_to_earnings) : '';
     html += '<tr style="background:#f0f9ff;border-top:2px solid #bfdbfe"><td colspan="10" style="padding:8px 10px;font-weight:700;font-size:13px;color:#1e40af">'
       + ticker+' <span style="font-size:11px;font-weight:400;color:#374151;font-family:monospace">$'+first.price.toFixed(2)+'</span>'
       + ' <span style="font-size:10px;font-weight:400;margin-left:8px">'+tNote+'</span>'+eNote+'</td></tr>';
@@ -1364,7 +1373,7 @@ function _cvxDataRow(o){
   function cov(v){ if(v==null) return '\u2014'; var c=v>=1.15?'#166534':v>=1.05?'#15803d':v>=1.00?'#92400e':'#991b1b'; return '<span style="color:'+c+';font-weight:600">'+v.toFixed(2)+'</span>'; }
   return '<tr style="border-bottom:1px solid #f3f4f6;background:'+st.bg+'">'
     + '<td style="padding:7px 8px;text-align:center">'+gradeBadge+'</td>'
-    + '<td style="padding:7px 10px;font-weight:700;color:#374151">'+o.ticker+'</td>'
+    + '<td style="padding:7px 10px;font-weight:700;color:#374151">'+o.ticker+' '+earnSoonBadge(o.days_to_earnings)+'</td>'
     + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:600">$'+o.strike+'</td>'
     + '<td style="padding:7px 6px;text-align:right;font-family:monospace;font-weight:700;color:#6b21a8">$'+o.premium.toFixed(2)+'</td>'
     + '<td style="padding:7px 6px;text-align:center;font-family:monospace;color:#4b5563">$'+o.mid.toFixed(2)+'</td>'
@@ -1532,7 +1541,7 @@ function renderPriceWatch() {
       + '<div style="margin-bottom:4px">'+distTxt+'</div>'
       + '<div style="font-size:10px;color:#4b5563">'+tgtRow+'</div>'
       + (movRow ? '<div style="margin-top:5px;line-height:1.8">'+movRow+'</div>' : '')
-      + (p.days_to_earnings && p.days_to_earnings <= 35 ? '<div style="margin-top:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:' + (p.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (p.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + ';display:inline-block">&#9888; Earnings in ' + p.days_to_earnings + 'd</div>' : '')
+      + (earnSoon(p.days_to_earnings) ? '<div style="margin-top:5px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:' + (p.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (p.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + ';display:inline-block">&#9888; Earnings in ' + p.days_to_earnings + 'd</div>' : '')
       + '</div>';
   }).join('');
 
@@ -2049,7 +2058,7 @@ function renderOpps() {
       }
       return '<div class="opp-card" style="border-left:4px solid '+st.badge+'">'
         + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
-        +   '<div><span style="font-weight:700;font-size:15px">'+o.ticker+'</span> <span style="font-family:monospace;color:#4b5563;font-size:12px">$'+o.price.toFixed(2)+'</span>'+recBadge+'</div>'
+        +   '<div><span style="font-weight:700;font-size:15px">'+o.ticker+'</span> <span style="font-family:monospace;color:#4b5563;font-size:12px">$'+o.price.toFixed(2)+'</span>'+recBadge+' '+earnSoonBadge(o.days_to_earnings)+'</div>'
         +   '<span style="font-size:10px;font-weight:700;background:'+st.badgeBg+';color:'+st.badge+';padding:2px 7px;border-radius:4px;white-space:nowrap">'+o.class_label+'</span>'
         + '</div>'
         + '<div style="display:flex;gap:14px;margin-top:8px;font-size:13px">'
@@ -2215,7 +2224,7 @@ function renderOpps() {
       +       '<span class="badge ' + bc + '">' + bl + '</span>'
       +       '<span style="color:#6b7280">&#183;</span>'
       +       '<span style="font-size:11px;color:#4b5563">' + o.tier + '</span>'
-      +       (o.expiry && o.mode !== 'LEAPS' ? earnExpiryBadge(o.ticker, o.expiry, o.dte, o.days_to_earnings) : (o.days_to_earnings && o.days_to_earnings <= 35 ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:' + (o.days_to_earnings <= 14 ? '#fee2e2' : '#fef9c3') + ';color:' + (o.days_to_earnings <= 14 ? '#991b1b' : '#92400e') + '">&#9888; Earn ' + o.days_to_earnings + 'd</span>' : ''))
+      +       (o.expiry && o.mode !== 'LEAPS' ? earnExpiryBadge(o.ticker, o.expiry, o.dte, o.days_to_earnings) : earnSoonBadge(o.days_to_earnings))
       +       (o.mode === 'LEAPS' && o.trend_label
           ? (function(){ var tC = o.trend_action==='BUY'?'#166534':o.trend_action==='WATCH'?'#92400e':'#991b1b'; var tB = o.trend_action==='BUY'?'#dcfce7':o.trend_action==='WATCH'?'#fef3c7':'#fee2e2'; return '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;background:'+tB+';color:'+tC+'">'+o.trend_label+'</span>'; })()
           : (o.mode !== 'CSP' && o.mode !== 'CC' && ql ? '<span class="badge ' + qlColor + '" style="font-size:10px" title="' + qlText + '">' + qlText + '</span>' : ''))
