@@ -19,7 +19,12 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
 ## Key tabs / sections
 - **Opportunities** — CSP, CC, LEAPS, Convexity, Bull Call Spread, Spike CC,
   Post-Drop filters. LEAPS and Convexity have sortable table views.
-- **Positions** — current holdings. `Positions | Holdings | Trade History`
+- **Positions** — current holdings. Positions-table rows are one block per
+  ticker (2026-11-05, John: LEAPS lists read as belonging to the wrong
+  stock): cells top-aligned, 2px divider between tickers, alternating row
+  shade, no divider under a cell's last LEAPS line — keep the row divider
+  STRONGER than the dividers inside the LEAPS cell.
+  `Positions | Holdings | Trade History`
   switch on the right; the account buttons on the left apply to all three.
   **Trade History (A73, 2026-09-15):** renders `results.trade_history` —
   closed option cycles from broker fills (stock price at the opening and

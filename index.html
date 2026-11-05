@@ -3226,7 +3226,16 @@ function renderPositions() {
   var watchlist = positions.filter(function(p) { return p.status === 'Watchlist'; });
   var totalCSP = positions.reduce(function(s, p) { return s + (p.csp_obligation || 0); }, 0);
 
-  function makeRow(p) {
+  // One ticker = one visual block (John, 2026-11-05: "hard to see which LEAPS
+  // belong to which stock"). A name with 5+ LEAPS made a tall row while every
+  // other cell sat vertically centred, and the row divider (0.5px #f3f4f6)
+  // was fainter than the dividers BETWEEN LEAPS lines inside the cell — so a
+  // LEAPS list read as belonging to the ticker above or below. Now: all cells
+  // top-aligned (ticker on the same line as its first LEAPS), a strong 2px
+  // divider between tickers, alternating row shade, and no divider under the
+  // last LEAPS line of a cell.
+  function makeRow(p, idx) {
+    var rowBg   = (idx % 2) ? '#f4f6f9' : '#ffffff';
     var covPct  = p.coverage_pct || 0;
     var cspObl  = p.csp_obligation || 0;
     var barColor = covPct >= 100 ? '#22c55e' : covPct >= 50 ? '#3b82f6' : covPct > 0 ? '#f59e0b' : '#e5e7eb';
@@ -3237,7 +3246,7 @@ function renderPositions() {
         + '<span style="font-size:11px;font-family:monospace;color:' + barColor + '">' + covPct + '%</span></div>'
       : '<span style="color:#6b7280">&#8212;</span>';
 
-    return '<tr style="border-bottom:0.5px solid #f3f4f6" onmouseover="this.style.background=&apos;#f9fafb&apos;" onmouseout="this.style.background=&apos;&apos;">'
+    return '<tr style="border-bottom:2px solid #cbd5e1;vertical-align:top;background:' + rowBg + '" onmouseover="this.style.background=&apos;#eef2ff&apos;" onmouseout="this.style.background=&apos;' + rowBg + '&apos;">'
       + '<td style="padding:6px 6px;font-weight:600;font-family:monospace;font-size:12px">'
         + p.ticker + (p.status==='Watchlist' ? '<span style="font-size:9px;color:#6b7280;font-weight:400;margin-left:4px">watch</span>' : '')
         + '</td>'
@@ -3292,8 +3301,9 @@ function renderPositions() {
             });
           }
           if (!leaps.length) return '<td style="padding:6px 5px;text-align:center;border-left:2px solid #c4b5fd;color:#6b7280;font-size:11px">&#8212;</td>';
-          var lines = leaps.map(function(l){
-            return '<div style="margin-bottom:4px;padding-bottom:4px;border-bottom:0.5px solid #e9d5ff">'
+          var lines = leaps.map(function(l, li){
+            var last = li === leaps.length - 1;
+            return '<div style="' + (last ? '' : 'margin-bottom:4px;padding-bottom:4px;border-bottom:0.5px solid #e9d5ff') + '">'
               + '<div style="font-size:11px;color:#4c1d95;white-space:nowrap">'+(l.contracts||1)+' x <span style="font-weight:400">$'+l.strike+'</span></div>'
               + '<div style="font-size:10px;color:#6d28d9;white-space:nowrap">'+(l.expiry_fmt||l.expiry)+'</div>'
               + (l.breakeven ? '<div style="font-size:11px;color:#4c1d95;font-weight:700;white-space:nowrap">BE $'+l.breakeven+'</div>' : '')
@@ -3318,11 +3328,11 @@ function renderPositions() {
   var html = '';
   if (owned.length) {
     html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Owned</td></tr>';
-    owned.forEach(function(p) { html += makeRow(p); });
+    owned.forEach(function(p, i) { html += makeRow(p, i); });
   }
   if (watchlist.length) {
     html += '<tr style="background:#f9fafb"><td colspan="12" style="padding:6px 10px;font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;border-top:1px dashed #e5e7eb">Watchlist</td></tr>';
-    watchlist.forEach(function(p) { html += makeRow(p); });
+    watchlist.forEach(function(p, i) { html += makeRow(p, i); });
   }
 
   // Total row — CSP
