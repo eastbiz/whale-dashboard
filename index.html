@@ -3374,9 +3374,13 @@ function fmtExpiry(s) {
 
 // % leads, $ in parens — the percentage drives John's close decisions
 // (80-90% of max premium is the take-profit rule), the dollar amount is context.
+// profit_pct is capped at -100 in the scanner (its gates read it);
+// profit_pct_raw is the real figure, so the % and the $ agree on a loss
+// bigger than the credit (NBIS $115 put, 2026-11-05: -132%, not -100%).
+// Older results.json has no raw field — fall back to the capped one.
 function fmtPnl(r) {
   var pnl = r.pnl_dollar || 0;
-  var pct = r.profit_pct || 0;
+  var pct = (r.profit_pct_raw !== undefined && r.profit_pct_raw !== null) ? r.profit_pct_raw : (r.profit_pct || 0);
   var sign = pnl >= 0 ? '+' : '-';
   return (pct >= 0 ? '+' : '') + pct + '% (' + sign + '$' + Math.abs(Math.round(pnl)).toLocaleString() + ')';
 }
@@ -3657,7 +3661,7 @@ function renderActionsTable() {
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace' + (stale ? ';color:#92400e' : '') + '">$' + (r.mark || 0).toFixed(2)
         + (stale ? '<div style="font-size:9px;color:#92400e;white-space:nowrap">stale</div>' : '') + '</td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;font-weight:700;color:' + pnlColor + '">'
-        + fmtPct(r.profit_pct)
+        + fmtPct((r.profit_pct_raw !== undefined && r.profit_pct_raw !== null) ? r.profit_pct_raw : r.profit_pct)
         + '<div style="font-size:10px">' + (r.pnl_dollar >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(r.pnl_dollar || 0)).toLocaleString() + '</div></td>'
       + '<td style="padding:6px 5px;text-align:right;font-family:monospace;border-left:2px solid #e5e7eb">$' + Math.round(d.remainingVal).toLocaleString()
         + '<div style="font-size:10px;color:#6b7280;white-space:nowrap">' + (r.remaining_prem || 0) + '% left</div></td>'
