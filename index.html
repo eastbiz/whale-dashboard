@@ -244,7 +244,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
           <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Max assignment exposure</span><span id="exp-risk-assign" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
-          <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Premium collected (open book)</span><span id="exp-risk-prem" style="font-family:monospace;font-size:14px;font-weight:600;color:#166534;">&#8212;</span></div>
+          <div title="Credit received minus the cost to close at the live option price, open CSPs only. Only puts with a live chain price are counted; a put without one is listed as 'not priced' and left out, never guessed. % = P&amp;L ÷ credit of the counted puts: +26% means you have kept 26% of the credit so far; −24% means closing them all now costs 24% more than you received."><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSP P&amp;L</span><span id="exp-risk-pnl" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span><span id="exp-risk-pnl-sub" style="display:block;font-size:11px;color:#4b5563;margin-top:2px;"></span></div>
           <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CSPs</span><span id="exp-risk-csp-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
           <div><span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:2px;">Open CCs</span><span id="exp-risk-cc-count" style="font-family:monospace;font-size:14px;font-weight:600;">&#8212;</span></div>
         </div>
@@ -672,6 +672,73 @@ function dayChg(pct, riskUp) {
   var arrow = flat ? '' : (up ? '▲ ' : '▼ ');
   var txt   = flat ? 'unchanged' : arrow + (up ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
   return '<span style="color:' + color + ';font-weight:600">' + txt + '</span>';
+}
+
+// Signed money with one decimal in K: +$25.9K, −$8.3K, −$373, +$1.46M.
+// fmtK() is unsigned and prints a negative as "$-25,917" — not for P&L.
+function fmtPnlK(v) {
+  var a = Math.abs(v || 0);
+  var s = (v || 0) < 0 ? '−' : '+';
+  if (a >= 1000000) return s + '$' + (a / 1000000).toFixed(2) + 'M';
+  if (a >= 1000)    return s + '$' + (a / 1000).toFixed(1) + 'K';
+  return s + '$' + Math.round(a);
+}
+
+// Open CSP P&L for the exposure panel's risk summary (John, 2026-11-13).
+// One net figure hides the losers (on 2026-11-11 the book read +26% while
+// FIX $1,260 sat at −108%), so the sub-line names how many puts are in a
+// loss, their sum, and the worst one. Only LIVE chain marks count
+// ("chain" / "chain_near" — the same rule as the Top CSP table); any other
+// mark is stale-prone and is shown as "not priced", never summed. A111
+// (scanner) narrowed "chain_near" to the same expiry: before it, a
+// long-dated put priced both MU $560 puts at $99.15 (−$13.6K of fake loss).
+// Uses profit_pct_raw (uncapped), like every P&L text since 2026-11-05.
+function openCspPnl(posActs) {
+  var rows = (posActs || []).filter(function(r){ return r && r.type === 'CSP'; });
+  if (!rows.length) {
+    return { valueHtml: '&#8212;', subHtml: '<span style="color:#6b7280">No open CSPs</span>',
+             pnl: null, pct: null, nLoss: 0, nUnpriced: 0 };
+  }
+  var priced = rows.filter(function(r){ return r.mark_src === 'chain' || r.mark_src === 'chain_near'; });
+  var nUnpriced = rows.length - priced.length;
+  var credit = 0, pnl = 0, lossSum = 0, losers = [];
+  priced.forEach(function(r){
+    credit += (r.premium_received || 0) * 100 * (r.contracts || 0);
+    pnl    += (r.pnl_dollar || 0);
+    if ((r.pnl_dollar || 0) < 0) { losers.push(r); lossSum += r.pnl_dollar; }
+  });
+  var unpricedTxt = nUnpriced
+    ? '<span style="color:#92400e" title="No live chain price this scan (the broker mark can be a day old). Left out of the total.">'
+      + nUnpriced + ' not priced</span>'
+    : '';
+  if (!priced.length || credit <= 0) {
+    return { valueHtml: '<span style="color:#92400e">n/a</span>',
+             subHtml: unpricedTxt || '<span style="color:#6b7280">no live prices</span>',
+             pnl: null, pct: null, nLoss: 0, nUnpriced: nUnpriced };
+  }
+  var pct = pnl / credit * 100;
+  var col = pnl >= 0 ? '#166534' : '#991b1b';
+  var pctTxt = (pct < 0 ? '−' : '+') + Math.abs(pct).toFixed(0) + '%';
+  var valueHtml = '<span style="color:' + col + '">' + fmtPnlK(pnl) + '</span>'
+    + ' <span style="font-size:12px;color:' + col + '">' + pctTxt + ' of credit</span>';
+  var parts = [];
+  if (losers.length) {
+    losers.sort(function(a,b){ return (a.profit_pct_raw != null ? a.profit_pct_raw : a.profit_pct || 0)
+                                    - (b.profit_pct_raw != null ? b.profit_pct_raw : b.profit_pct || 0); });
+    var w  = losers[0];
+    var wp = (w.profit_pct_raw != null ? w.profit_pct_raw : w.profit_pct) || 0;
+    var wk = Number(w.strike || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+    parts.push('<span style="color:#991b1b">' + losers.length + ' in loss ' + fmtPnlK(lossSum) + '</span>');
+    parts.push('worst <b>' + escHtml(w.ticker) + ' $' + wk + '</b> '
+      + '<span style="color:#991b1b">' + (wp < 0 ? '−' : '+') + Math.abs(wp).toFixed(0) + '%</span>'
+      + ' (' + fmtPnlK(w.pnl_dollar || 0) + ')');
+  } else {
+    parts.push('<span style="color:#166534">none in loss</span>');
+  }
+  if (unpricedTxt) parts.push(unpricedTxt);
+  return { valueHtml: valueHtml, subHtml: parts.join(' · '),
+           pnl: pnl, pct: pct, credit: credit, nLoss: losers.length, lossSum: lossSum,
+           worst: losers[0] || null, nUnpriced: nUnpriced };
 }
 
 // Format a YYYY-MM-DD baseline date as a short "vs Jul 30".
@@ -1672,16 +1739,6 @@ function renderMarket() {
   const pct      = exp.csp_allocation_pct      || (maxCso > 0 ? +(cso / maxCso * maxPct).toFixed(1) : 0);
   const nPuts    = (exp.csp_positions    || []).length;
 
-  // Premium actually collected on the open short book. Prefer the scanner's
-  // field; fall back to summing the positions so this is correct even against
-  // a results.json written before that field existed. NOT total_premium_all —
-  // that is hypothetical premium from this scan's candidates.
-  const premCollected = exp.total_premium_collected != null
-    ? exp.total_premium_collected
-    : (exp.csp_positions || []).concat(exp.cc_positions || []).reduce(function(s,p){
-        return s + (p.premium_received || 0) * 100 * (p.contracts || 0);
-      }, 0);
-
   // Close candidates — the actions that mean "you can take this off today".
   const CLOSE_ACTIONS = ['TAKE PROFIT','BIG MOVE','P&L SWING'];
   const posActs  = data.position_actions || [];
@@ -1831,10 +1888,11 @@ function renderMarket() {
 
     // Risk Summary — spec §4
     document.getElementById('exp-risk-assign').textContent    = fmtK(exp.max_assignment_exposure || cso);
-    var premChg = dayChg(exp.premium_collected_change_pct, false);
-    document.getElementById('exp-risk-prem').innerHTML =
-      fmtK(premCollected)
-      + (premChg ? ' <span style="font-size:12px">' + premChg + '</span>' : '');
+    // Open CSP P&L (John, 2026-11-13) — replaced "Premium collected (open
+    // book)", whose day change only moved when puts were opened or closed.
+    var _pnl = openCspPnl(posActs);
+    document.getElementById('exp-risk-pnl').innerHTML = _pnl.valueHtml;
+    document.getElementById('exp-risk-pnl-sub').innerHTML = _pnl.subHtml;
     document.getElementById('exp-risk-csp-count').textContent = cspCount;
     document.getElementById('exp-risk-cc-count').textContent  = ccPosCount;
   }
