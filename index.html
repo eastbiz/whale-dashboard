@@ -926,6 +926,58 @@ async function runScan() {
 // real UTC offset; older files only have scan_time, whose " ET" suffix was a
 // mislabel (the value was always Pacific). Returns null when unparseable so
 // callers can fail safe.
+// A114 (EX-79): Schwab health for the header badge and the top banner.
+// results.json → schwab_status reports the token and the quotes apart.
+// Before it, every scan without Schwab quotes read "token expired": on
+// 2026-11-23 06:44 PT the token refreshed fine, accounts and 80 chains
+// loaded, and only Schwab's quotes server answered HTTP 500.
+function schwabHealth() {
+  var ss = data.schwab_status || null;
+  var sd = parseScanDate(data);
+  // Unparseable/missing timestamp must read as stale, not as "token ok".
+  var ageH = sd ? (Date.now() - sd.getTime()) / 3600000 : 99;
+  var when = data.scan_time ? ' (last scan: ' + data.scan_time + ')' : '';
+  var r = {badge: '⚪ Schwab status unknown', color: '#6b7280', banner: '', bannerRed: false};
+  var qErr = ss && ss.quotes_error ? ss.quotes_error : 'no quotes';
+
+  // Badge (header): scan older than 8 h is flagged.
+  if (ss && ss.token_ok === false) {
+    r.badge = '🔴 Schwab rejected the token — renew on Windows'; r.color = '#991b1b';
+  } else if (ageH > 8) {
+    r.badge = '🟡 Schwab · last scan ' + Math.round(ageH) + 'h ago — token may have expired'; r.color = '#92400e';
+  } else if (data.schwab_live === true) {
+    r.badge = '🟢 Schwab live · token ok'; r.color = '#166534';
+  } else if (data.schwab_live === false && ss && ss.token_ok === true) {
+    r.badge = '🟠 Schwab token ok · quotes failed (' + qErr + ') — prices from Yahoo'; r.color = '#92400e';
+  } else if (data.schwab_live === false) {
+    r.badge = '🟠 No Schwab quotes at last scan — token or Schwab server, see scan log'; r.color = '#92400e';
+  }
+
+  // Banner (top of page): scan older than 18 h is flagged.
+  if (ss && ss.token_ok === false) {
+    r.banner = '⚠️ Schwab rejected the token at the last scan'
+      + (ss.token_error ? ' (' + ss.token_error + ')' : '')
+      + ' — options data is stale. Renew the token on Windows (python schwab_login.py), then run a manual scan.' + when;
+    r.bannerRed = true;
+  } else if (ageH > 18) {
+    r.banner = '⚠️ The last scan is ' + Math.round(ageH) + ' h old — data may be stale. Check the Actions log; if Schwab rejected the token, renew it on Windows.' + when;
+    r.bannerRed = true;
+  } else if (ss && ss.chains_ok === 0 && ss.chains_failed > 0) {
+    r.banner = '⚠️ Schwab option chains failed at the last scan (' + ss.chains_failed + ' calls) — options data is stale.' + when;
+    r.bannerRed = true;
+  } else if (data.schwab_live === false && ss && ss.token_ok === true) {
+    r.banner = '⚠️ Schwab quotes failed at the last scan (' + qErr
+      + (/^HTTP 5/.test(qErr) ? ', an error on Schwab’s server' : '') + ' — the token is OK). '
+      + 'Stock prices, day moves and volume are from Yahoo.'
+      + (ss.chains_failed > 0 ? ' Option chains: ' + ss.chains_ok + ' loaded, ' + ss.chains_failed + ' failed.' : ' Option chains are live.')
+      + (ss.history_failed > 0 ? ' IVP is the backup estimate (Schwab price history failed).' : '')
+      + ' The next scan retries.' + when;
+  } else if (data.schwab_live === false) {
+    r.banner = '⚠️ No Schwab quotes at the last scan — the token was rejected or Schwab’s server failed; the scan log says which ("Schwab token refreshed" = token OK). Stock prices are from Yahoo.' + when;
+  }
+  return r;
+}
+
 function parseScanDate(d) {
   if (!d) return null;
   if (d.scan_time_iso) {
@@ -944,27 +996,12 @@ async function loadData() {
     data = await fetchResults();
     renderAll();
     document.getElementById('last-scan').textContent = 'Scanned: ' + (data.scan_time || '&#8212;');
-    // Schwab token status — also check scan age, not just schwab_live flag
+    // Schwab status — token and quotes apart (A114), plus scan age.
     var schwabEl = document.getElementById('schwab-status');
     if (schwabEl) {
-      var _scanDate = parseScanDate(data);
-      // Unparseable/missing timestamp must read as stale, not as "token ok".
-      var scanAgeHours = _scanDate ? (Date.now() - _scanDate.getTime()) / 3600000 : 99;
-      var scanIsStale = scanAgeHours > 8; // stale if last scan >8 hours ago
-      if (data.schwab_live === true && !scanIsStale) {
-        schwabEl.textContent = '🟢 Schwab live · token ok';
-        schwabEl.style.color = '#166534';
-      } else if (data.schwab_live === true && scanIsStale) {
-        // Token was ok at last scan but that scan is old — could be expired since
-        schwabEl.textContent = '🟡 Schwab · last scan ' + Math.round(scanAgeHours) + 'h ago — token may have expired';
-        schwabEl.style.color = '#92400e';
-      } else if (data.schwab_live === false) {
-        schwabEl.textContent = '🔴 Schwab token expired — refresh on Windows';
-        schwabEl.style.color = '#991b1b';
-      } else {
-        schwabEl.textContent = '⚪ Schwab status unknown';
-        schwabEl.style.color = '#6b7280';
-      }
+      var _sh = schwabHealth();
+      schwabEl.textContent = _sh.badge;
+      schwabEl.style.color = _sh.color;
     }
   } catch(e) {
     document.getElementById('last-scan').textContent = 'Load failed';
@@ -1620,20 +1657,20 @@ function renderAll() {
   document.getElementById('market-content').style.display = 'block';
   document.getElementById('market-error').style.display = 'none';
 
-  // ── Schwab stale-data banner ──────────────────────────────
+  // ── Schwab stale-data banner (A114: token and quotes apart) ──
   let banner = document.getElementById('schwab-stale-banner');
-  var scanDate = parseScanDate(data);
-  var scanStale = !scanDate || (Date.now() - scanDate.getTime()) > 18 * 3600 * 1000;
-  if (data.schwab_live === false || scanStale) {
+  var _shb = schwabHealth();
+  if (_shb.banner) {
     if (!banner) {
       banner = document.createElement('div');
       banner.id = 'schwab-stale-banner';
-      banner.style.cssText = 'position:sticky;top:0;z-index:999;background:#b91c1c;color:#fff;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;letter-spacing:0.01em;';
-      var scanMsg = scanStale && data.scan_time ? ' (last scan: ' + data.scan_time + ')' : '';
-      banner.innerHTML = '⚠️ Options data is stale — Schwab token expired. Refresh token on Windows then run a manual scan.' + scanMsg;
       var appEl = document.getElementById('app');
       if (appEl) appEl.prepend(banner);
     }
+    // Set every render: the banner used to keep its first text across reloads.
+    banner.style.cssText = 'position:sticky;top:0;z-index:999;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;letter-spacing:0.01em;'
+      + (_shb.bannerRed ? 'background:#b91c1c;color:#fff;' : 'background:#fef3c7;color:#92400e;border-bottom:1px solid #f59e0b;');
+    banner.textContent = _shb.banner;
   } else {
     if (banner) banner.remove();
   }
