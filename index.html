@@ -384,15 +384,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <table style="width:100%;border-collapse:collapse;font-size:12px" id="holdings-table">
           <thead>
             <tr style="border-bottom:2px solid #e5e7eb">
-              <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Symbol</th>
+              <th onclick="holdSort('t')" title="Click to sort A&rarr;Z; click again for Z&rarr;A" style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none">Symbol<span id="hsi-t"></span></th>
               <th style="text-align:left;padding:6px 4px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Tier</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Price</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Price vs your buy_under / sell_above. Green = at or within 5% above buy target; orange = at or within 8% below sell target &mdash; the same bands as the Price Watch panel.">vs your targets</th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Shares $</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95">LEAPS $</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e" title="Cash needed if every short put is assigned. Shown for context; NOT part of Total exposure.">CSP oblig.</th>
+              <th onclick="holdSort('leaps')" title="Click to sort largest first; click again for smallest first" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #c4b5fd;background:#f5f3ff;color:#4c1d95;cursor:pointer;user-select:none">LEAPS $<span id="hsi-leaps"></span></th>
+              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #fed7aa;background:#fff7ed;color:#92400e;cursor:pointer;user-select:none" title="Cash needed if every short put is assigned. Shown for context; NOT part of Total exposure. Click to sort largest first; click again for smallest first." onclick="holdSort('cso')">CSP oblig.<span id="hsi-cso"></span></th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;font-weight:600;white-space:nowrap;border-left:2px solid #d1fae5;background:#f0fdf4;color:#065f46" title="Covered calls you can still write, per account: shares in that account &divide; 100, less the calls already written there (a call is covered only by shares in the SAME account; LEAPS never count). From the last scan &mdash; a call written after it is not in this number.">CC room</th>
-              <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Shares + LEAPS market value">Total exposure</th>
+              <th onclick="holdSort('total')" style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none" title="Shares + LEAPS market value. Click to sort largest first; click again for smallest first.">Total exposure<span id="hsi-total"> &#9660;</span></th>
               <th style="text-align:right;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Total exposure as % of NAV (Schwab net liq + IBKR stock + IBKR options, incl. SGOV)">% of NAV</th>
               <th style="text-align:left;padding:6px 6px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap" title="Scanner sizing verdict (A49): shares + LEAPS vs the tier band, % of invested capital">Sizing</th>
               <th style="text-align:left;padding:6px 5px;font-size:10px;text-transform:uppercase;color:#4b5563;font-weight:600;white-space:nowrap">Accts</th>
@@ -3090,6 +3090,34 @@ function vsLastLine(o) {
 // mean + Nasdaq/Zacks label) — printed as n/a when a feed is missing.
 function holdingsAcctKey(a) { return ((a || 'IBKR') + '').toUpperCase(); }
 
+// Holdings sort (John, 2026-11-24): Symbol, LEAPS $, CSP oblig., Total
+// exposure. Default = Total exposure, largest first (the A69 order).
+// First click on a money column = largest first; on Symbol = A to Z;
+// a second click on the same column reverses it. Ties fall back to Total
+// exposure (largest first), then symbol, so rows with $0 in the sorted
+// column keep a fixed order. The SGOV cash footer is never ranked.
+var holdSortCol = 'total';
+var holdSortAsc = false;
+var HOLD_SORT_LABEL = { t: 'symbol', leaps: 'LEAPS $', cso: 'CSP obligation', total: 'total exposure' };
+function holdSort(col) {
+  if (holdSortCol === col) { holdSortAsc = !holdSortAsc; }
+  else { holdSortCol = col; holdSortAsc = (col === 't'); }
+  Object.keys(HOLD_SORT_LABEL).forEach(function(c) {
+    var el = document.getElementById('hsi-' + c);
+    if (el) el.textContent = c === holdSortCol ? ' ' + (holdSortAsc ? '\u25B2' : '\u25BC') : '';
+  });
+  if (data) renderHoldings();
+}
+function holdSortCmp(a, b) {
+  var d;
+  if (holdSortCol === 't') d = a.t < b.t ? -1 : a.t > b.t ? 1 : 0;
+  else d = (a[holdSortCol] || 0) - (b[holdSortCol] || 0);
+  if (!holdSortAsc) d = -d;
+  if (d) return d;
+  if (b.total !== a.total) return b.total - a.total;
+  return a.t < b.t ? -1 : a.t > b.t ? 1 : 0;
+}
+
 function ratingColor(label) {
   var l = (label || '').toLowerCase();
   if (!l) return '#6b7280';
@@ -3140,10 +3168,14 @@ function renderHoldings() {
                 ccRoom: ccRoomBy[p.ticker] || [] };
     if (cashSet[p.ticker]) cashRows.push(row); else rows.push(row);
   });
-  rows.sort(function(a,b){ return b.total - a.total; });
+  rows.sort(holdSortCmp);
 
   if (note) {
-    note.innerHTML = 'Every held name' + (acct === 'ALL' ? ', all accounts' : ' in ' + escHtml(acct)) + ', largest first. '
+    var sortTxt = holdSortCol === 't'
+      ? (holdSortAsc ? 'by symbol A to Z' : 'by symbol Z to A')
+      : 'by ' + HOLD_SORT_LABEL[holdSortCol] + ', ' + (holdSortAsc ? 'smallest first' : 'largest first');
+    note.innerHTML = 'Every held name' + (acct === 'ALL' ? ', all accounts' : ' in ' + escHtml(acct)) + ', sorted ' + sortTxt
+      + ' (click Symbol, LEAPS $, CSP oblig. or Total exposure to sort). '
       + '<b>Total exposure = shares + LEAPS market value</b>; CSP obligation is context only. '
       + 'Row colour: <span style="color:#166534;font-weight:600">green</span> = at/near your buy target, '
       + '<span style="color:#9a3412;font-weight:600">orange</span> = at/near your sell target (5% / 8% bands, same as Price Watch). '

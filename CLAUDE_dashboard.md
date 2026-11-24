@@ -26,6 +26,12 @@ GitHub Pages. This repo is the VIEW; the scanner repo is the source of truth.
   STRONGER than the dividers inside the LEAPS cell.
   `Positions | Holdings | Trade History`
   switch on the right; the account buttons on the left apply to all three.
+  **Holdings sort (2026-11-24, John):** Symbol, LEAPS $, CSP oblig. and
+  Total exposure headers sort on click (`holdSort()` / `holdSortCmp()`);
+  default Total exposure, largest first; a money column sorts largest
+  first on the first click, Symbol A to Z; ties go to Total exposure, then
+  symbol. The sort stays when the account filter changes; not saved
+  across page loads.
   **Trade History (A73, 2026-09-15):** renders `results.trade_history` —
   closed option cycles from broker fills (stock price at the opening and
   closing fill, credit, buy-back, how closed, days held, kept % of credit,
